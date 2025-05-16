@@ -8,8 +8,8 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-// The Figma API key
-const FIGMA_API_KEY = 'figd_Y73rZqlZ2muODPJ8aLu2lmnX1mo_AO8qVo6NpdVv';
+// The Figma API key - replace with your own key
+const FIGMA_API_KEY = 'YOUR_FIGMA_API_KEY';
 
 console.log('Starting Figma Developer MCP server...');
 console.log(`Using API key: ${FIGMA_API_KEY.substring(0, 8)}...`);
