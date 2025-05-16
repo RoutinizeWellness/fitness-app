@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sin conexión - Routinize Wellness</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #f8fafc;
+      color: #1e293b;
+      text-align: center;
+      padding: 0 20px;
+    }
+    
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+    }
+    
+    h1 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    
+    p {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      color: #64748b;
+    }
+    
+    .button {
+      display: inline-block;
+      background-color: #3b82f6;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    
+    .button:hover {
+      background-color: #2563eb;
+    }
+    
+    .cached-content {
+      margin-top: 40px;
+      width: 100%;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 20px;
+    }
+    
+    .cached-item {
+      background-color: white;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      text-align: left;
+    }
+    
+    .cached-item h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+    }
+    
+    .cached-item p {
+      margin: 0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="/icons/icon-192x192.png" alt="Routinize Logo" class="logo">
+    <h1>Sin conexión a Internet</h1>
+    <p>No pudimos conectar con nuestros servidores. Verifica tu conexión a Internet e intenta nuevamente.</p>
+    <a href="/" class="button">Reintentar</a>
+    
+    <div class="cached-content">
+      <h2>Contenido disponible sin conexión</h2>
+      <p>Puedes acceder a estos elementos que fueron guardados previamente:</p>
+      
+      <div id="cached-items">
+        <!-- El contenido se llenará dinámicamente con JavaScript -->
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Intentar cargar contenido cacheado
+    async function loadCachedContent() {
+      try {
+        const cache = await caches.open('routinize-cache-v1');
+        const keys = await cache.keys();
+        const cachedItems = document.getElementById('cached-items');
+        
+        // Filtrar y mostrar solo páginas principales
+        const mainPages = keys.filter(key => {
+          const url = new URL(key.url);
+          return url.pathname === '/' || 
+                 url.pathname === '/dashboard' || 
+                 url.pathname === '/workout' ||
+                 url.pathname === '/ejercicios' ||
+                 url.pathname === '/plan';
+        });
+        
+        if (mainPages.length === 0) {
+          cachedItems.innerHTML = '<p>No hay contenido disponible sin conexión.</p>';
+          return;
+        }
+        
+        // Crear elementos para cada página cacheada
+        mainPages.forEach(key => {
+          const url = new URL(key.url);
+          let title = 'Página';
+          
+          // Asignar títulos según la ruta
+          switch (url.pathname) {
+            case '/':
+              title = 'Inicio';
+              break;
+            case '/dashboard':
+              title = 'Dashboard';
+              break;
+            case '/workout':
+              title = 'Entrenamientos';
+              break;
+            case '/ejercicios':
+              title = 'Biblioteca de Ejercicios';
+              break;
+            case '/plan':
+              title = 'Plan de Entrenamiento';
+              break;
+            default:
+              title = url.pathname.substring(1);
+              title = title.charAt(0).toUpperCase() + title.slice(1);
+          }
+          
+          const item = document.createElement('div');
+          item.className = 'cached-item';
+          item.innerHTML = `
+            <h3>${title}</h3>
+            <p>Disponible sin conexión</p>
+          `;
+          
+          // Hacer que el elemento sea clickeable
+          item.addEventListener('click', () => {
+            window.location.href = url.pathname;
+          });
+          
+          cachedItems.appendChild(item);
+        });
+      } catch (error) {
+        console.error('Error al cargar contenido cacheado:', error);
+        document.getElementById('cached-items').innerHTML = '<p>No se pudo cargar el contenido sin conexión.</p>';
+      }
+    }
+    
+    // Cargar contenido cuando la página esté lista
+    document.addEventListener('DOMContentLoaded', loadCachedContent);
+  </script>
+</body>
+</html>

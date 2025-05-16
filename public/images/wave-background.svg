@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="414" height="300" viewBox="0 0 414 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Purple wave -->
+  <path d="M0 0H414V180C414 180 350 220 207 200C64 180 0 240 0 240V0Z" fill="#F0EBF8" />
+  
+  <!-- Orange wave -->
+  <path d="M0 100C0 100 100 70 207 90C314 110 414 70 414 70V240C414 240 350 200 207 220C64 240 0 180 0 180V100Z" fill="#FFEBDC" opacity="0.7" />
+  
+  <!-- Pink wave -->
+  <path d="M0 140C0 140 100 170 207 150C314 130 414 170 414 170V300C414 300 350 260 207 280C64 300 0 240 0 240V140Z" fill="#FFD6D6" opacity="0.5" />
+</svg>

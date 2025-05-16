@@ -1,0 +1,271 @@
+/* Estilos para la página de bienvenida */
+
+/* Animaciones para elementos decorativos */
+@keyframes float {
+  0% {
+    transform: translateY(0px) translateX(0px);
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+  }
+  100% {
+    transform: translateY(0px) translateX(0px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Clases para elementos decorativos */
+.welcome-floating-element {
+  animation: float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.welcome-floating-element-slow {
+  animation: float 8s ease-in-out infinite;
+  will-change: transform;
+}
+
+.welcome-floating-element-fast {
+  animation: float 4s ease-in-out infinite;
+  will-change: transform;
+}
+
+.welcome-pulse-element {
+  animation: pulse 4s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.welcome-rotate-element {
+  animation: rotate 20s linear infinite;
+  will-change: transform;
+}
+
+.welcome-rotate-element-reverse {
+  animation: rotate 25s linear infinite reverse;
+  will-change: transform;
+}
+
+/* Gradientes y efectos de fondo */
+.welcome-gradient-text {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite linear;
+}
+
+.welcome-gradient-border {
+  position: relative;
+  border-radius: 0.5rem;
+  padding: 1px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite linear;
+}
+
+.welcome-gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: white;
+  border-radius: 0.4rem;
+  z-index: 0;
+}
+
+.dark .welcome-gradient-border::before {
+  background: #1f2937;
+}
+
+/* Efectos de glassmorphism */
+.welcome-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.dark .welcome-glass {
+  background: rgba(17, 24, 39, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Efectos de hover */
+.welcome-hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.welcome-hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Efectos de scroll */
+.welcome-snap-scroll {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+  scroll-behavior: smooth;
+}
+
+.welcome-snap-scroll > section {
+  scroll-snap-align: start;
+  height: 100vh;
+  width: 100%;
+}
+
+/* Efectos de transición entre secciones */
+.welcome-section-transition {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.welcome-section-transition.hidden {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.welcome-section-transition.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Efectos para botones */
+.welcome-button-glow {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.welcome-button-glow::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  z-index: -1;
+}
+
+.welcome-button-glow:hover::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Efectos para imágenes */
+.welcome-image-reveal {
+  clip-path: inset(0 100% 0 0);
+  animation: reveal 1s ease forwards;
+}
+
+@keyframes reveal {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Efectos para texto */
+.welcome-text-fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn 1s ease forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.welcome-text-fade-in-delay-1 {
+  animation-delay: 0.2s;
+}
+
+.welcome-text-fade-in-delay-2 {
+  animation-delay: 0.4s;
+}
+
+.welcome-text-fade-in-delay-3 {
+  animation-delay: 0.6s;
+}
+
+/* Efectos para listas */
+.welcome-list-stagger > * {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.welcome-list-stagger.animate > *:nth-child(1) {
+  animation: staggerIn 0.5s ease forwards 0.1s;
+}
+
+.welcome-list-stagger.animate > *:nth-child(2) {
+  animation: staggerIn 0.5s ease forwards 0.2s;
+}
+
+.welcome-list-stagger.animate > *:nth-child(3) {
+  animation: staggerIn 0.5s ease forwards 0.3s;
+}
+
+.welcome-list-stagger.animate > *:nth-child(4) {
+  animation: staggerIn 0.5s ease forwards 0.4s;
+}
+
+.welcome-list-stagger.animate > *:nth-child(5) {
+  animation: staggerIn 0.5s ease forwards 0.5s;
+}
+
+@keyframes staggerIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

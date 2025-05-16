@@ -1,0 +1,306 @@
+/* Pixel True Habit Builder UI Kit Styles */
+
+/* Base styles for the app */
+.pixel-true-app {
+  width: 414px;
+  height: 896px;
+  background: #FFF3E9;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Manrope', sans-serif;
+}
+
+/* Phone mockup styles */
+.phone-mockup {
+  width: 434px;
+  height: 940px;
+  flex-shrink: 0;
+  background: url('/images/phone-mockup.png') lightgray 50% / cover no-repeat;
+  position: relative;
+  margin: 0 auto;
+}
+
+.phone-mockup-rotated {
+  width: 383.868px;
+  height: 830.788px;
+  transform: rotate(-45deg);
+  flex-shrink: 0;
+  border-radius: 35px;
+  background: url('/images/phone-mockup-rotated.png') lightgray 50% / cover no-repeat;
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  z-index: -1;
+}
+
+/* Card styles */
+.pixel-card {
+  width: 350px;
+  height: 487px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #FFF;
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Gradient background */
+.gradient-bg {
+  width: 414px;
+  height: 692px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, rgba(255, 243, 233, 0.00) 22.22%, #FFF3E9 50%);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+/* Header styles */
+.pixel-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.pixel-logo {
+  display: flex;
+  align-items: center;
+}
+
+.pixel-logo img {
+  height: 32px;
+  margin-right: 8px;
+}
+
+.pixel-logo-text {
+  font-weight: 700;
+  font-size: 18px;
+  color: #573353;
+}
+
+.pixel-header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.pixel-icon-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Bottom navigation */
+.pixel-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0px -2px 16px rgba(0, 0, 0, 0.08);
+  z-index: 100;
+}
+
+.pixel-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20%;
+}
+
+.pixel-nav-icon {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 4px;
+}
+
+.pixel-nav-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #573353;
+  opacity: 0.7;
+}
+
+.pixel-nav-item.active .pixel-nav-text {
+  color: #FDA758;
+  opacity: 1;
+}
+
+.pixel-add-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FDA758 0%, #FE9870 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 4px 16px rgba(253, 167, 88, 0.4);
+  position: relative;
+  top: -20px;
+}
+
+/* Content sections */
+.pixel-section {
+  margin-bottom: 32px;
+  padding: 0 24px;
+}
+
+.pixel-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.pixel-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #573353;
+}
+
+.pixel-view-all {
+  font-size: 14px;
+  font-weight: 500;
+  color: #FDA758;
+  display: flex;
+  align-items: center;
+}
+
+/* Cards and items */
+.pixel-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.pixel-module-card {
+  background: white;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.pixel-module-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.pixel-module-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #573353;
+  margin-bottom: 4px;
+}
+
+.pixel-module-description {
+  font-size: 14px;
+  color: #573353;
+  opacity: 0.7;
+}
+
+/* Today's plan card */
+.pixel-today-card {
+  background: white;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.pixel-today-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.pixel-today-info {
+  display: flex;
+  align-items: center;
+}
+
+.pixel-today-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.pixel-today-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #573353;
+}
+
+.pixel-today-subtitle {
+  font-size: 14px;
+  color: #573353;
+  opacity: 0.7;
+}
+
+.pixel-start-button {
+  background: #FDA758;
+  color: white;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 50px;
+  box-shadow: 0px 2px 8px rgba(253, 167, 88, 0.3);
+}
+
+.pixel-progress-bar {
+  height: 10px;
+  background: #F5F5F5;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.pixel-progress-fill {
+  height: 100%;
+  background: #FDA758;
+  border-radius: 5px;
+}
+
+/* Color variables */
+:root {
+  --pixel-primary: #FDA758;
+  --pixel-primary-dark: #FE9870;
+  --pixel-purple: #8C80F8;
+  --pixel-green: #5DE292;
+  --pixel-red: #FF7285;
+  --pixel-blue: #5CC2FF;
+  --pixel-text: #573353;
+  --pixel-text-light: rgba(87, 51, 83, 0.7);
+  --pixel-background: #FFF3E9;
+  --pixel-card-bg: #FFFFFF;
+}
+
+/* Media query to ensure the design works on mobile */
+@media (max-width: 414px) {
+  .pixel-true-app {
+    width: 100%;
+    height: 100vh;
+  }
+  
+  .phone-mockup,
+  .phone-mockup-rotated {
+    display: none;
+  }
+}

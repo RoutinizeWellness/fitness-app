@@ -1,0 +1,196 @@
+/* Dashboard Styles */
+.dashboard-container {
+  width: 414px;
+  height: 896px;
+  background-color: #FFF3E9;
+  position: relative;
+  margin: 0 auto;
+  overflow: hidden;
+  font-family: 'Roboto Serif', 'Manrope', sans-serif;
+  color: #573353;
+}
+
+/* Background waves */
+.wave-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 300px;
+  z-index: 0;
+}
+
+/* Top navigation */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #f0f0f0;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Quote section */
+.quote-section {
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+  margin-top: 20px;
+}
+
+.quote-text {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+  color: #573353;
+}
+
+.quote-author {
+  font-size: 14px;
+  margin-top: 10px;
+  color: #573353;
+  opacity: 0.7;
+}
+
+/* Habits section */
+.habits-section {
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+  margin-top: 40px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #573353;
+  opacity: 0.7;
+}
+
+.habits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.habit-item {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.habit-color {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  margin-right: 15px;
+}
+
+.habit-name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.habit-done-button {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #573353;
+}
+
+/* Add habit button */
+.add-habit-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #FDA758;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: none;
+  box-shadow: 0 4px 15px rgba(253, 167, 88, 0.4);
+  cursor: pointer;
+  z-index: 2;
+}
+
+.add-habit-button svg {
+  stroke: white;
+}
+
+/* Bottom navigation */
+.bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  background-color: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 1;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.nav-item.active {
+  color: #FDA758;
+}
+
+/* Media query for mobile devices */
+@media (max-width: 414px) {
+  .dashboard-container {
+    width: 100%;
+    height: 100vh;
+  }
+}

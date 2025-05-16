@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20.5 8C13.6 8 8 13.6 8 20.5C8 27.4 13.6 33 20.5 33C27.4 33 33 27.4 33 20.5C33 13.6 27.4 8 20.5 8ZM20.5 30C15.3 30 11 25.7 11 20.5C11 15.3 15.3 11 20.5 11C25.7 11 30 15.3 30 20.5C30 25.7 25.7 30 20.5 30Z" fill="white"/>
+  <path d="M20.5 14C17 14 14 17 14 20.5C14 24 17 27 20.5 27C24 27 27 24 27 20.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <path d="M20.5 17C18.6 17 17 18.6 17 20.5C17 22.4 18.6 24 20.5 24" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <path d="M27 20.5C27 18.6 25.4 17 23.5 17" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <path d="M42 15H46C48.8 15 51 17.2 51 20C51 22.8 48.8 25 46 25H42V15ZM46 22C47.1 22 48 21.1 48 20C48 18.9 47.1 18 46 18H45V22H46Z" fill="white"/>
+  <path d="M54 15H57V22C57 23.1 57.9 24 59 24C60.1 24 61 23.1 61 22V15H64V22C64 24.8 61.8 27 59 27C56.2 27 54 24.8 54 22V15Z" fill="white"/>
+  <path d="M72 15H69V25H72V15Z" fill="white"/>
+  <path d="M74 15H77L80 20.5L83 15H86V25H83V19.5L80 25L77 19.5V25H74V15Z" fill="white"/>
+  <path d="M88 15H91V25H88V15Z" fill="white"/>
+  <path d="M93 15H96L99 20.5L102 15H105V25H102V19.5L99 25L96 19.5V25H93V15Z" fill="white"/>
+  <path d="M107 15H114V18H110V19H113V22H110V25H107V15Z" fill="white"/>
+</svg>

@@ -1,0 +1,165 @@
+/* Estilos 3D inspirados en https://dribbble.com/shots/19054160-3D-Credential-Page */
+
+/* Efecto de tarjeta 3D */
+.card-3d {
+  position: relative;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #ffffff, #f5f7fa);
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.05),
+    0 4px 6px -2px rgba(0, 0, 0, 0.03),
+    inset 0 -8px 16px -6px rgba(0, 0, 0, 0.01),
+    inset 0 2px 8px -2px rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.card-3d:hover {
+  transform: translateY(-5px);
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    inset 0 -8px 16px -6px rgba(0, 0, 0, 0.01),
+    inset 0 2px 8px -2px rgba(255, 255, 255, 0.8);
+}
+
+/* Efecto de vidrio */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+/* Texto con degradado */
+.gradient-text {
+  background: linear-gradient(90deg, #3b82f6, #10b981);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+
+/* Botón con efecto 3D */
+.button-3d {
+  position: relative;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #3b82f6, #2563eb);
+  color: white;
+  font-weight: 600;
+  box-shadow: 
+    0 4px 6px -1px rgba(59, 130, 246, 0.2),
+    0 2px 4px -1px rgba(59, 130, 246, 0.1),
+    inset 0 -4px 8px -4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 4px -1px rgba(255, 255, 255, 0.4);
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.button-3d:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 10px 15px -3px rgba(59, 130, 246, 0.3),
+    0 4px 6px -2px rgba(59, 130, 246, 0.2),
+    inset 0 -4px 8px -4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 4px -1px rgba(255, 255, 255, 0.4);
+}
+
+.button-3d:active {
+  transform: translateY(1px);
+  box-shadow: 
+    0 2px 4px -1px rgba(59, 130, 246, 0.2),
+    0 1px 2px -1px rgba(59, 130, 246, 0.1),
+    inset 0 -2px 4px -2px rgba(0, 0, 0, 0.1),
+    inset 0 1px 2px -1px rgba(255, 255, 255, 0.4);
+}
+
+/* Fondo con efecto de profundidad */
+.depth-background {
+  background-image: 
+    radial-gradient(at 100% 0%, hsla(221, 83%, 53%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(142, 71%, 45%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, hsla(217, 91%, 60%, 0.05) 0px, transparent 70%);
+  background-attachment: fixed;
+}
+
+/* Efecto de neomorfismo */
+.neomorphic {
+  border-radius: 16px;
+  background: #f0f4f8;
+  box-shadow:
+    8px 8px 16px #d1d9e6,
+    -8px -8px 16px #ffffff;
+  border: none;
+}
+
+/* Efecto de tarjeta flotante */
+.floating-card {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Efecto de avatar 3D */
+.avatar-3d {
+  border: 3px solid white;
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Efecto de borde brillante */
+.glow-border {
+  position: relative;
+}
+
+.glow-border::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #3b82f6, #10b981, #3b82f6);
+  border-radius: 18px;
+  z-index: -1;
+  filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glow-border:hover::after {
+  opacity: 0.7;
+}
+
+/* Efecto de progreso 3D */
+.progress-3d {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(145deg, #e6e6e6, #f0f0f0);
+  box-shadow: 
+    inset 2px 2px 5px #d1d1d1,
+    inset -2px -2px 5px #ffffff;
+  overflow: hidden;
+}
+
+.progress-3d-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #3b82f6, #10b981);
+  box-shadow: 
+    0 2px 4px -1px rgba(59, 130, 246, 0.2),
+    0 1px 2px -1px rgba(59, 130, 246, 0.1);
+  transition: width 0.5s ease;
+}

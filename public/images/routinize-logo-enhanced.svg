@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00c853" />
+      <stop offset="50%" stop-color="#009688" />
+      <stop offset="100%" stop-color="#006064" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3" />
+    </filter>
+  </defs>
+  
+  <!-- Fondo con sombra -->
+  <rect width="200" height="200" rx="40" ry="40" fill="white" filter="url(#shadow)" />
+  
+  <!-- Círculo de fondo con gradiente -->
+  <circle cx="100" cy="100" r="70" fill="url(#logoGradient)" />
+  
+  <!-- Elementos decorativos -->
+  <circle cx="70" cy="60" r="10" fill="white">
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="100" cy="50" r="5" fill="white">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="2.5s" repeatCount="indefinite" />
+  </circle>
+  
+  <!-- Ondas con animación -->
+  <path d="M50,80 C60,60 80,50 100,60 C120,70 140,60 150,80" stroke="white" stroke-width="8" fill="none" stroke-linecap="round">
+    <animate attributeName="d" values="M50,80 C60,60 80,50 100,60 C120,70 140,60 150,80;M50,82 C60,62 80,52 100,62 C120,72 140,62 150,82;M50,80 C60,60 80,50 100,60 C120,70 140,60 150,80" dur="4s" repeatCount="indefinite" />
+  </path>
+  
+  <path d="M40,100 C60,80 80,70 100,80 C120,90 140,80 160,100" stroke="white" stroke-width="8" fill="none" stroke-linecap="round">
+    <animate attributeName="d" values="M40,100 C60,80 80,70 100,80 C120,90 140,80 160,100;M40,102 C60,82 80,72 100,82 C120,92 140,82 160,102;M40,100 C60,80 80,70 100,80 C120,90 140,80 160,100" dur="4s" repeatCount="indefinite" begin="0.5s" />
+  </path>
+  
+  <path d="M30,120 C60,100 80,90 100,100 C120,110 140,100 170,120" stroke="white" stroke-width="8" fill="none" stroke-linecap="round">
+    <animate attributeName="d" values="M30,120 C60,100 80,90 100,100 C120,110 140,100 170,120;M30,122 C60,102 80,92 100,102 C120,112 140,102 170,122;M30,120 C60,100 80,90 100,100 C120,110 140,100 170,120" dur="4s" repeatCount="indefinite" begin="1s" />
+  </path>
+</svg>

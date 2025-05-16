@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Calendar with checkmarks -->
+  <rect x="30" y="40" width="100" height="80" rx="8" fill="white" stroke="#573353" stroke-width="2"/>
+  
+  <!-- Calendar header -->
+  <rect x="30" y="40" width="100" height="20" rx="8" fill="#DDDCFE" stroke="#573353" stroke-width="2"/>
+  
+  <!-- Calendar grid -->
+  <line x1="30" y1="60" x2="130" y2="60" stroke="#573353" stroke-width="2"/>
+  <line x1="30" y1="80" x2="130" y2="80" stroke="#573353" stroke-opacity="0.2" stroke-width="1"/>
+  <line x1="30" y1="100" x2="130" y2="100" stroke="#573353" stroke-opacity="0.2" stroke-width="1"/>
+  
+  <line x1="50" y1="40" x2="50" y2="120" stroke="#573353" stroke-opacity="0.2" stroke-width="1"/>
+  <line x1="70" y1="40" x2="70" y2="120" stroke="#573353" stroke-opacity="0.2" stroke-width="1"/>
+  <line x1="90" y1="40" x2="90" y2="120" stroke="#573353" stroke-opacity="0.2" stroke-width="1"/>
+  <line x1="110" y1="40" x2="110" y2="120" stroke="#573353" stroke-opacity="0.2" stroke-width="1"/>
+  
+  <!-- Calendar days -->
+  <text x="40" y="53" font-family="Arial" font-size="10" font-weight="bold" fill="#573353">M</text>
+  <text x="60" y="53" font-family="Arial" font-size="10" font-weight="bold" fill="#573353">T</text>
+  <text x="80" y="53" font-family="Arial" font-size="10" font-weight="bold" fill="#573353">W</text>
+  <text x="100" y="53" font-family="Arial" font-size="10" font-weight="bold" fill="#573353">T</text>
+  <text x="120" y="53" font-family="Arial" font-size="10" font-weight="bold" fill="#573353">F</text>
+  
+  <!-- Checkmarks -->
+  <circle cx="40" cy="70" r="6" fill="#FEA800"/>
+  <path d="M36 70L39 73L44 68" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <circle cx="60" cy="70" r="6" fill="#FEA800"/>
+  <path d="M56 70L59 73L64 68" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <circle cx="80" cy="70" r="6" fill="#FEA800"/>
+  <path d="M76 70L79 73L84 68" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <circle cx="40" cy="90" r="6" fill="#FEA800"/>
+  <path d="M36 90L39 93L44 88" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <circle cx="60" cy="90" r="6" fill="#FEA800"/>
+  <path d="M56 90L59 93L64 88" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <circle cx="80" cy="90" r="6" stroke="#573353" stroke-opacity="0.3" stroke-width="1.5" fill="white"/>
+  
+  <circle cx="40" cy="110" r="6" stroke="#573353" stroke-opacity="0.3" stroke-width="1.5" fill="white"/>
+</svg>

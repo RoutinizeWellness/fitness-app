@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Trophy -->
+  <path d="M80 30C66.7 30 56 40.7 56 54V70H104V54C104 40.7 93.3 30 80 30Z" fill="#FEA800" stroke="#573353" stroke-width="2"/>
+  <path d="M56 70H48C41.4 70 36 64.6 36 58V54C36 47.4 41.4 42 48 42H56" stroke="#573353" stroke-width="2"/>
+  <path d="M104 70H112C118.6 70 124 64.6 124 58V54C124 47.4 118.6 42 112 42H104" stroke="#573353" stroke-width="2"/>
+  <rect x="72" y="70" width="16" height="20" fill="#FEA800" stroke="#573353" stroke-width="2"/>
+  <rect x="64" y="90" width="32" height="10" rx="2" fill="#DDDCFE" stroke="#573353" stroke-width="2"/>
+  <circle cx="80" cy="50" r="10" fill="white" stroke="#573353" stroke-width="2"/>
+  <path d="M75 50L78 53L85 46" stroke="#573353" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Confetti -->
+  <circle cx="40" cy="40" r="5" fill="#FF6767"/>
+  <circle cx="120" cy="40" r="5" fill="#B1AFE9"/>
+  <circle cx="30" cy="80" r="5" fill="#1B237E"/>
+  <circle cx="130" cy="80" r="5" fill="#573353"/>
+  <circle cx="50" cy="120" r="5" fill="#DDDCFE"/>
+  <circle cx="110" cy="120" r="5" fill="#FEA800"/>
+  
+  <!-- Stars -->
+  <path d="M50 50L52.5 55L58 56L54 60L55 65L50 62.5L45 65L46 60L42 56L47.5 55L50 50Z" fill="#FEA800" stroke="#573353" stroke-width="1.5"/>
+  <path d="M110 50L112.5 55L118 56L114 60L115 65L110 62.5L105 65L106 60L102 56L107.5 55L110 50Z" fill="#FEA800" stroke="#573353" stroke-width="1.5"/>
+  <path d="M80 100L82.5 105L88 106L84 110L85 115L80 112.5L75 115L76 110L72 106L77.5 105L80 100Z" fill="#FEA800" stroke="#573353" stroke-width="1.5"/>
+  
+  <!-- Streak counter -->
+  <rect x="60" y="120" width="40" height="20" rx="10" fill="#B1AFE9" stroke="#573353" stroke-width="2"/>
+  <text x="80" y="135" font-family="Arial" font-size="12" font-weight="bold" fill="#573353" text-anchor="middle">7 DAYS</text>
+</svg>

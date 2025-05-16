@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 10H20V20H10V10Z" fill="white" fill-opacity="0.1"/>
+  <path d="M30 10H40V20H30V10Z" fill="white" fill-opacity="0.1"/>
+  <path d="M50 10H60V20H50V10Z" fill="white" fill-opacity="0.1"/>
+  <path d="M70 10H80V20H70V10Z" fill="white" fill-opacity="0.1"/>
+  <path d="M90 10H100V20H90V10Z" fill="white" fill-opacity="0.1"/>
+  <path d="M10 30H20V40H10V30Z" fill="white" fill-opacity="0.1"/>
+  <path d="M30 30H40V40H30V30Z" fill="white" fill-opacity="0.1"/>
+  <path d="M50 30H60V40H50V30Z" fill="white" fill-opacity="0.1"/>
+  <path d="M70 30H80V40H70V30Z" fill="white" fill-opacity="0.1"/>
+  <path d="M90 30H100V40H90V30Z" fill="white" fill-opacity="0.1"/>
+  <path d="M10 50H20V60H10V50Z" fill="white" fill-opacity="0.1"/>
+  <path d="M30 50H40V60H30V50Z" fill="white" fill-opacity="0.1"/>
+  <path d="M50 50H60V60H50V50Z" fill="white" fill-opacity="0.1"/>
+  <path d="M70 50H80V60H70V50Z" fill="white" fill-opacity="0.1"/>
+  <path d="M90 50H100V60H90V50Z" fill="white" fill-opacity="0.1"/>
+  <path d="M10 70H20V80H10V70Z" fill="white" fill-opacity="0.1"/>
+  <path d="M30 70H40V80H30V70Z" fill="white" fill-opacity="0.1"/>
+  <path d="M50 70H60V80H50V70Z" fill="white" fill-opacity="0.1"/>
+  <path d="M70 70H80V80H70V70Z" fill="white" fill-opacity="0.1"/>
+  <path d="M90 70H100V80H90V70Z" fill="white" fill-opacity="0.1"/>
+  <path d="M10 90H20V100H10V90Z" fill="white" fill-opacity="0.1"/>
+  <path d="M30 90H40V100H30V90Z" fill="white" fill-opacity="0.1"/>
+  <path d="M50 90H60V100H50V90Z" fill="white" fill-opacity="0.1"/>
+  <path d="M70 90H80V100H70V90Z" fill="white" fill-opacity="0.1"/>
+  <path d="M90 90H100V100H90V90Z" fill="white" fill-opacity="0.1"/>
+</svg>

@@ -1,0 +1,21 @@
+.splash-screen-illustration-1,
+.splash-screen-illustration-1 * {
+  box-sizing: border-box;
+}
+
+.splash-screen-illustration-1 {
+  height: 940px;
+  position: relative;
+  object-fit: cover;
+}
+
+/* Figma Color Variables */
+:root {
+  /* Colors from the Monumental Habits theme */
+  --splash-background: #FFF3E9;
+  --splash-primary: #FDA758;
+  --splash-primary-hover: #FE9870;
+  --splash-secondary: #8C80F8;
+  --splash-text: #573353;
+  --splash-accent: #FFDFC8;
+}

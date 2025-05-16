@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00c853" />
+      <stop offset="100%" stop-color="#006064" />
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="40" ry="40" fill="white" />
+  <circle cx="100" cy="100" r="70" fill="url(#logoGradient)" />
+  <circle cx="70" cy="60" r="10" fill="white" />
+  <circle cx="100" cy="50" r="5" fill="white" />
+  <path d="M50,80 C60,60 80,50 100,60 C120,70 140,60 150,80" stroke="white" stroke-width="8" fill="none" />
+  <path d="M40,100 C60,80 80,70 100,80 C120,90 140,80 160,100" stroke="white" stroke-width="8" fill="none" />
+  <path d="M30,120 C60,100 80,90 100,100 C120,110 140,100 170,120" stroke="white" stroke-width="8" fill="none" />
+  <text x="100" y="180" font-family="Arial, sans-serif" font-weight="bold" font-size="24" text-anchor="middle" fill="#0d2b3e">Routinize</text>
+</svg>

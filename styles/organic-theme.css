@@ -1,0 +1,272 @@
+/* 
+ * Organic Theme - Inspirado en diseños de Mobbin
+ * Este archivo define estilos globales para un diseño más orgánico y moderno
+ */
+
+/* Variables de tema orgánico */
+:root {
+  /* Radios de borde orgánicos */
+  --radius-xs: 0.5rem;      /* 8px */
+  --radius-sm: 1rem;        /* 16px */
+  --radius-md: 1.5rem;      /* 24px */
+  --radius-lg: 2rem;        /* 32px */
+  --radius-xl: 2.5rem;      /* 40px */
+  --radius-pill: 9999px;
+  
+  /* Sombras suaves */
+  --shadow-soft-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-soft-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-soft-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+  
+  /* Colores de acento */
+  --accent-amber-light: 245 158 11;
+  --accent-amber-dark: 252 211 77;
+  --accent-purple-light: 147 51 234;
+  --accent-purple-dark: 192 132 252;
+  
+  /* Transiciones */
+  --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-spring: cubic-bezier(0.43, 0.13, 0.23, 0.96);
+  
+  /* Espaciado */
+  --content-padding-organic: 1.5rem;
+  --card-padding-organic: 1.25rem;
+}
+
+/* Clases de radio de borde orgánico */
+.radius-organic-xs {
+  --radius: var(--radius-xs);
+}
+
+.radius-organic-sm {
+  --radius: var(--radius-sm);
+}
+
+.radius-organic-md {
+  --radius: var(--radius-md);
+}
+
+.radius-organic-lg {
+  --radius: var(--radius-lg);
+}
+
+.radius-organic-xl {
+  --radius: var(--radius-xl);
+}
+
+.radius-organic-pill {
+  --radius: var(--radius-pill);
+}
+
+/* Clases de color de acento orgánico */
+.accent-organic-amber {
+  --primary: var(--accent-amber-light);
+  --primary-foreground: 255 255 255;
+}
+
+.dark .accent-organic-amber {
+  --primary: var(--accent-amber-dark);
+  --primary-foreground: 0 0 0;
+}
+
+.accent-organic-purple {
+  --primary: var(--accent-purple-light);
+  --primary-foreground: 255 255 255;
+}
+
+.dark .accent-organic-purple {
+  --primary: var(--accent-purple-dark);
+  --primary-foreground: 0 0 0;
+}
+
+/* Componentes con estilo orgánico */
+
+/* Tarjetas orgánicas */
+.card-organic {
+  border-radius: var(--radius-md);
+  background-color: hsl(var(--card));
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.3s var(--transition-spring), 
+              box-shadow 0.3s var(--transition-spring);
+  overflow: hidden;
+}
+
+.card-organic:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-soft-md);
+}
+
+/* Botones orgánicos */
+.button-organic {
+  border-radius: var(--radius-pill);
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  transition: transform 0.2s var(--transition-bounce), 
+              box-shadow 0.2s var(--transition-bounce),
+              background-color 0.2s ease;
+  box-shadow: var(--shadow-soft-sm);
+}
+
+.button-organic:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft);
+}
+
+.button-organic:active {
+  transform: translateY(0);
+}
+
+/* Inputs orgánicos */
+.input-organic {
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  border: 2px solid transparent;
+  background-color: hsl(var(--muted));
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-organic:focus {
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.2);
+}
+
+/* Badges orgánicos */
+.badge-organic {
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.75rem;
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+/* Animaciones orgánicas */
+@keyframes float-organic {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float-organic {
+  animation: float-organic 6s ease-in-out infinite;
+}
+
+@keyframes pulse-organic {
+  0% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 12px hsl(var(--primary) / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+  }
+}
+
+.animate-pulse-organic {
+  animation: pulse-organic 2.5s infinite;
+}
+
+/* Transiciones de página */
+.page-transition-organic-enter {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.page-transition-organic-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s var(--transition-spring), 
+              transform 0.4s var(--transition-spring);
+}
+
+.page-transition-organic-exit {
+  opacity: 1;
+}
+
+.page-transition-organic-exit-active {
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+}
+
+/* Efectos de vidrio */
+.glass-organic {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+}
+
+.dark .glass-organic {
+  background: rgba(30, 30, 30, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Gradientes orgánicos */
+.gradient-organic-amber {
+  background: linear-gradient(135deg, 
+    hsl(43, 96%, 56%) 0%, 
+    hsl(36, 100%, 65%) 100%);
+}
+
+.gradient-organic-purple {
+  background: linear-gradient(135deg, 
+    hsl(270, 76%, 56%) 0%, 
+    hsl(280, 87%, 65%) 100%);
+}
+
+.gradient-organic-mixed {
+  background: linear-gradient(135deg, 
+    hsl(43, 96%, 56%) 0%, 
+    hsl(270, 76%, 56%) 100%);
+}
+
+/* Texto con gradiente */
+.gradient-text-organic {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-size: 200% 100%;
+  animation: shimmer-organic 3s infinite linear;
+}
+
+@keyframes shimmer-organic {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Mejoras de accesibilidad */
+.focus-organic:focus-visible {
+  outline: 3px solid hsl(var(--primary) / 0.5);
+  outline-offset: 3px;
+  border-radius: var(--radius-xs);
+}
+
+/* Efectos de hover para tarjetas */
+.hover-lift-organic {
+  transition: transform 0.3s var(--transition-spring), 
+              box-shadow 0.3s var(--transition-spring);
+}
+
+.hover-lift-organic:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-soft-md);
+}
+
+/* Efectos de presión para botones */
+.press-effect-organic {
+  transition: transform 0.2s var(--transition-bounce);
+}
+
+.press-effect-organic:active {
+  transform: scale(0.96);
+}

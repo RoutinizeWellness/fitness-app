@@ -1,0 +1,640 @@
+.sign-up-page,
+.sign-up-page * {
+  box-sizing: border-box;
+}
+
+.sign-up-page {
+  background: #FFF3E9;
+  width: 414px;
+  height: 896px;
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto;
+  font-family: "Manrope", sans-serif;
+}
+
+.already-have-an-account-sign-in {
+  color: #573353;
+  text-align: center;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: -0.03em;
+  font-weight: 400;
+  position: absolute;
+  right: 25.36%;
+  left: 25.36%;
+  width: 49.28%;
+  bottom: 3.79%;
+  top: 93.75%;
+  height: 2.46%;
+}
+
+.already-have-an-account-sign-in-span {
+  font-family: "Manrope", sans-serif;
+  font-weight: 500;
+}
+
+.already-have-an-account-sign-in-span2 {
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  color: #573353;
+  text-decoration: none;
+}
+
+.facebook-button {
+  width: 181px;
+  height: 50px;
+  position: absolute;
+  right: 4.83%;
+  left: 51.45%;
+  bottom: 9.82%;
+  top: 84.6%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.rectangle-23772 {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 43.72%;
+  height: 5.58%;
+  position: absolute;
+  right: 4.83%;
+  left: 51.45%;
+  bottom: 9.82%;
+  top: 84.6%;
+  cursor: pointer;
+}
+
+.vector {
+  width: 5.56%;
+  height: 2.57%;
+  position: absolute;
+  right: 34.3%;
+  left: 60.14%;
+  bottom: 11.27%;
+  top: 86.16%;
+  overflow: visible;
+  z-index: 1;
+}
+
+.facebook {
+  color: #573353;
+  text-align: center;
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  position: absolute;
+  right: 13.29%;
+  left: 69.57%;
+  width: 17.15%;
+  bottom: 11.72%;
+  top: 86.5%;
+  height: 1.79%;
+  z-index: 1;
+}
+
+.google-button {
+  width: 181px;
+  height: 50px;
+  position: absolute;
+  right: 51.45%;
+  left: 4.83%;
+  bottom: 9.82%;
+  top: 84.6%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.rectangle-23756 {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 43.72%;
+  height: 5.58%;
+  position: absolute;
+  right: 51.45%;
+  left: 4.83%;
+  bottom: 9.82%;
+  top: 84.6%;
+  cursor: pointer;
+}
+
+.google {
+  color: #573353;
+  text-align: center;
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  position: absolute;
+  right: 62.08%;
+  left: 24.88%;
+  width: 13.04%;
+  bottom: 11.72%;
+  top: 86.5%;
+  height: 1.79%;
+  z-index: 1;
+}
+
+.google-icon {
+  width: 5.56%;
+  height: 2.57%;
+  position: absolute;
+  right: 78.99%;
+  left: 15.46%;
+  bottom: 11.38%;
+  top: 86.05%;
+  overflow: visible;
+  z-index: 1;
+}
+
+.text {
+  width: 374px;
+  height: 22px;
+  position: static;
+}
+
+.or-sign-in-with {
+  color: #573353;
+  text-align: center;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  opacity: 0.5;
+  position: absolute;
+  right: 39.37%;
+  left: 39.61%;
+  width: 21.01%;
+  bottom: 17.63%;
+  top: 79.91%;
+  height: 2.46%;
+}
+
+.vector-144 {
+  border-top: 1px solid rgba(87, 51, 83, 0.2);
+  width: 30%;
+  position: absolute;
+  right: 65%;
+  left: 5%;
+  bottom: 81.14%;
+  top: 81.14%;
+}
+
+.vector-145 {
+  border-top: 1px solid rgba(87, 51, 83, 0.2);
+  width: 30%;
+  position: absolute;
+  right: 5%;
+  left: 65%;
+  bottom: 81.14%;
+  top: 81.14%;
+}
+
+.button-374-x-variant-4 {
+  padding: 20px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 0px;
+  top: 616px;
+  overflow: hidden;
+}
+
+.button {
+  background: #FDA758;
+  border-radius: 8px;
+  padding: 22px 132px 22px 132px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 374px;
+  height: 60px;
+  position: relative;
+  border: none;
+  cursor: pointer;
+}
+
+.text2 {
+  color: #573353;
+  text-align: center;
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-and-checkbox {
+  position: absolute;
+  inset: 0;
+}
+
+.keep-me-signed-in {
+  color: #573353;
+  text-align: left;
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  position: absolute;
+  right: 52.9%;
+  left: 16.43%;
+  width: 30.68%;
+  bottom: 36.72%;
+  top: 60.83%;
+  height: 2.46%;
+  cursor: pointer;
+}
+
+.rectangle-23726 {
+  background: #FDA758;
+  border-radius: 6px;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 1px;
+  width: 4.83%;
+  height: 2.23%;
+  position: absolute;
+  right: 86.23%;
+  left: 8.94%;
+  bottom: 36.83%;
+  top: 60.94%;
+}
+
+.vector-131 {
+  width: 8.5px;
+  height: 5px;
+  position: absolute;
+  left: 43px;
+  top: 554px;
+  overflow: visible;
+  z-index: 1;
+}
+
+.email-me-about-special-pricing-and-more {
+  color: #573353;
+  text-align: left;
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  position: absolute;
+  right: 15.7%;
+  left: 16.43%;
+  width: 67.87%;
+  bottom: 32.14%;
+  top: 65.4%;
+  height: 2.46%;
+  cursor: pointer;
+}
+
+.rectangle-23777 {
+  background: #FDA758;
+  border-radius: 6px;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 1px;
+  width: 4.83%;
+  height: 2.23%;
+  position: absolute;
+  right: 86.23%;
+  left: 8.94%;
+  bottom: 32.25%;
+  top: 65.51%;
+}
+
+.vector-140 {
+  width: 8.5px;
+  height: 5px;
+  position: absolute;
+  left: 43px;
+  top: 595px;
+  overflow: visible;
+  z-index: 1;
+}
+
+.input-fields {
+  position: absolute;
+  inset: 0;
+}
+
+.input-password {
+  width: 374px;
+  height: 56px;
+  position: static;
+}
+
+.rectangle-23779 {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 90.34%;
+  height: 6.25%;
+  position: absolute;
+  right: 4.83%;
+  left: 4.83%;
+  bottom: 42.3%;
+  top: 51.45%;
+}
+
+.vector-143 {
+  width: 0%;
+  height: 6.25%;
+  position: absolute;
+  right: 83.33%;
+  left: 16.67%;
+  bottom: 36.05%;
+  top: 57.7%;
+  overflow: visible;
+}
+
+.password {
+  color: #573353;
+  text-align: left;
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  position: absolute;
+  right: 62.56%;
+  left: 20.53%;
+  width: 16.91%;
+  bottom: 44.53%;
+  top: 53.68%;
+  height: 1.79%;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.password::placeholder {
+  color: rgba(87, 51, 83, 0.5);
+}
+
+.show {
+  color: #573353;
+  text-align: right;
+  font-family: "Manrope", sans-serif;
+  font-size: 14px;
+  line-height: 16px;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  text-decoration: underline;
+  position: absolute;
+  right: 9.66%;
+  left: 81.64%;
+  width: 8.7%;
+  bottom: 44.53%;
+  top: 53.68%;
+  height: 1.79%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.vector2 {
+  opacity: 0.5;
+  width: 2.9%;
+  height: 1.79%;
+  position: absolute;
+  right: 87.68%;
+  left: 9.42%;
+  bottom: 44.53%;
+  top: 53.68%;
+  overflow: visible;
+  z-index: 1;
+}
+
+.input-email {
+  width: 374px;
+  height: 56px;
+  position: static;
+}
+
+.rectangle-23778 {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 90.34%;
+  height: 6.25%;
+  position: absolute;
+  right: 4.83%;
+  left: 4.83%;
+  bottom: 49.44%;
+  top: 44.31%;
+}
+
+.vector-142 {
+  width: 0%;
+  height: 6.25%;
+  position: absolute;
+  right: 83.33%;
+  left: 16.67%;
+  bottom: 43.19%;
+  top: 50.56%;
+  overflow: visible;
+}
+
+.email {
+  color: #573353;
+  text-align: left;
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  position: absolute;
+  right: 70.05%;
+  left: 20.53%;
+  width: 9.42%;
+  bottom: 51.67%;
+  top: 46.54%;
+  height: 1.79%;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.email::placeholder {
+  color: rgba(87, 51, 83, 0.5);
+}
+
+.vector3 {
+  opacity: 0.5;
+  width: 3.62%;
+  height: 1.34%;
+  position: absolute;
+  right: 87.44%;
+  left: 8.94%;
+  bottom: 51.9%;
+  top: 46.76%;
+  overflow: visible;
+  z-index: 1;
+}
+
+.input-profile {
+  width: 374px;
+  height: 56px;
+  position: static;
+}
+
+.rectangle-23775 {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 90.34%;
+  height: 6.25%;
+  position: absolute;
+  right: 4.83%;
+  left: 4.83%;
+  bottom: 56.58%;
+  top: 37.17%;
+}
+
+.vector-141 {
+  width: 0%;
+  height: 6.25%;
+  position: absolute;
+  right: 83.33%;
+  left: 16.67%;
+  bottom: 50.33%;
+  top: 43.42%;
+  overflow: visible;
+}
+
+.group-10069 {
+  width: 137px;
+  height: 18px;
+  position: static;
+}
+
+.mira-passaquindici {
+  color: #573353;
+  text-align: left;
+  font-family: "Manrope", sans-serif;
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  position: absolute;
+  right: 46.38%;
+  left: 20.53%;
+  width: 33.09%;
+  bottom: 58.82%;
+  top: 39.4%;
+  height: 1.79%;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.mira-passaquindici::placeholder {
+  color: rgba(87, 51, 83, 0.5);
+}
+
+.vector-149 {
+  width: 0px;
+  height: 18px;
+  position: absolute;
+  left: 222px;
+  top: 352px;
+  overflow: visible;
+}
+
+.user {
+  width: 3.44%;
+  height: 1.79%;
+  position: absolute;
+  right: 87.63%;
+  left: 8.94%;
+  bottom: 58.82%;
+  top: 39.4%;
+  overflow: visible;
+  z-index: 1;
+}
+
+.create-your-account {
+  color: #573353;
+  text-align: center;
+  font-family: "Klasik", sans-serif;
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -0.03em;
+  font-weight: 400;
+  text-transform: uppercase;
+  position: absolute;
+  right: 8.21%;
+  left: 7.25%;
+  width: 84.54%;
+  bottom: 66.41%;
+  top: 30.02%;
+  height: 3.57%;
+}
+
+.create-your-account-2-1 {
+  width: 187.76px;
+  height: 200px;
+  position: absolute;
+  left: 113px;
+  top: 48px;
+  overflow: hidden;
+}
+
+.hidden-checkbox {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkbox-container {
+  position: relative;
+  display: inline-block;
+}
+
+.custom-checkbox {
+  background: #FDA758;
+  border-radius: 6px;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 1px;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  left: 37px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.keep-me-signed-in .custom-checkbox {
+  top: 545px;
+}
+
+.email-me-about-special-pricing-and-more .custom-checkbox {
+  top: 586px;
+}

@@ -1,0 +1,282 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { usePathname } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
+import { cn } from "@/lib/utils"
+import { useOrganicTheme } from "@/components/theme/organic-theme-provider"
+
+interface OrganicTransitionProps {
+  children: React.ReactNode
+  className?: string
+}
+
+export function OrganicPageTransition({ children, className }: OrganicTransitionProps) {
+  const pathname = usePathname()
+  const { animation } = useOrganicTheme()
+  
+  // Diferentes variantes de animación según el nivel seleccionado
+  const getTransitionProps = () => {
+    switch (animation) {
+      case "none":
+        return {
+          initial: { opacity: 1 },
+          animate: { opacity: 1 },
+          exit: { opacity: 1 },
+          transition: { duration: 0 }
+        }
+      case "subtle":
+        return {
+          initial: { opacity: 0, y: 16 },
+          animate: { opacity: 1, y: 0 },
+          exit: { opacity: 0, y: -16 },
+          transition: { 
+            duration: 0.4, 
+            ease: [0.43, 0.13, 0.23, 0.96] // Transición spring-organic
+          }
+        }
+      case "playful":
+        return {
+          initial: { opacity: 0, scale: 0.97, y: 20 },
+          animate: { opacity: 1, scale: 1, y: 0 },
+          exit: { opacity: 0, scale: 1.03, y: -20 },
+          transition: { 
+            duration: 0.5, 
+            ease: [0.34, 1.56, 0.64, 1], // Transición bounce-organic
+            scale: { type: "spring", stiffness: 300, damping: 20 }
+          }
+        }
+      default:
+        return {
+          initial: { opacity: 0, y: 16 },
+          animate: { opacity: 1, y: 0 },
+          exit: { opacity: 0, y: -16 },
+          transition: { duration: 0.4 }
+        }
+    }
+  }
+  
+  const transitionProps = getTransitionProps()
+  
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={pathname}
+        initial={transitionProps.initial}
+        animate={transitionProps.animate}
+        exit={transitionProps.exit}
+        transition={transitionProps.transition}
+        className={cn("min-h-screen", className)}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
+// Componente de transición para elementos individuales
+interface OrganicElementTransitionProps {
+  children: React.ReactNode
+  className?: string
+  delay?: number
+  duration?: number
+  type?: "fade" | "slide" | "scale" | "card"
+}
+
+export function OrganicElement({ 
+  children, 
+  className,
+  delay = 0,
+  duration = 0.5,
+  type = "fade"
+}: OrganicElementTransitionProps) {
+  const { animation } = useOrganicTheme()
+  
+  // No animar si las animaciones están desactivadas
+  if (animation === "none") {
+    return <div className={className}>{children}</div>
+  }
+  
+  // Configurar la animación según el tipo
+  const getAnimationProps = () => {
+    const isPlayful = animation === "playful"
+    const transitionEase = isPlayful 
+      ? [0.34, 1.56, 0.64, 1] // bounce-organic
+      : [0.43, 0.13, 0.23, 0.96] // spring-organic
+    
+    switch (type) {
+      case "fade":
+        return {
+          initial: { opacity: 0, y: 10 },
+          animate: { opacity: 1, y: 0 },
+          transition: { 
+            duration: isPlayful ? duration * 1.2 : duration, 
+            delay, 
+            ease: transitionEase
+          }
+        }
+      case "slide":
+        return {
+          initial: { opacity: 0, x: 20 },
+          animate: { opacity: 1, x: 0 },
+          transition: { 
+            duration: isPlayful ? duration * 1.2 : duration, 
+            delay, 
+            ease: transitionEase
+          }
+        }
+      case "scale":
+        return {
+          initial: { opacity: 0, scale: 0.9 },
+          animate: { opacity: 1, scale: 1 },
+          transition: { 
+            duration: isPlayful ? duration * 1.2 : duration, 
+            delay, 
+            ease: transitionEase,
+            scale: isPlayful ? { type: "spring", stiffness: 300, damping: 20 } : undefined
+          }
+        }
+      case "card":
+        return {
+          initial: { opacity: 0, scale: 0.95, y: 20 },
+          animate: { opacity: 1, scale: 1, y: 0 },
+          transition: { 
+            duration: isPlayful ? duration * 1.2 : duration, 
+            delay, 
+            ease: transitionEase,
+            scale: isPlayful ? { type: "spring", stiffness: 300, damping: 20 } : undefined
+          }
+        }
+      default:
+        return {
+          initial: { opacity: 0 },
+          animate: { opacity: 1 },
+          transition: { duration, delay }
+        }
+    }
+  }
+  
+  const animationProps = getAnimationProps()
+  
+  return (
+    <motion.div
+      initial={animationProps.initial}
+      animate={animationProps.animate}
+      transition={animationProps.transition}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+// Componente para animar una lista de elementos
+interface OrganicStaggeredListProps {
+  children: React.ReactNode[]
+  className?: string
+  itemClassName?: string
+  staggerDelay?: number
+  duration?: number
+  direction?: "up" | "down" | "left" | "right"
+}
+
+export function OrganicStaggeredList({
+  children,
+  className,
+  itemClassName,
+  staggerDelay = 0.1,
+  duration = 0.5,
+  direction = "up"
+}: OrganicStaggeredListProps) {
+  const { animation } = useOrganicTheme()
+  
+  // No animar si las animaciones están desactivadas
+  if (animation === "none") {
+    return (
+      <div className={className}>
+        {children.map((child, index) => (
+          <div key={index} className={itemClassName}>
+            {child}
+          </div>
+        ))}
+      </div>
+    )
+  }
+  
+  const isPlayful = animation === "playful"
+  const transitionEase = isPlayful 
+    ? [0.34, 1.56, 0.64, 1] // bounce-organic
+    : [0.43, 0.13, 0.23, 0.96] // spring-organic
+  
+  // Configurar la dirección de la animación
+  const getDirectionVariants = () => {
+    switch (direction) {
+      case "up":
+        return {
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 }
+        }
+      case "down":
+        return {
+          hidden: { opacity: 0, y: -20 },
+          visible: { opacity: 1, y: 0 }
+        }
+      case "left":
+        return {
+          hidden: { opacity: 0, x: 20 },
+          visible: { opacity: 1, x: 0 }
+        }
+      case "right":
+        return {
+          hidden: { opacity: 0, x: -20 },
+          visible: { opacity: 1, x: 0 }
+        }
+      default:
+        return {
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 }
+        }
+    }
+  }
+  
+  const directionVariants = getDirectionVariants()
+  
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: staggerDelay
+      }
+    }
+  }
+  
+  const itemVariants = {
+    hidden: directionVariants.hidden,
+    visible: {
+      ...directionVariants.visible,
+      transition: { 
+        duration: isPlayful ? duration * 1.2 : duration,
+        ease: transitionEase,
+        type: isPlayful ? "spring" : "tween",
+        stiffness: isPlayful ? 300 : undefined,
+        damping: isPlayful ? 20 : undefined
+      }
+    }
+  }
+  
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className={className}
+    >
+      {children.map((child, index) => (
+        <motion.div key={index} variants={itemVariants} className={itemClassName}>
+          {child}
+        </motion.div>
+      ))}
+    </motion.div>
+  )
+}

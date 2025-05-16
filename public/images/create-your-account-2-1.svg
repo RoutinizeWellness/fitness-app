@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="188" height="200" viewBox="0 0 188 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Simple illustration for account creation -->
+  <circle cx="94" cy="100" r="70" fill="#FFF3E9" stroke="#FDA758" stroke-width="2"/>
+  
+  <!-- Decorative elements -->
+  <path d="M10.66 12.65L20 20L15 30" stroke="#573353" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M66.77 171.48L75 160L85 170" stroke="#573353" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Chat box -->
+  <rect x="7.6" y="98.72" width="40" height="30" rx="5" fill="#B1AFE9" stroke="#573353" stroke-width="1.5"/>
+  <circle cx="17.6" cy="113.72" r="2" fill="#573353"/>
+  <circle cx="27.6" cy="113.72" r="2" fill="#573353"/>
+  <circle cx="37.6" cy="113.72" r="2" fill="#573353"/>
+  
+  <!-- Card -->
+  <rect x="80.51" y="114.03" width="35" height="25" rx="4" fill="#FEA800" stroke="#573353" stroke-width="1.5"/>
+  <line x1="85.51" y1="120.03" x2="110.51" y2="120.03" stroke="#573353" stroke-width="1.5"/>
+  <line x1="85.51" y1="125.03" x2="100.51" y2="125.03" stroke="#573353" stroke-width="1.5"/>
+  <line x1="85.51" y1="130.03" x2="105.51" y2="130.03" stroke="#573353" stroke-width="1.5"/>
+  
+  <!-- Box -->
+  <rect x="34.23" y="45.36" width="30" height="30" rx="5" fill="#FF6767" stroke="#573353" stroke-width="1.5"/>
+  <path d="M44.23 60.36L49.23 65.36L59.23 55.36" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Mail -->
+  <rect x="105.77" y="50.04" width="35" height="25" rx="4" fill="white" stroke="#573353" stroke-width="1.5"/>
+  <path d="M105.77 55.04L123.27 65.04L140.77 55.04" stroke="#573353" stroke-width="1.5"/>
+  
+  <!-- Checklist -->
+  <rect x="114.03" y="32.86" width="25" height="30" rx="4" fill="#DDDCFE" stroke="#573353" stroke-width="1.5"/>
+  <path d="M119.03 42.86L124.03 47.86L134.03 37.86" stroke="#573353" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="119.03" y1="52.86" x2="134.03" y2="52.86" stroke="#573353" stroke-width="1.5"/>
+  <line x1="119.03" y1="57.86" x2="134.03" y2="57.86" stroke="#573353" stroke-width="1.5"/>
+  
+  <!-- Person -->
+  <circle cx="67.8" cy="88.18" r="10" fill="#FDA758" stroke="#573353" stroke-width="1.5"/>
+  <path d="M58.68 106.48C58.68 100.96 62.28 96.48 67.8 96.48C73.32 96.48 76.92 100.96 76.92 106.48" stroke="#573353" stroke-width="1.5"/>
+  <circle cx="63.8" cy="88.18" r="1.5" fill="#573353"/>
+  <circle cx="71.8" cy="88.18" r="1.5" fill="#573353"/>
+  <path d="M65.8 93.18C65.8 93.18 67.8 94.18 69.8 93.18" stroke="#573353" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

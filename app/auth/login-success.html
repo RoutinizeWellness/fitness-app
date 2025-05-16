@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Success - Redirecting...</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Roboto+Serif:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and base styles */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: #FFF3E9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 16px;
+        }
+
+        /* Main container with exact dimensions from Figma */
+        .app-container {
+            width: 414px;
+            height: 896px;
+            background-color: #FFF3E9;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 40px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Decorative elements */
+        .decorative-circle-1 {
+            position: absolute;
+            top: 80px;
+            right: 40px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #FDA758;
+            opacity: 0.1;
+            filter: blur(40px);
+        }
+
+        .decorative-circle-2 {
+            position: absolute;
+            bottom: 120px;
+            left: 30px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: #8C80F8;
+            opacity: 0.1;
+            filter: blur(40px);
+        }
+
+        /* Success card */
+        .success-card {
+            width: 350px;
+            background-color: white;
+            border-radius: 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            padding: 40px 24px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Success icon */
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #5DE292;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            position: relative;
+            animation: scaleIn 0.5s ease-out 0.2s both;
+        }
+
+        .success-icon::before {
+            content: '';
+            position: absolute;
+            width: 32px;
+            height: 16px;
+            border-left: 4px solid white;
+            border-bottom: 4px solid white;
+            transform: rotate(-45deg);
+            top: 28px;
+            left: 24px;
+        }
+
+        /* Text styles */
+        h1 {
+            font-family: 'Roboto Serif', serif;
+            color: #573353;
+            font-size: 28px;
+            margin-bottom: 16px;
+            animation: slideUp 0.5s ease-out 0.3s both;
+        }
+
+        p {
+            color: rgba(87, 51, 83, 0.7);
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 32px;
+            animation: slideUp 0.5s ease-out 0.4s both;
+        }
+
+        /* Button styles */
+        .button {
+            background-color: #FDA758;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 8px 16px rgba(253, 167, 88, 0.3);
+            transition: all 0.2s ease;
+            animation: slideUp 0.5s ease-out 0.5s both;
+        }
+
+        .button:hover {
+            background-color: #FE9870;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(253, 167, 88, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(0);
+            box-shadow: 0 6px 12px rgba(253, 167, 88, 0.3);
+        }
+
+        /* Progress indicator */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: rgba(87, 51, 83, 0.1);
+            border-radius: 3px;
+            margin-bottom: 32px;
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out 0.4s both;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #FDA758;
+            border-radius: 3px;
+            width: 0;
+            animation: progressFill 2s ease-out forwards;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes progressFill {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 414px) {
+            .app-container {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .success-card {
+                width: 90%;
+                max-width: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Decorative elements -->
+        <div class="decorative-circle-1"></div>
+        <div class="decorative-circle-2"></div>
+
+        <!-- Success card -->
+        <div class="success-card">
+            <div class="success-icon"></div>
+            <h1>LOGIN SUCCESSFUL!</h1>
+            <p>You are being redirected to the dashboard. Please wait a moment...</p>
+
+            <!-- Progress indicator -->
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+
+            <a href="/dashboard" class="button">Go to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        // Immediate redirection attempt
+        (function() {
+            try {
+                window.location.replace('/dashboard');
+            } catch (e) {
+                console.error('Immediate redirection failed:', e);
+            }
+        })();
+
+        // Primary redirection method with short delay
+        setTimeout(() => {
+            window.location.href = "/dashboard";
+        }, 1000);
+
+        // Backup redirection methods
+        setTimeout(() => {
+            try {
+                // Try using the History API
+                window.history.replaceState({}, '', '/dashboard');
+                window.location.reload();
+            } catch (e) {
+                console.log('History API redirection failed, trying button click');
+                // If that fails, try clicking the button
+                document.querySelector('.button').click();
+            }
+        }, 2000);
+
+        // Final fallback
+        setTimeout(() => {
+            console.log('Using final fallback redirection');
+            window.location.replace('/dashboard');
+        }, 3000);
+    </script>
+</body>
+</html>

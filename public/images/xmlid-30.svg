@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="286" height="264" viewBox="0 0 286 264" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Envelope base -->
+  <rect x="43" y="82" width="200" height="140" rx="10" fill="#DDDCFE" stroke="#573353" stroke-width="2"/>
+  
+  <!-- Envelope flap (open) -->
+  <path d="M43 92L143 142L243 92" stroke="#573353" stroke-width="2" fill="#B1AFE9"/>
+  
+  <!-- Envelope body -->
+  <rect x="53" y="102" width="180" height="110" rx="5" fill="white" stroke="#573353" stroke-width="1"/>
+  
+  <!-- Lock icon -->
+  <circle cx="143" cy="157" r="25" fill="#FDA758" stroke="#573353" stroke-width="2"/>
+  <rect x="133" y="147" width="20" height="20" rx="2" fill="#573353"/>
+  <rect x="138" y="137" width="10" height="10" rx="5" fill="#573353"/>
+  
+  <!-- Decorative elements -->
+  <circle cx="43" cy="42" r="10" fill="#FF6767" opacity="0.5"/>
+  <circle cx="243" cy="42" r="10" fill="#FDA758" opacity="0.5"/>
+  <circle cx="43" cy="222" r="10" fill="#B1AFE9" opacity="0.5"/>
+  <circle cx="243" cy="222" r="10" fill="#1B237E" opacity="0.5"/>
+  
+  <!-- Email symbols -->
+  <path d="M83 132H113" stroke="#573353" stroke-opacity="0.3" stroke-width="2"/>
+  <path d="M83 147H173" stroke="#573353" stroke-opacity="0.3" stroke-width="2"/>
+  <path d="M83 162H173" stroke="#573353" stroke-opacity="0.3" stroke-width="2"/>
+  <path d="M83 177H173" stroke="#573353" stroke-opacity="0.3" stroke-width="2"/>
+</svg>
