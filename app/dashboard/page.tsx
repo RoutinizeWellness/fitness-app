@@ -11,9 +11,14 @@ import {
   Heart,
   Moon,
   ChevronRight,
-  LogOut
+  LogOut,
+  BarChart2
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { MobileNav } from "@/components/ui/mobile-nav"
+import { FeatureCard } from "@/components/ui/feature-card"
+import { StatCard } from "@/components/ui/stat-card"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 export default function DashboardPage() {
   const { user, isLoading, profile } = useAuth()
@@ -31,10 +36,7 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-500">Cargando...</p>
-        </div>
+        <LoadingSpinner size="lg" message="Cargando tu perfil..." />
       </div>
     )
   }
@@ -45,79 +47,92 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-4xl mx-auto p-4 pb-20 md:pb-4">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-gray-500">Bienvenido, {profile?.first_name || profile?.full_name?.split(' ')[0] || 'Usuario'}</p>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">Bienvenido, {profile?.first_name || profile?.full_name?.split(' ')[0] || 'Usuario'}</p>
         </div>
-        <Avatar className="h-10 w-10">
+        <Avatar className="h-12 w-12 border-2 border-primary/20">
           <AvatarImage src={profile?.avatar_url} />
-          <AvatarFallback>{profile?.first_name?.[0] || profile?.full_name?.[0] || 'U'}</AvatarFallback>
+          <AvatarFallback className="bg-primary/10 text-primary font-medium">{profile?.first_name?.[0] || profile?.full_name?.[0] || 'U'}</AvatarFallback>
         </Avatar>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <Card className="p-4 cursor-pointer" onClick={() => router.push('/training')}>
-          <div className="flex flex-col items-center text-center">
-            <div className="bg-blue-100 p-3 rounded-full mb-2">
-              <Dumbbell className="h-6 w-6 text-blue-600" />
-            </div>
-            <h3 className="font-medium">Entrenamiento</h3>
-          </div>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <FeatureCard
+          icon={Dumbbell}
+          title="Entrenamiento"
+          iconColor="text-blue-600"
+          iconBgColor="bg-blue-100"
+          onClick={() => router.push('/training')}
+        />
 
-        <Card className="p-4 cursor-pointer" onClick={() => router.push('/nutrition')}>
-          <div className="flex flex-col items-center text-center">
-            <div className="bg-green-100 p-3 rounded-full mb-2">
-              <Utensils className="h-6 w-6 text-green-600" />
-            </div>
-            <h3 className="font-medium">Nutrición</h3>
-          </div>
-        </Card>
+        <FeatureCard
+          icon={Utensils}
+          title="Nutrición"
+          iconColor="text-green-600"
+          iconBgColor="bg-green-100"
+          onClick={() => router.push('/nutrition')}
+        />
 
-        <Card className="p-4 cursor-pointer" onClick={() => router.push('/sleep')}>
-          <div className="flex flex-col items-center text-center">
-            <div className="bg-purple-100 p-3 rounded-full mb-2">
-              <Moon className="h-6 w-6 text-purple-600" />
-            </div>
-            <h3 className="font-medium">Sueño</h3>
-          </div>
-        </Card>
+        <FeatureCard
+          icon={Moon}
+          title="Sueño"
+          iconColor="text-purple-600"
+          iconBgColor="bg-purple-100"
+          onClick={() => router.push('/sleep')}
+        />
 
-        <Card className="p-4 cursor-pointer" onClick={() => router.push('/wellness')}>
-          <div className="flex flex-col items-center text-center">
-            <div className="bg-red-100 p-3 rounded-full mb-2">
-              <Heart className="h-6 w-6 text-red-600" />
-            </div>
-            <h3 className="font-medium">Bienestar</h3>
-          </div>
-        </Card>
+        <FeatureCard
+          icon={Heart}
+          title="Bienestar"
+          iconColor="text-red-600"
+          iconBgColor="bg-red-100"
+          onClick={() => router.push('/wellness')}
+        />
       </div>
 
-      <Card className="p-6 mb-6">
-        <h2 className="text-xl font-bold mb-4">Entrenamiento de hoy</h2>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="font-medium">Fuerza - Tren Superior</h3>
-            <p className="text-sm text-gray-500">45 min • 6 ejercicios</p>
+      <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <Card className="md:col-span-2 overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
+          <div className="p-6">
+            <h2 className="text-xl font-bold mb-4">Entrenamiento de hoy</h2>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-medium">Fuerza - Tren Superior</h3>
+                <p className="text-sm text-muted-foreground">45 min • 6 ejercicios</p>
+              </div>
+              <Button onClick={() => router.push('/training')} className="bg-primary hover:bg-primary/90 text-white">
+                Iniciar
+              </Button>
+            </div>
           </div>
-          <Button onClick={() => router.push('/training')}>
-            Iniciar
-          </Button>
-        </div>
-      </Card>
+          <div className="h-2 bg-primary/10 w-full">
+            <div className="h-full bg-primary w-0 transition-all duration-300"></div>
+          </div>
+        </Card>
 
-      <Card className="p-6">
+        <StatCard
+          title="Progreso semanal"
+          value="75%"
+          description="3 de 4 entrenamientos"
+          icon={BarChart2}
+          iconColor="text-primary"
+          iconBgColor="bg-primary/10"
+          trend={{ value: 15, isPositive: true, label: "vs. semana pasada" }}
+        />
+      </div>
+
+      <Card className="p-6 shadow-md hover:shadow-lg transition-all duration-300">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Perfil</h2>
-          <Button variant="outline" size="icon" onClick={() => router.push('/profile')}>
+          <Button variant="outline" size="icon" onClick={() => router.push('/profile')} className="rounded-full hover:bg-primary/10">
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
         <Button
           variant="outline"
-          className="w-full justify-start text-red-500"
+          className="w-full justify-start text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
           onClick={() => {
             // Cerrar sesión
             const { signOut } = useAuth();
@@ -129,6 +144,8 @@ export default function DashboardPage() {
           Cerrar sesión
         </Button>
       </Card>
+
+      <MobileNav className="md:hidden" />
     </div>
   )
 }

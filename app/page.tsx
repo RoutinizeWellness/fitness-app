@@ -51,12 +51,36 @@ export default function Home() {
 
   // Show a loader while deciding redirection
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[rgb(var(--habit-background))]">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4" style={{ background: 'var(--habit-gradient-primary)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
-          Routinize Habit Builder
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
+      <div className="text-center max-w-md px-4">
+        <div className="mb-8 flex justify-center">
+          <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-10 w-10 text-primary"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
+        </div>
+        <h1 className="text-3xl font-bold mb-2 text-foreground">
+          Routinize Fitness
         </h1>
-        <PulseLoader message="Loading your habits..." />
+        <p className="text-muted-foreground mb-8">
+          Tu compañero de entrenamiento personalizado
+        </p>
+        <div className="relative h-1.5 w-48 bg-primary/20 rounded-full mx-auto overflow-hidden">
+          <div className="absolute top-0 left-0 h-full w-1/3 bg-primary rounded-full animate-[loading_1.5s_ease-in-out_infinite]" />
+        </div>
+        <p className="mt-4 text-sm text-muted-foreground">Cargando tu perfil...</p>
       </div>
     </div>
   )
