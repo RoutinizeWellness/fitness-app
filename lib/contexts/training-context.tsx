@@ -7,15 +7,9 @@ import {
   WorkoutLog,
   Exercise
 } from '@/lib/types/training'
-import {
-  getUserRoutines,
-  getWorkoutLogs,
-  getExercises,
-  getTrainingStats,
-  saveWorkoutRoutine,
-  saveWorkoutLog,
-  deleteWorkoutRoutine
-} from '@/lib/services/training-service'
+import { getAllExercises } from '@/lib/services/exercise-service'
+import { getUserWorkoutLogs, saveWorkoutLog, deleteWorkoutLog, getTrainingStats } from '@/lib/services/workout-log-service'
+import { getUserRoutines, saveWorkoutRoutine, deleteWorkoutRoutine } from '@/lib/services/workout-routine-service'
 
 type TrainingContextType = {
   routines: WorkoutRoutine[]
@@ -59,7 +53,7 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setIsLoadingRoutines(true)
     try {
       const { data, error } = await getUserRoutines(user.id)
-      
+
       if (error) {
         console.error('Error fetching routines:', error)
         toast({
@@ -69,7 +63,7 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         })
         return
       }
-      
+
       setRoutines(data || [])
     } catch (error) {
       console.error('Unexpected error fetching routines:', error)
@@ -92,8 +86,8 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     setIsLoadingLogs(true)
     try {
-      const { data, error } = await getWorkoutLogs(user.id)
-      
+      const { data, error } = await getUserWorkoutLogs(user.id)
+
       if (error) {
         console.error('Error fetching logs:', error)
         toast({
@@ -103,7 +97,7 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         })
         return
       }
-      
+
       setLogs(data || [])
     } catch (error) {
       console.error('Unexpected error fetching logs:', error)
@@ -120,8 +114,8 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const refreshExercises = async () => {
     setIsLoadingExercises(true)
     try {
-      const { data, error } = await getExercises()
-      
+      const { data, error } = await getAllExercises()
+
       if (error) {
         console.error('Error fetching exercises:', error)
         toast({
@@ -131,7 +125,7 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         })
         return
       }
-      
+
       setExercises(data || [])
     } catch (error) {
       console.error('Unexpected error fetching exercises:', error)
@@ -155,7 +149,7 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setIsLoadingStats(true)
     try {
       const { data, error } = await getTrainingStats(user.id)
-      
+
       if (error) {
         console.error('Error fetching stats:', error)
         toast({
@@ -165,7 +159,7 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         })
         return
       }
-      
+
       setStats(data || null)
     } catch (error) {
       console.error('Unexpected error fetching stats:', error)
@@ -189,7 +183,7 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       routine.userId = user.id
 
       const { data, error } = await saveWorkoutRoutine(routine)
-      
+
       if (error) {
         console.error('Error saving routine:', error)
         toast({
@@ -199,11 +193,11 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         })
         return { success: false, error }
       }
-      
+
       // Update local state
       if (data) {
         const existingIndex = routines.findIndex(r => r.id === data.id)
-        
+
         if (existingIndex >= 0) {
           // Update existing routine
           const updatedRoutines = [...routines]
@@ -213,15 +207,15 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           // Add new routine
           setRoutines([data, ...routines])
         }
-        
+
         toast({
           title: 'Success',
           description: 'Workout routine saved successfully',
         })
-        
+
         return { success: true, error: null }
       }
-      
+
       return { success: false, error: new Error('No data returned after saving routine') }
     } catch (error) {
       console.error('Unexpected error saving routine:', error)
@@ -241,7 +235,7 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
 
       const { success, error } = await deleteWorkoutRoutine(routineId, user.id)
-      
+
       if (error) {
         console.error('Error deleting routine:', error)
         toast({
@@ -251,19 +245,19 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         })
         return { success: false, error }
       }
-      
+
       if (success) {
         // Update local state
         setRoutines(routines.filter(r => r.id !== routineId))
-        
+
         toast({
           title: 'Success',
           description: 'Workout routine deleted successfully',
         })
-        
+
         return { success: true, error: null }
       }
-      
+
       return { success: false, error: new Error('Failed to delete routine') }
     } catch (error) {
       console.error('Unexpected error deleting routine:', error)
@@ -286,7 +280,7 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       log.userId = user.id
 
       const { data, error } = await saveWorkoutLog(log)
-      
+
       if (error) {
         console.error('Error saving log:', error)
         toast({
@@ -296,11 +290,11 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         })
         return { success: false, error }
       }
-      
+
       // Update local state
       if (data) {
         const existingIndex = logs.findIndex(l => l.id === data.id)
-        
+
         if (existingIndex >= 0) {
           // Update existing log
           const updatedLogs = [...logs]
@@ -310,18 +304,18 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           // Add new log
           setLogs([data, ...logs])
         }
-        
+
         toast({
           title: 'Success',
           description: 'Workout log saved successfully',
         })
-        
+
         // Refresh stats after saving a log
         refreshStats()
-        
+
         return { success: true, error: null }
       }
-      
+
       return { success: false, error: new Error('No data returned after saving log') }
     } catch (error) {
       console.error('Unexpected error saving log:', error)
