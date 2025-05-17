@@ -32,10 +32,10 @@ export default function LoginPage() {
         setIsLoading(false)
       } else if (data) {
         console.log("Inicio de sesión exitoso, redirigiendo al dashboard...")
-        
+
         // Usar la página de redirección forzada
         router.push("/force-redirect")
-        
+
         // Como respaldo, usar redirección directa
         setTimeout(() => {
           if (window.location.pathname.includes("/auth/login")) {
@@ -51,102 +51,104 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="w-[414px] h-[896px] bg-[#FFF3E9] mx-auto flex flex-col items-center justify-center px-4 overflow-hidden relative">
-      <div className="flex flex-col items-center mb-8">
-        <div className="w-16 h-16 mb-4">
-          <Image
-            src="/images/monumental-logo.svg"
-            alt="Monumental Logo"
-            width={64}
-            height={64}
-            priority
-          />
-        </div>
-        <h1 className="text-[#573353] text-2xl font-bold text-center">WELCOME TO MONUMENTAL HABITS</h1>
-      </div>
-
-      {/* Login Images */}
-      <div className="relative w-full max-w-md flex flex-col items-center mb-6">
-        <div className="w-40 h-40 mb-4 relative">
-          <Image
-            src="/images/login-illustration-1.svg"
-            alt="Login Illustration"
-            width={160}
-            height={160}
-            priority
-          />
-        </div>
-        <div className="w-40 h-40 relative">
-          <Image
-            src="/images/login-illustration-2.svg"
-            alt="Login Illustration"
-            width={160}
-            height={160}
-            priority
-          />
-        </div>
-      </div>
-
-      {/* Login Form */}
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-md p-6">
-        {errorMessage && (
-          <Alert className="mb-4 bg-red-50 text-red-800 border-red-200">
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
-
-        <form onSubmit={handleSubmit} id="login-form">
-          {/* Email Input */}
-          <div className="mb-4">
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-6 py-6 rounded-full border border-gray-200 text-[#573353] focus-visible:ring-1 focus-visible:ring-[#573353] focus-visible:ring-offset-0"
-              placeholder="jonathansmth@gmail.com"
-            />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 p-4">
+      <div className="w-full max-w-md">
+        <div className="flex flex-col items-center mb-8">
+          <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-10 w-10 text-primary"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
           </div>
+          <h1 className="text-3xl font-bold mb-2 text-foreground">Routinize Fitness</h1>
+          <p className="text-muted-foreground mb-8">Inicia sesión para continuar</p>
+        </div>
 
-          {/* Password Input */}
-          <div className="mb-6">
-            <Input
-              id="password"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-6 py-6 rounded-full border border-gray-200 text-[#573353] focus-visible:ring-1 focus-visible:ring-[#573353] focus-visible:ring-offset-0"
-            />
+        {/* Login Form */}
+        <div className="w-full bg-card rounded-lg border border-border shadow-sm p-6">
+          {errorMessage && (
+            <Alert className="mb-6 bg-destructive/10 text-destructive border-destructive/20">
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit} id="login-form" className="space-y-4">
+            {/* Email Input */}
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium text-foreground">
+                Correo electrónico
+              </label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full rounded-md border-input"
+                placeholder="correo@ejemplo.com"
+              />
+            </div>
+
+            {/* Password Input */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="text-sm font-medium text-foreground">
+                  Contraseña
+                </label>
+                <Link href="/auth/forgot-password" className="text-xs text-primary hover:underline">
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full rounded-md border-input"
+              />
+            </div>
+
+            {/* Login Button */}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Iniciando sesión...
+                </>
+              ) : (
+                "Iniciar sesión"
+              )}
+            </Button>
+
+            {/* Botón de redirección manual (se añadirá dinámicamente si es necesario) */}
+            <div id="manual-redirect-container"></div>
+          </form>
+
+          {/* Sign Up Link */}
+          <div className="mt-6 text-center">
+            <p className="text-muted-foreground text-sm">
+              ¿No tienes una cuenta?{" "}
+              <Link href="/auth/register" className="font-medium text-primary hover:underline">
+                Regístrate aquí
+              </Link>
+            </p>
           </div>
-
-          {/* Login Button */}
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-[#FDA758] hover:bg-[#FDA758]/90 text-white font-medium rounded-full py-6 mb-6"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Logging in...
-              </>
-            ) : (
-              "Log in with email"
-            )}
-          </Button>
-
-          {/* Botón de redirección manual (se añadirá dinámicamente si es necesario) */}
-          <div id="manual-redirect-container"></div>
-        </form>
-
-        {/* Sign Up Link */}
-        <div className="flex justify-center">
-          <p className="text-[#573353] text-sm">
-            Or sign up <Link href="/auth/register" className="font-medium text-[#FDA758]">here</Link>
-          </p>
         </div>
       </div>
     </div>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Silueta del cuerpo humano (vista posterior) -->
+  <path d="M200,50 
+           C240,50 270,70 270,110 
+           C270,140 260,160 250,170 
+           L260,190 L260,230 
+           C260,280 240,320 240,350 
+           L245,450 L230,500 L220,600 
+           L180,600 L170,500 L155,450 
+           L160,350 C160,320 140,280 140,230 
+           L140,190 L150,170 
+           C140,160 130,140 130,110 
+           C130,70 160,50 200,50 Z" 
+        fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Cabeza -->
+  <circle cx="200" cy="40" r="30" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Brazos -->
+  <path d="M250,170 L300,220 L320,300 L310,310 L290,240 L260,200" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  <path d="M150,170 L100,220 L80,300 L90,310 L110,240 L140,200" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Dorsal ancho (principal) -->
+  <path d="M200,120 
+           C230,120 250,150 260,190 
+           C260,230 250,270 240,300 
+           C230,320 220,330 200,330 
+           C180,330 170,320 160,300 
+           C150,270 140,230 140,190 
+           C150,150 170,120 200,120 Z" 
+        fill="#3498db" stroke="#2980b9" stroke-width="1" opacity="0.8"/>
+  
+  <!-- Dorsal ancho izquierdo -->
+  <path d="M200,120 
+           C170,120 150,150 140,190 
+           C140,230 150,270 160,300 
+           C170,320 180,330 200,330" 
+        fill="#3498db" stroke="#2980b9" stroke-width="1" opacity="0.8"/>
+  
+  <!-- Dorsal ancho derecho -->
+  <path d="M200,120 
+           C230,120 250,150 260,190 
+           C260,230 250,270 240,300 
+           C230,320 220,330 200,330" 
+        fill="#3498db" stroke="#2980b9" stroke-width="1" opacity="0.8"/>
+  
+  <!-- Trapecio (secundario) -->
+  <path d="M200,50 
+           C220,50 240,60 250,80 
+           C260,100 260,120 250,140 
+           C230,130 220,130 200,130 
+           C180,130 170,130 150,140 
+           C140,120 140,100 150,80 
+           C160,60 180,50 200,50 Z" 
+        fill="#9b59b6" stroke="#8e44ad" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Romboides (secundario) -->
+  <path d="M200,130 
+           C220,130 230,130 250,140 
+           C240,160 230,170 200,170 
+           C170,170 160,160 150,140 
+           C170,130 180,130 200,130 Z" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Bíceps (secundario) -->
+  <path d="M260,200 C265,210 270,230 270,240 C275,250 280,260 280,270 C275,275 270,275 265,270 C260,260 255,240 250,220" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  <path d="M140,200 C135,210 130,230 130,240 C125,250 120,260 120,270 C125,275 130,275 135,270 C140,260 145,240 150,220" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Leyenda -->
+  <rect x="50" y="400" width="20" height="20" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+  <text x="80" y="415" font-family="Arial" font-size="14" fill="#333">Dorsal ancho (principal)</text>
+  
+  <rect x="50" y="430" width="20" height="20" fill="#9b59b6" stroke="#8e44ad" stroke-width="1"/>
+  <text x="80" y="445" font-family="Arial" font-size="14" fill="#333">Trapecio</text>
+  
+  <rect x="50" y="460" width="20" height="20" fill="#ffb347" stroke="#e67e22" stroke-width="1"/>
+  <text x="80" y="475" font-family="Arial" font-size="14" fill="#333">Romboides y otros secundarios</text>
+  
+  <text x="200" y="510" font-family="Arial" font-size="16" text-anchor="middle" fill="#666" font-weight="bold">
+    Ejercicios para espalda
+  </text>
+  <text x="200" y="535" font-family="Arial" font-size="14" text-anchor="middle" fill="#666">
+    Dominadas, remo, jalones al pecho
+  </text>
+</svg>

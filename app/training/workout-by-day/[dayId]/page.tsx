@@ -158,7 +158,7 @@ const workoutDays: Record<string, {
   }
 }
 
-export default function WorkoutPage({ params }: { params: { dayId: string } }) {
+export default function WorkoutByDayPage({ params }: { params: { dayId: string } }) {
   const router = useRouter()
   const { toast } = useToast()
   const { user } = useAuth()
