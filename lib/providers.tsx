@@ -1,12 +1,10 @@
-"use client"
-
 import React from 'react'
-import { AuthProvider } from '@/lib/contexts/auth-context'
-import { ProfileProvider } from '@/lib/contexts/profile-context'
-import { TrainingProvider } from '@/lib/contexts/training-context'
+import { AuthProvider } from './contexts/auth-context'
+import { ProfileProvider } from './contexts/profile-context'
+import { TrainingProvider } from './contexts/training-context'
 import { Toaster } from '@/components/ui/toaster'
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <AuthProvider>
       <ProfileProvider>
