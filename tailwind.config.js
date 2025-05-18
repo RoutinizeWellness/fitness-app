@@ -20,6 +20,13 @@ module.exports = {
         klasik: ['Klasik', 'sans-serif'],
         manrope: ['Manrope', 'sans-serif'],
       },
+      keyframes: {
+        loading: {
+          '0%': { transform: 'translateX(-100%)' },
+          '50%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(-100%)' },
+        },
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

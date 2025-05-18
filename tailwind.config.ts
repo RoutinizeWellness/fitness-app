@@ -107,13 +107,16 @@ const config: Config = {
             },
             'pulse-organic': {
                 '0%': {
-                    boxShadow: '0 0 0 0 hsl(var(--primary) / 0.4)'
+                    opacity: 0.6,
+                    transform: 'scale(0.98)'
                 },
-                '70%': {
-                    boxShadow: '0 0 0 12px hsl(var(--primary) / 0)'
+                '50%': {
+                    opacity: 1,
+                    transform: 'scale(1.02)'
                 },
                 '100%': {
-                    boxShadow: '0 0 0 0 hsl(var(--primary) / 0)'
+                    opacity: 0.6,
+                    transform: 'scale(0.98)'
                 }
             },
             'shimmer-organic': {
@@ -123,6 +126,30 @@ const config: Config = {
                 '100%': {
                     backgroundPosition: '200% 0'
                 }
+            },
+            'spin-slow': {
+                '0%': {
+                    transform: 'rotate(0deg)'
+                },
+                '100%': {
+                    transform: 'rotate(360deg)'
+                }
+            },
+            'reverse-spin': {
+                '0%': {
+                    transform: 'rotate(360deg)'
+                },
+                '100%': {
+                    transform: 'rotate(0deg)'
+                }
+            },
+            'bounce-organic': {
+                '0%, 100%': {
+                    transform: 'translateY(0)'
+                },
+                '50%': {
+                    transform: 'translateY(-15px)'
+                }
             }
   		},
   		animation: {
@@ -130,7 +157,10 @@ const config: Config = {
   			'accordion-up': 'accordion-up 0.2s ease-out',
             'float-organic': 'float-organic 6s ease-in-out infinite',
             'pulse-organic': 'pulse-organic 2.5s infinite',
-            'shimmer-organic': 'shimmer-organic 3s infinite linear'
+            'shimmer-organic': 'shimmer-organic 3s infinite linear',
+            'spin-slow': 'spin-slow 8s linear infinite',
+            'reverse-spin': 'reverse-spin 12s linear infinite',
+            'bounce-organic': 'bounce-organic 2s ease-in-out infinite'
   		},
         transitionTimingFunction: {
             'bounce-organic': 'cubic-bezier(0.34, 1.56, 0.64, 1)',

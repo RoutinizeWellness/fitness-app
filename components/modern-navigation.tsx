@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/sheet"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { useFeedback } from "@/components/feedback/action-feedback"
 import { Card3D } from "@/components/ui/card-3d"
 

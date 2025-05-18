@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import ModernNavigation from "@/components/modern-navigation"
 import { CircularNavBar } from "@/components/navigation/circular-nav-bar"
 import { NotificationCenter, Notification } from "@/components/notifications/notification-center"
 import { useFeedback } from "@/components/feedback/action-feedback"
 import { PulseLoader } from "@/components/ui/enhanced-skeletons"
 import { CopilotChat } from "@/components/copilot-chat"
+import { PageTransition } from "@/components/ui/page-transition"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 // Datos de ejemplo para notificaciones
 const sampleNotifications: Notification[] = [
@@ -177,7 +179,11 @@ export default function DashboardLayout({
 
   // Mostrar loader mientras carga
   if (isLoading) {
-    return <PulseLoader message="Cargando tu perfil..." />
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner size="lg" message="Cargando tu perfil..." />
+      </div>
+    )
   }
 
   // Si no hay usuario autenticado, no renderizar nada (se redirigirá a login)
@@ -205,7 +211,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#FFF3E9]">
+    <div className="min-h-screen bg-background">
       {/* Keep the original navigation for now (can be removed later) */}
       <div className="hidden">
         <ModernNavigation
@@ -216,7 +222,9 @@ export default function DashboardLayout({
       </div>
 
       <div className="content-area pb-20">
-        {children}
+        <PageTransition>
+          {children}
+        </PageTransition>
       </div>
 
       {/* New Circular Navigation Bar */}

@@ -1,10 +1,14 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { Bell, User } from "lucide-react"
+import { Avatar } from "@/components/ui/avatar"
+import { useAuth } from "@/lib/contexts/auth-context"
+import { HighContrastToggle } from "@/components/ui/high-contrast-toggle"
 
 interface CircularNavBarProps {
   activeTab: string
@@ -14,7 +18,10 @@ interface CircularNavBarProps {
 
 export function CircularNavBar({ activeTab, onTabChange, className }: CircularNavBarProps) {
   const router = useRouter()
+  const pathname = usePathname()
+  const { user, profile } = useAuth()
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
 
   // Navigation items with custom icons matching the image
   const navItems = [
@@ -59,6 +66,19 @@ export function CircularNavBar({ activeTab, onTabChange, className }: CircularNa
       route: "/nutrition"
     },
     {
+      id: "wellness",
+      icon: (
+        <div className="w-6 h-6 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill={activeTab === "wellness" ? "#FF6B6B" : "#888888"} />
+          </svg>
+        </div>
+      ),
+      label: "Bienestar",
+      color: "#FF6B6B",
+      route: "/wellness/recovery"
+    },
+    {
       id: "profile",
       icon: (
         <div className="w-6 h-6 flex items-center justify-center">
@@ -77,11 +97,60 @@ export function CircularNavBar({ activeTab, onTabChange, className }: CircularNa
     setIsAddMenuOpen(!isAddMenuOpen)
   }
 
+  // Simular notificaciones no leídas
+  useEffect(() => {
+    // En una implementación real, esto vendría de una API o base de datos
+    setUnreadNotifications(Math.floor(Math.random() * 5))
+  }, [])
+
   return (
-    <div className={cn("fixed bottom-6 left-0 right-0 z-50 flex justify-center", className)}>
-      <div className="relative">
-        {/* Main navigation bar - exact styling from the image */}
-        <div className="flex items-center bg-white rounded-full h-14 px-6 shadow-md">
+    <>
+      {/* Header minimalista */}
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md shadow-sm">
+        <div className="container max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center">
+            <span className="text-xl font-bold gradient-text">Routinize</span>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <HighContrastToggle />
+
+            <button
+              className="relative"
+              onClick={() => router.push("/notifications")}
+              aria-label={`Notificaciones${unreadNotifications > 0 ? `, ${unreadNotifications} no leídas` : ''}`}
+            >
+              <Bell className="h-5 w-5" />
+              {unreadNotifications > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] text-white font-medium"
+                  aria-hidden="true"
+                >
+                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => router.push("/profile")}
+              aria-label="Perfil de usuario"
+            >
+              <Avatar className="h-8 w-8">
+                <img
+                  src={profile?.avatar_url || "/placeholder.svg"}
+                  alt={`Foto de perfil de ${profile?.full_name || 'usuario'}`}
+                />
+              </Avatar>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Barra de navegación principal */}
+      <div className={cn("fixed bottom-6 left-0 right-0 z-50 flex justify-center", className)}>
+        <div className="relative">
+          {/* Main navigation bar - exact styling from the image */}
+          <div className="flex items-center bg-white rounded-full h-14 px-6 shadow-md">
           {navItems.map((item, index) => {
             const isActive = activeTab === item.id
 
@@ -94,14 +163,18 @@ export function CircularNavBar({ activeTab, onTabChange, className }: CircularNa
                 key={item.id}
                 className={cn(
                   "flex items-center justify-center w-10 h-10 rounded-full transition-all",
-                  isBeforeCenter ? "mr-12" : isAfterCenter ? "ml-12" : "mx-3"
+                  isBeforeCenter ? "mr-12" : isAfterCenter ? "ml-12" : "mx-3",
+                  isActive ? "text-primary" : "text-gray-500 hover:text-gray-700 focus:text-gray-700"
                 )}
                 onClick={() => {
                   onTabChange(item.id)
                   router.push(item.route)
                 }}
+                aria-label={item.label}
+                aria-current={isActive ? "page" : undefined}
               >
                 {item.icon}
+                <span className="sr-only">{item.label}</span>
               </button>
             )
           })}
@@ -109,9 +182,12 @@ export function CircularNavBar({ activeTab, onTabChange, className }: CircularNa
 
         {/* Center add button - orange circle with plus */}
         <motion.button
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-[#FDA758] rounded-full flex items-center justify-center shadow-md"
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-[#FDA758] rounded-full flex items-center justify-center shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FDA758]"
           whileTap={{ scale: 0.95 }}
           onClick={toggleAddMenu}
+          aria-label="Abrir menú de acciones"
+          aria-expanded={isAddMenuOpen}
+          aria-haspopup="true"
         >
           <motion.div
             animate={{ rotate: isAddMenuOpen ? 45 : 0 }}
@@ -132,41 +208,48 @@ export function CircularNavBar({ activeTab, onTabChange, className }: CircularNa
               animate={{ opacity: 1, y: -70 }}
               exit={{ opacity: 0, y: 10 }}
               className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-4 w-48"
+              role="menu"
+              aria-orientation="vertical"
+              aria-labelledby="menu-button"
             >
-              <div className="space-y-2">
+              <div className="space-y-2" role="none">
                 <button
-                  className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                  className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 transition-colors focus:outline-none focus:bg-gray-100 focus:ring-2 focus:ring-offset-1 focus:ring-[#FDA758]"
                   onClick={() => {
                     router.push("/training/new")
                     setIsAddMenuOpen(false)
                   }}
+                  role="menuitem"
                 >
                   Nuevo Entrenamiento
                 </button>
                 <button
-                  className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                  className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 transition-colors focus:outline-none focus:bg-gray-100 focus:ring-2 focus:ring-offset-1 focus:ring-[#FDA758]"
                   onClick={() => {
                     router.push("/nutrition/add-meal")
                     setIsAddMenuOpen(false)
                   }}
+                  role="menuitem"
                 >
                   Nueva Comida
                 </button>
                 <button
-                  className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                  className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 transition-colors focus:outline-none focus:bg-gray-100 focus:ring-2 focus:ring-offset-1 focus:ring-[#FDA758]"
                   onClick={() => {
                     router.push("/add-habit")
                     setIsAddMenuOpen(false)
                   }}
+                  role="menuitem"
                 >
                   Nuevo Hábito
                 </button>
                 <button
-                  className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 transition-colors flex items-center"
+                  className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 transition-colors flex items-center focus:outline-none focus:bg-gray-100 focus:ring-2 focus:ring-offset-1 focus:ring-[#FDA758]"
                   onClick={() => {
                     router.push("/ai-personalization")
                     setIsAddMenuOpen(false)
                   }}
+                  role="menuitem"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#FEA800" />
@@ -179,6 +262,7 @@ export function CircularNavBar({ activeTab, onTabChange, className }: CircularNa
         </AnimatePresence>
       </div>
     </div>
+    </>
   )
 }
 

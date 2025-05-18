@@ -243,46 +243,70 @@ export function FullPageSkeleton() {
   )
 }
 
-// Esqueleto para pantalla de carga con pulso
-export function PulseLoader({ message = "Cargando...", fullScreen = true }: { message?: string, fullScreen?: boolean }) {
+// Enhanced loading screen with modern design and animations
+export function PulseLoader({ message = "Loading...", fullScreen = true }: { message?: string, fullScreen?: boolean }) {
   const content = (
     <>
-      <div className="relative w-24 h-24 mb-6">
-        <Image
-          src="/images/routinize-logo.svg"
-          alt="Routinize Logo"
-          width={96}
-          height={96}
-          className="drop-shadow-lg animate-pulse"
-          priority
-        />
-        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-teal-500 animate-spin"></div>
+      {/* Logo container with enhanced animations */}
+      <div className="relative w-32 h-32 mb-8">
+        {/* Outer ring animation */}
+        <div className="absolute inset-0 rounded-full border-4 border-blue-400/30 animate-spin-slow"></div>
+
+        {/* Middle ring animation (opposite direction) */}
+        <div className="absolute inset-2 rounded-full border-4 border-teal-400/40 animate-reverse-spin"></div>
+
+        {/* Inner container with gradient background */}
+        <div className="absolute inset-4 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center shadow-lg overflow-hidden">
+          {/* Logo with pulse animation */}
+          <Image
+            src="/images/routinize-logo.svg"
+            alt="Routinize Logo"
+            width={80}
+            height={80}
+            className="drop-shadow-lg animate-pulse-organic"
+            priority
+          />
+        </div>
+
+        {/* Decorative particles */}
+        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-blue-400 blur-sm animate-float-organic"></div>
+        <div className="absolute -bottom-3 -left-3 w-8 h-8 rounded-full bg-teal-400 blur-sm animate-float-organic" style={{ animationDelay: '1.5s' }}></div>
       </div>
 
-      <div className="flex space-x-2 justify-center items-center mb-4">
-        {[0, 1, 2].map((index) => (
+      {/* Loading indicator dots with enhanced animation */}
+      <div className="flex space-x-3 justify-center items-center mb-6">
+        {[0, 1, 2, 3].map((index) => (
           <div
             key={index}
-            className="w-3 h-3 bg-teal-500 rounded-full animate-pulse"
-            style={{ animationDelay: `${index * 0.2}s` }}
+            className="w-3 h-3 bg-gradient-to-r from-blue-400 to-teal-400 rounded-full animate-pulse-organic"
+            style={{
+              animationDelay: `${index * 0.15}s`,
+              opacity: 0.7 + (index * 0.1)
+            }}
           />
         ))}
       </div>
 
-      <p className="text-lg font-medium text-teal-700 dark:text-teal-300">{message}</p>
+      {/* Loading message with enhanced typography */}
+      <p className="text-lg font-medium text-blue-100 tracking-wide">{message}</p>
+
+      {/* Subtle progress bar */}
+      <div className="mt-8 w-64 h-1 bg-blue-900/30 rounded-full overflow-hidden">
+        <div className="h-full bg-gradient-to-r from-blue-400 to-teal-400 rounded-full animate-shimmer-organic"></div>
+      </div>
     </>
   )
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+      <div className="fixed inset-0 bg-gradient-to-b from-[#1a2151]/95 to-[#2d3a80]/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
         {content}
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[200px] w-full">
+    <div className="flex flex-col items-center justify-center min-h-[300px] w-full">
       {content}
     </div>
   )

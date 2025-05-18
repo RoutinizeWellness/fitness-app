@@ -1,62 +1,82 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { PulseLoader } from "@/components/ui/enhanced-skeletons"
+import SplashScreen from "@/components/splash/SplashScreen"
 
 export default function Home() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
+  const [showSplash, setShowSplash] = useState(true)
+  const [initialLoad, setInitialLoad] = useState(true)
 
+  // Handle the splash screen display and initial routing
   useEffect(() => {
-    // Function to handle redirection
-    const handleRedirection = async () => {
-      // If loading, wait
-      if (isLoading) return
+    // Check if this is the first visit or a refresh
+    const hasVisitedBefore = localStorage.getItem('hasVisitedBefore')
 
-      try {
-        if (user) {
-          // If user is authenticated, redirect to dashboard
-          console.log("Usuario autenticado, redirigiendo al dashboard")
+    if (hasVisitedBefore) {
+      // Skip splash for returning users
+      setShowSplash(false)
+      setInitialLoad(false)
+    } else {
+      // Show splash for first-time visitors
+      localStorage.setItem('hasVisitedBefore', 'true')
 
-          // Método 1: Redirección con router (más suave)
-          router.push("/dashboard")
+      // Auto-hide splash after 3 seconds
+      const timer = setTimeout(() => {
+        setShowSplash(false)
+      }, 3000)
 
-          // Método 2: Redirección directa con window.location.href (inmediata)
-          setTimeout(() => {
-            console.log("Usando redirección directa con window.location.href...")
-            window.location.href = "/dashboard"
-          }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [])
 
-          // Método 3: Como respaldo, usar replace (más fuerte que href)
-          setTimeout(() => {
-            console.log("Usando redirección con replace como respaldo...")
-            window.location.replace("/dashboard")
-          }, 300)
-        } else {
-          // If not authenticated, go to login
-          console.log("Usuario no autenticado, redirigiendo a login")
-          router.push("/auth/login")
-        }
-      } catch (error) {
-        console.error("Error durante la redirección:", error)
-        // In case of error, redirect to login by default
+  // Handle redirection after splash screen
+  useEffect(() => {
+    // Only proceed with redirection if splash is not showing and auth is loaded
+    if (showSplash || isLoading) return
+
+    try {
+      if (user) {
+        // If user is authenticated, redirect to dashboard
+        console.log("User authenticated, redirecting to dashboard")
+        router.push("/dashboard")
+      } else {
+        // If not authenticated, go to login
+        console.log("User not authenticated, redirecting to login")
         router.push("/auth/login")
       }
+    } catch (error) {
+      console.error("Error during redirection:", error)
+      // In case of error, redirect to login by default
+      router.push("/auth/login")
     }
+  }, [user, isLoading, router, showSplash])
 
-    handleRedirection()
-  }, [user, isLoading, router])
+  // Handle splash screen completion
+  const handleSplashComplete = () => {
+    setShowSplash(false)
+  }
 
-  // Show a loader while deciding redirection
+  // Show splash screen on initial load
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />
+  }
+
+  // Show loading screen while determining redirection
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[rgb(var(--habit-background))]">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4" style={{ background: 'var(--habit-gradient-primary)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
-          Routinize Habit Builder
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a2151] to-[#2d3a80]">
+      <div className="text-center max-w-md px-4">
+        <h1 className="text-3xl font-bold mb-2 text-white">
+          Routinize Wellness
         </h1>
-        <PulseLoader message="Loading your habits..." />
+        <p className="text-blue-200/80 mb-8">
+          Tu compañero de entrenamiento personalizado
+        </p>
+        <PulseLoader message="Loading your fitness data..." />
       </div>
     </div>
   )

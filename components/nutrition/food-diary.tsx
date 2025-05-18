@@ -16,32 +16,39 @@ import { Calendar } from "@/components/ui/calendar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import { CalendarIcon, Utensils, Coffee, Apple, Moon, Trash2, Plus, Search, Loader2, BarChart } from "lucide-react"
-import { getNutritionEntries, addNutritionEntry, deleteNutritionEntry } from "@/lib/nutrition-service"
-import { searchFoodDatabase, searchFoodApi } from "@/lib/food-database-api"
+import { useNutrition } from "@/contexts/nutrition-context"
 import { NutritionEntry, FoodItem, MEAL_TYPES } from "@/lib/types/nutrition"
 
-interface FoodDiaryProps {
-  userId: string
-}
+interface FoodDiaryProps {}
 
-export default function FoodDiary({ userId }: FoodDiaryProps) {
+export default function FoodDiary({}: FoodDiaryProps) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
-  const [nutritionLog, setNutritionLog] = useState<NutritionEntry[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSearching, setIsSearching] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [searchResults, setSearchResults] = useState<FoodItem[]>([])
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null)
   const [addFoodDialogOpen, setAddFoodDialogOpen] = useState(false)
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("all")
   const { toast } = useToast()
 
+  // Usar el contexto de nutrición
+  const {
+    nutritionEntries,
+    isLoadingEntries,
+    loadNutritionEntries,
+    addEntry,
+    deleteEntry,
+    searchResults,
+    isSearching,
+    searchFoods,
+    getFood
+  } = useNutrition()
+
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
-    meal_type: "desayuno",
-    food_name: "",
+    mealType: "breakfast" as const,
+    foodId: "",
+    foodName: "",
+    servingSize: 1,
+    servingUnit: "g",
     calories: 0,
     protein: 0,
     carbs: 0,
@@ -248,7 +255,7 @@ export default function FoodDiary({ userId }: FoodDiaryProps) {
     const currentDate = new Date(selectedDate)
     const nextDay = new Date(currentDate)
     nextDay.setDate(currentDate.getDate() + 1)
-    
+
     // No permitir seleccionar fechas futuras
     if (nextDay <= new Date()) {
       setSelectedDate(nextDay.toISOString().split("T")[0])
@@ -326,9 +333,9 @@ export default function FoodDiary({ userId }: FoodDiaryProps) {
             />
           </PopoverContent>
         </Popover>
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={goToNextDay}
           disabled={new Date(selectedDate).toDateString() === new Date().toDateString()}
         >
@@ -337,7 +344,7 @@ export default function FoodDiary({ userId }: FoodDiaryProps) {
       </div>
 
       {/* Botón para añadir alimento */}
-      <Button 
+      <Button
         className="w-full flex items-center justify-center gap-2"
         onClick={() => {
           setFormData({

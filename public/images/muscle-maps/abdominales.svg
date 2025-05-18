@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Silueta del cuerpo humano -->
+  <path d="M200,50 
+           C240,50 270,70 270,110 
+           C270,140 260,160 250,170 
+           L260,190 L260,230 
+           C260,280 240,320 240,350 
+           L245,450 L230,500 L220,600 
+           L180,600 L170,500 L155,450 
+           L160,350 C160,320 140,280 140,230 
+           L140,190 L150,170 
+           C140,160 130,140 130,110 
+           C130,70 160,50 200,50 Z" 
+        fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Cabeza -->
+  <circle cx="200" cy="40" r="30" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Brazos -->
+  <path d="M250,170 L300,220 L320,300 L310,310 L290,240 L260,200" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  <path d="M150,170 L100,220 L80,300 L90,310 L110,240 L140,200" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Recto abdominal (principal) -->
+  <path d="M200,200 
+           C220,200 230,210 230,230 
+           C230,250 230,270 230,290 
+           C230,310 220,320 200,320 
+           C180,320 170,310 170,290 
+           C170,270 170,250 170,230 
+           C170,210 180,200 200,200 Z" 
+        fill="#1abc9c" stroke="#16a085" stroke-width="1" opacity="0.8"/>
+  
+  <!-- Líneas de definición del recto abdominal -->
+  <path d="M200,200 C190,200 180,210 180,220" stroke="#16a085" stroke-width="1" fill="none"/>
+  <path d="M200,200 C210,200 220,210 220,220" stroke="#16a085" stroke-width="1" fill="none"/>
+  
+  <path d="M180,240 L220,240" stroke="#16a085" stroke-width="1" fill="none"/>
+  <path d="M180,270 L220,270" stroke="#16a085" stroke-width="1" fill="none"/>
+  <path d="M180,300 L220,300" stroke="#16a085" stroke-width="1" fill="none"/>
+  
+  <!-- Oblicuos (secundario) -->
+  <path d="M230,230 
+           C240,230 245,240 250,250 
+           C250,270 245,290 240,310 
+           C235,315 230,320 230,320" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  <path d="M170,230 
+           C160,230 155,240 150,250 
+           C150,270 155,290 160,310 
+           C165,315 170,320 170,320" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Transverso abdominal (profundo) -->
+  <path d="M200,210 
+           C215,210 225,220 225,230 
+           C225,250 225,270 225,290 
+           C225,300 215,310 200,310 
+           C185,310 175,300 175,290 
+           C175,270 175,250 175,230 
+           C175,220 185,210 200,210 Z" 
+        fill="#9b59b6" stroke="#8e44ad" stroke-width="1" opacity="0.4"/>
+  
+  <!-- Leyenda -->
+  <rect x="50" y="400" width="20" height="20" fill="#1abc9c" stroke="#16a085" stroke-width="1"/>
+  <text x="80" y="415" font-family="Arial" font-size="14" fill="#333">Recto abdominal (principal)</text>
+  
+  <rect x="50" y="430" width="20" height="20" fill="#ffb347" stroke="#e67e22" stroke-width="1"/>
+  <text x="80" y="445" font-family="Arial" font-size="14" fill="#333">Oblicuos</text>
+  
+  <rect x="50" y="460" width="20" height="20" fill="#9b59b6" stroke="#8e44ad" stroke-width="1" opacity="0.4"/>
+  <text x="80" y="475" font-family="Arial" font-size="14" fill="#333">Transverso abdominal (profundo)</text>
+  
+  <text x="200" y="510" font-family="Arial" font-size="16" text-anchor="middle" fill="#666" font-weight="bold">
+    Ejercicios para abdominales
+  </text>
+  <text x="200" y="535" font-family="Arial" font-size="14" text-anchor="middle" fill="#666">
+    Crunches, planchas, elevaciones de piernas
+  </text>
+</svg>

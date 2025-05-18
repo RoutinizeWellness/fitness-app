@@ -1,5 +1,7 @@
 # Routinize Fitness App
 
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+
 A comprehensive fitness application designed for working professionals, offering personalized training, nutrition, sleep, productivity, and wellness modules.
 
 ## Features
