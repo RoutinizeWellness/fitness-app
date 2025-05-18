@@ -1,26 +1,19 @@
-import { createClient } from "@supabase/supabase-js"
+// Importar el cliente mejorado de Supabase
+import { supabase, enhancedSupabase } from "./enhanced-supabase-client"
 
-// Usar las credenciales proporcionadas
-const supabaseUrl = "https://soviwrzrgskhvgcmujfj.supabase.co"
-const supabaseAnonKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdml3cnpyZ3NraHZnY211amZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMTIzMzIsImV4cCI6MjA2MTY4ODMzMn0.dBGIib2YNrXTrGFvMQaUf3w8jbIRX-pixujAj_SPn5s"
+// Exportar el cliente de Supabase para mantener compatibilidad con el código existente
+export { supabase, enhancedSupabase }
 
-// Crear y exportar el cliente de Supabase
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-// Verificar la conexión a Supabase
+// Verificar la conexión a Supabase usando el cliente mejorado
 export const checkSupabaseConnection = async () => {
   try {
-    console.log("Verificando conexión a Supabase...")
-    const { data, error } = await supabase.from('profiles').select('count').limit(1)
+    const isConnected = await enhancedSupabase.checkConnection()
 
-    if (error) {
-      console.error("Error de conexión a Supabase:", error)
-      return { success: false, error }
+    if (!isConnected) {
+      return { success: false, error: new Error("No se pudo establecer conexión con Supabase") }
     }
 
-    console.log("Conexión a Supabase exitosa:", data)
-    return { success: true, data }
+    return { success: true, data: { status: 'connected' } }
   } catch (error) {
     console.error("Error al verificar conexión a Supabase:", error)
     return { success: false, error }
@@ -29,7 +22,7 @@ export const checkSupabaseConnection = async () => {
 
 // Ejecutar la verificación de conexión de forma asíncrona sin bloquear
 setTimeout(() => {
-  checkSupabaseConnection().catch(err => {
+  enhancedSupabase.checkConnection().catch(err => {
     console.error("Error en la verificación asíncrona de Supabase:", err)
   })
 }, 2000)
