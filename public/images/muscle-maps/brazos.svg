@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Silueta del cuerpo humano -->
+  <path d="M200,50 
+           C240,50 270,70 270,110 
+           C270,140 260,160 250,170 
+           L260,190 L260,230 
+           C260,280 240,320 240,350 
+           L245,450 L230,500 L220,600 
+           L180,600 L170,500 L155,450 
+           L160,350 C160,320 140,280 140,230 
+           L140,190 L150,170 
+           C140,160 130,140 130,110 
+           C130,70 160,50 200,50 Z" 
+        fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Cabeza -->
+  <circle cx="200" cy="40" r="30" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Brazos -->
+  <path d="M250,170 L300,220 L320,300 L310,310 L290,240 L260,200" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  <path d="M150,170 L100,220 L80,300 L90,310 L110,240 L140,200" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Bíceps (principal) -->
+  <path d="M260,200 C265,210 270,230 270,240 C275,250 280,260 280,270 C275,275 270,275 265,270 C260,260 255,240 250,220" 
+        fill="#3498db" stroke="#2980b9" stroke-width="1" opacity="0.8"/>
+  <path d="M140,200 C135,210 130,230 130,240 C125,250 120,260 120,270 C125,275 130,275 135,270 C140,260 145,240 150,220" 
+        fill="#3498db" stroke="#2980b9" stroke-width="1" opacity="0.8"/>
+  
+  <!-- Tríceps (principal) -->
+  <path d="M260,200 C265,210 270,230 270,240 C275,250 280,260 280,270 C275,275 270,275 265,270 C260,260 255,240 250,220" 
+        fill="#e74c3c" stroke="#c0392b" stroke-width="1" opacity="0.8"/>
+  <path d="M140,200 C135,210 130,230 130,240 C125,250 120,260 120,270 C125,275 130,275 135,270 C140,260 145,240 150,220" 
+        fill="#e74c3c" stroke="#c0392b" stroke-width="1" opacity="0.8"/>
+  
+  <!-- Antebrazos (secundario) -->
+  <path d="M280,270 C285,280 290,290 300,300 L320,300 L310,310 L290,310 C280,300 275,290 270,280 C270,275 275,275 280,270" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  <path d="M120,270 C115,280 110,290 100,300 L80,300 L90,310 L110,310 C120,300 125,290 130,280 C130,275 125,275 120,270" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Deltoides (secundario) -->
+  <path d="M250,170 C255,160 260,150 265,145 C270,155 272,165 270,175 C265,175 255,173 250,170" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  <path d="M150,170 C145,160 140,150 135,145 C130,155 128,165 130,175 C135,175 145,173 150,170" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Leyenda -->
+  <rect x="50" y="400" width="20" height="20" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+  <text x="80" y="415" font-family="Arial" font-size="14" fill="#333">Bíceps (principal)</text>
+  
+  <rect x="50" y="430" width="20" height="20" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+  <text x="80" y="445" font-family="Arial" font-size="14" fill="#333">Tríceps (principal)</text>
+  
+  <rect x="50" y="460" width="20" height="20" fill="#ffb347" stroke="#e67e22" stroke-width="1"/>
+  <text x="80" y="475" font-family="Arial" font-size="14" fill="#333">Antebrazos y deltoides (secundarios)</text>
+  
+  <text x="200" y="510" font-family="Arial" font-size="16" text-anchor="middle" fill="#666" font-weight="bold">
+    Ejercicios para brazos
+  </text>
+  <text x="200" y="535" font-family="Arial" font-size="14" text-anchor="middle" fill="#666">
+    Curl de bíceps, extensiones de tríceps, fondos
+  </text>
+</svg>

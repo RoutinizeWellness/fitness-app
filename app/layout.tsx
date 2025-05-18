@@ -62,7 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <AuthProvider>
                     <SupabaseProvider>
                       {children}
-                      <Toaster />
+                      <Toaster position="bottom-center" />
                     </SupabaseProvider>
                   </AuthProvider>
                 </ActionFeedbackProvider>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Silueta del cuerpo humano -->
+  <path d="M200,50 
+           C240,50 270,70 270,110 
+           C270,140 260,160 250,170 
+           L260,190 L260,230 
+           C260,280 240,320 240,350 
+           L245,450 L230,500 L220,600 
+           L180,600 L170,500 L155,450 
+           L160,350 C160,320 140,280 140,230 
+           L140,190 L150,170 
+           C140,160 130,140 130,110 
+           C130,70 160,50 200,50 Z" 
+        fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Cabeza -->
+  <circle cx="200" cy="40" r="30" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Brazos -->
+  <path d="M250,170 L300,220 L320,300 L310,310 L290,240 L260,200" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  <path d="M150,170 L100,220 L80,300 L90,310 L110,240 L140,200" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Deltoides (principal) -->
+  <!-- Deltoides anterior -->
+  <path d="M250,170 C255,160 260,150 265,145 C270,155 272,165 270,175 C265,175 255,173 250,170" 
+        fill="#f39c12" stroke="#d35400" stroke-width="1" opacity="0.8"/>
+  <path d="M150,170 C145,160 140,150 135,145 C130,155 128,165 130,175 C135,175 145,173 150,170" 
+        fill="#f39c12" stroke="#d35400" stroke-width="1" opacity="0.8"/>
+  
+  <!-- Deltoides lateral -->
+  <path d="M265,145 C270,140 275,135 280,135 C285,145 285,155 280,165 C275,165 270,160 265,155" 
+        fill="#f39c12" stroke="#d35400" stroke-width="1" opacity="0.8"/>
+  <path d="M135,145 C130,140 125,135 120,135 C115,145 115,155 120,165 C125,165 130,160 135,155" 
+        fill="#f39c12" stroke="#d35400" stroke-width="1" opacity="0.8"/>
+  
+  <!-- Deltoides posterior -->
+  <path d="M280,135 C285,130 290,130 295,135 C295,145 290,155 285,160 C280,155 280,145 280,135" 
+        fill="#f39c12" stroke="#d35400" stroke-width="1" opacity="0.8"/>
+  <path d="M120,135 C115,130 110,130 105,135 C105,145 110,155 115,160 C120,155 120,145 120,135" 
+        fill="#f39c12" stroke="#d35400" stroke-width="1" opacity="0.8"/>
+  
+  <!-- Trapecio (secundario) -->
+  <path d="M200,50 
+           C220,50 240,60 250,80 
+           C260,100 260,120 250,140 
+           C230,130 220,130 200,130 
+           C180,130 170,130 150,140 
+           C140,120 140,100 150,80 
+           C160,60 180,50 200,50 Z" 
+        fill="#9b59b6" stroke="#8e44ad" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Pectoral (secundario) -->
+  <path d="M200,130 
+           C230,130 245,150 250,170 
+           C240,190 220,200 200,200 
+           C180,200 160,190 150,170 
+           C155,150 170,130 200,130 Z" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Tríceps (secundario) -->
+  <path d="M260,200 C265,210 270,230 270,240 C275,250 280,260 280,270 C275,275 270,275 265,270 C260,260 255,240 250,220" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  <path d="M140,200 C135,210 130,230 130,240 C125,250 120,260 120,270 C125,275 130,275 135,270 C140,260 145,240 150,220" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Leyenda -->
+  <rect x="50" y="400" width="20" height="20" fill="#f39c12" stroke="#d35400" stroke-width="1"/>
+  <text x="80" y="415" font-family="Arial" font-size="14" fill="#333">Deltoides (principal)</text>
+  
+  <rect x="50" y="430" width="20" height="20" fill="#9b59b6" stroke="#8e44ad" stroke-width="1"/>
+  <text x="80" y="445" font-family="Arial" font-size="14" fill="#333">Trapecio</text>
+  
+  <rect x="50" y="460" width="20" height="20" fill="#ffb347" stroke="#e67e22" stroke-width="1"/>
+  <text x="80" y="475" font-family="Arial" font-size="14" fill="#333">Pectoral y tríceps (secundarios)</text>
+  
+  <text x="200" y="510" font-family="Arial" font-size="16" text-anchor="middle" fill="#666" font-weight="bold">
+    Ejercicios para hombros
+  </text>
+  <text x="200" y="535" font-family="Arial" font-size="14" text-anchor="middle" fill="#666">
+    Press militar, elevaciones laterales, pájaros
+  </text>
+</svg>
