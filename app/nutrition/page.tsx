@@ -23,6 +23,8 @@ import HealthyRecipes from "@/components/nutrition/healthy-recipes"
 import AdvancedNutritionAnalysis from "@/components/nutrition/advanced-nutrition-analysis"
 import MealPlanGenerator from "@/components/nutrition/meal-plan-generator"
 import WaterTracker from "@/components/nutrition/water-tracker"
+import NutritionStats from "@/components/nutrition/nutrition-stats"
+import DietaryRestrictions from "@/components/nutrition/dietary-restrictions"
 
 export default function NutritionPage() {
   const [activeTab, setActiveTab] = useState("dashboard")
@@ -145,12 +147,14 @@ export default function NutritionPage() {
         {/* Pestañas principales */}
         <div className="container max-w-md mx-auto px-4 mt-2">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-5 mb-4 bg-white">
+            <TabsList className="grid grid-cols-7 mb-4 bg-white">
               <TabsTrigger value="dashboard" className="rounded-full">Dashboard</TabsTrigger>
               <TabsTrigger value="diary" className="rounded-full">Diario</TabsTrigger>
               <TabsTrigger value="recipes" className="rounded-full">Recetas</TabsTrigger>
               <TabsTrigger value="plan" className="rounded-full">Plan</TabsTrigger>
               <TabsTrigger value="water" className="rounded-full">Agua</TabsTrigger>
+              <TabsTrigger value="stats" className="rounded-full">Stats</TabsTrigger>
+              <TabsTrigger value="restrictions" className="rounded-full">Restricciones</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -380,6 +384,16 @@ export default function NutritionPage() {
         {/* Pestaña de Seguimiento de Agua */}
         <TabsContent value="water" className="mt-0">
           <WaterTracker />
+        </TabsContent>
+
+        {/* Pestaña de Estadísticas Nutricionales */}
+        <TabsContent value="stats" className="mt-0">
+          <NutritionStats />
+        </TabsContent>
+
+        {/* Pestaña de Restricciones Alimentarias */}
+        <TabsContent value="restrictions" className="mt-0">
+          <DietaryRestrictions />
         </TabsContent>
       </main>
 
