@@ -10,8 +10,12 @@ import {
   WaterLog,
   NutritionRecommendation,
   NutritionAnalysis,
-  DailyNutrition
+  DailyNutrition,
+  NutritionSearchOptions,
+  NutritionStats,
+  MealType
 } from './types/nutrition';
+import { format } from 'date-fns';
 
 type QueryResponse<T> = {
   data: T | null;
@@ -25,7 +29,7 @@ export const getNutritionEntries = async (
     date?: string;
     startDate?: string;
     endDate?: string;
-    mealType?: string;
+    mealType?: MealType;
     limit?: number;
   }
 ): Promise<QueryResponse<NutritionEntry[]>> => {
