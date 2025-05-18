@@ -177,20 +177,40 @@ export default function TrainingInitialAssessment() {
     setIsSubmitting(true)
 
     try {
-      // Save assessment data to Supabase
-      const { data, error } = await supabase
-        .from('training_assessments')
-        .insert([
-          {
-            user_id: user.id,
-            assessment_data: assessmentData,
-            created_at: new Date().toISOString()
-          }
-        ])
-        .select()
+      // Preparar datos para la tabla initial_assessments según el esquema proporcionado
+      const initialAssessmentData = {
+        user_id: user.id,
+        experience_level: assessmentData.experienceLevel,
+        training_goals: assessmentData.primaryGoal,
+        injuries: assessmentData.injuries,
+        equipment_available: assessmentData.equipment,
+        preferred_days: assessmentData.weeklyAvailability,
+        preferred_duration: assessmentData.sessionDuration,
+        created_at: new Date().toISOString()
+      }
 
-      if (error) {
-        throw error
+      // Guardar en la tabla initial_assessments
+      const { error: initialAssessmentError } = await supabase
+        .from('initial_assessments')
+        .insert([initialAssessmentData])
+
+      if (initialAssessmentError) {
+        console.error("Error al guardar en initial_assessments:", initialAssessmentError)
+        // Si falla, intentar con la tabla anterior como respaldo
+        const { data, error } = await supabase
+          .from('training_assessments')
+          .insert([
+            {
+              user_id: user.id,
+              assessment_data: assessmentData,
+              created_at: new Date().toISOString()
+            }
+          ])
+          .select()
+
+        if (error) {
+          throw error
+        }
       }
 
       // Mark assessment as complete
@@ -202,7 +222,7 @@ export default function TrainingInitialAssessment() {
       })
 
       // Redirigir a la página de generación de plan
-      router.push("/training/generate-plan?tab=generate")
+      window.location.href = "/training/generate-plan?tab=generate"
     } catch (error) {
       console.error("Error al guardar la evaluación:", error)
       toast({

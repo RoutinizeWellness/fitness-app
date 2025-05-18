@@ -8,7 +8,7 @@ import {
 
 export function ThemeProvider({
   children,
-  defaultTheme = "light",
+  defaultTheme = "system",
   ...props
 }: ThemeProviderProps) {
   // Force the theme to be the default on initial render to avoid hydration mismatch
@@ -23,7 +23,8 @@ export function ThemeProvider({
     <NextThemesProvider
       defaultTheme={defaultTheme}
       enableSystem={mounted} // Only enable system theme after mounting
-      attribute="data-theme"
+      attribute="class" // Cambiado a 'class' para funcionar con Tailwind CSS
+      disableTransitionOnChange
       {...props}
     >
       {children}
