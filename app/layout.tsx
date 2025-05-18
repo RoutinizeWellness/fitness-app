@@ -9,6 +9,7 @@ const klasik = Roboto_Serif({
   display: 'swap',
 })
 import { Toaster } from "@/components/ui/toaster"
+import { Providers } from "./providers"
 import { ThemeProvider } from "@/components/theme-provider"
 import { EnhancedThemeProvider } from "@/components/theme/theme-provider"
 import { OrganicThemeProvider } from "@/components/theme/organic-theme-provider"
