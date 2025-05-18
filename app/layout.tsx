@@ -15,7 +15,7 @@ import { EnhancedThemeProvider } from "@/components/theme/theme-provider"
 import { OrganicThemeProvider } from "@/components/theme/organic-theme-provider"
 import { HabitBuilderThemeProvider } from "@/components/theme/habit-builder-theme-provider"
 import { ActionFeedbackProvider } from "@/components/feedback/action-feedback"
-import { Providers } from "./providers"
+import { AIAssistantEnhanced } from "@/components/ai-assistant-enhanced"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -61,6 +61,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <ActionFeedbackProvider>
                   <Providers>
                     {children}
+                    <AIAssistantEnhanced />
+                    <Toaster />
                   </Providers>
                 </ActionFeedbackProvider>
               </HabitBuilderThemeProvider>
