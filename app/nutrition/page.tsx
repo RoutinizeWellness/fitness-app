@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
-import { CalendarIcon, PlusCircle, Search, Utensils, BarChart, Calendar, BookOpen, Apple, Sparkles } from "lucide-react"
+import { CalendarIcon, PlusCircle, Search, Utensils, BarChart, Calendar, BookOpen, Apple, Sparkles, ChevronRight } from "lucide-react"
 import { OrganicLayout, OrganicSection } from "@/components/organic-layout"
 import { OrganicElement, OrganicStaggeredList } from "@/components/transitions/organic-transitions"
 import NutritionDashboard from "@/components/nutrition/nutrition-dashboard"
@@ -18,6 +18,11 @@ import NutritionAnalytics from "@/components/nutrition/nutrition-analytics"
 import FoodDatabase from "@/components/nutrition/food-database"
 import DietManager from "@/components/nutrition/diet-manager"
 import MealPlanDisplay from "@/components/nutrition/meal-plan-display"
+import EnhancedFoodTracker from "@/components/nutrition/enhanced-food-tracker"
+import HealthyRecipes from "@/components/nutrition/healthy-recipes"
+import AdvancedNutritionAnalysis from "@/components/nutrition/advanced-nutrition-analysis"
+import MealPlanGenerator from "@/components/nutrition/meal-plan-generator"
+import WaterTracker from "@/components/nutrition/water-tracker"
 
 export default function NutritionPage() {
   const [activeTab, setActiveTab] = useState("dashboard")
@@ -136,38 +141,52 @@ export default function NutritionPage() {
             </button>
           </div>
         </div>
+
+        {/* Pestañas principales */}
+        <div className="container max-w-md mx-auto px-4 mt-2">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid grid-cols-5 mb-4 bg-white">
+              <TabsTrigger value="dashboard" className="rounded-full">Dashboard</TabsTrigger>
+              <TabsTrigger value="diary" className="rounded-full">Diario</TabsTrigger>
+              <TabsTrigger value="recipes" className="rounded-full">Recetas</TabsTrigger>
+              <TabsTrigger value="plan" className="rounded-full">Plan</TabsTrigger>
+              <TabsTrigger value="water" className="rounded-full">Agua</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </header>
 
-      <main className="container max-w-md mx-auto px-4 pt-20 pb-32">
-        {/* Today's Meals */}
-        <div className="mb-8">
-          <h2 className="text-lg font-medium text-[#573353] mb-4">Today's Meals</h2>
-          <div className="bg-white rounded-3xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <div className="w-12 h-12 rounded-full bg-[#8C80F8] flex items-center justify-center mr-3">
-                  <Utensils className="h-6 w-6 text-white" />
+      <main className="container max-w-md mx-auto px-4 pt-28 pb-32">
+        <TabsContent value="dashboard" className="mt-0">
+          {/* Today's Meals */}
+          <div className="mb-8">
+            <h2 className="text-lg font-medium text-[#573353] mb-4">Today's Meals</h2>
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full bg-[#8C80F8] flex items-center justify-center mr-3">
+                    <Utensils className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-[#573353] font-semibold text-base">Weight Loss Plan</h3>
+                    <p className="text-[#573353]/70 text-sm mt-0.5">1800 calories • 5 meals</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-[#573353] font-semibold text-base">Weight Loss Plan</h3>
-                  <p className="text-[#573353]/70 text-sm mt-0.5">1800 calories • 5 meals</p>
-                </div>
+                <button className="bg-[#8C80F8] text-white font-medium rounded-full px-4 py-2 text-sm shadow-sm">
+                  View
+                </button>
               </div>
-              <button className="bg-[#8C80F8] text-white font-medium rounded-full px-4 py-2 text-sm shadow-sm">
-                View
-              </button>
-            </div>
 
-            <div className="h-2.5 bg-[#F5F5F5] rounded-full mb-3">
-              <div className="h-full rounded-full bg-[#8C80F8]" style={{ width: '60%' }} />
-            </div>
+              <div className="h-2.5 bg-[#F5F5F5] rounded-full mb-3">
+                <div className="h-full rounded-full bg-[#8C80F8]" style={{ width: '60%' }} />
+              </div>
 
-            <div className="flex justify-between text-xs">
-              <span className="text-[#573353]/70">3 of 5 meals completed</span>
-              <span className="text-[#8C80F8] font-medium">60%</span>
+              <div className="flex justify-between text-xs">
+                <span className="text-[#573353]/70">3 of 5 meals completed</span>
+                <span className="text-[#8C80F8] font-medium">60%</span>
+              </div>
             </div>
           </div>
-        </div>
 
         {/* Meal Plans */}
         <div className="mb-8">
@@ -341,6 +360,27 @@ export default function NutritionPage() {
             ))}
           </div>
         </div>
+        </TabsContent>
+
+        {/* Pestaña de Diario de Alimentos */}
+        <TabsContent value="diary" className="mt-0">
+          <EnhancedFoodTracker />
+        </TabsContent>
+
+        {/* Pestaña de Recetas */}
+        <TabsContent value="recipes" className="mt-0">
+          <HealthyRecipes />
+        </TabsContent>
+
+        {/* Pestaña de Plan de Comidas */}
+        <TabsContent value="plan" className="mt-0">
+          <MealPlanGenerator />
+        </TabsContent>
+
+        {/* Pestaña de Seguimiento de Agua */}
+        <TabsContent value="water" className="mt-0">
+          <WaterTracker />
+        </TabsContent>
       </main>
 
       {/* Bottom Navigation */}
