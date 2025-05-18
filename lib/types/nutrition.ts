@@ -38,26 +38,15 @@ export type FoodPreference = {
   updated_at: string;
 };
 
-export type NutritionEntry = {
+export interface NutritionEntry {
   id: string;
-  user_id: string;
+  userId: string;
   date: string;
-  meal_type: string;
-  food_name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  notes?: string | null;
-  created_at: string;
-};
-
-export type FoodItem = {
-  id: string;
-  name: string;
-  brand?: string;
-  serving_size: string;
-  serving_unit: string;
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  foodId: string;
+  foodName: string;
+  servingSize: number;
+  servingUnit: string;
   calories: number;
   protein: number;
   carbs: number;
@@ -66,77 +55,118 @@ export type FoodItem = {
   sugar?: number;
   sodium?: number;
   cholesterol?: number;
-  image_url?: string;
+  notes?: string;
+  created_at?: string;
+}
+
+export interface FoodItem {
+  id: string;
+  name: string;
+  brand?: string;
+  servingSize: number;
+  servingUnit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number;
+  sugar?: number;
+  sodium?: number;
+  cholesterol?: number;
+  imageUrl?: string;
   barcode?: string;
-  is_verified?: boolean;
+  isVerified?: boolean;
   category?: string;
-  alternative_foods?: string[]; // IDs de alimentos alternativos
+  alternativeFoods?: string[]; // IDs de alimentos alternativos
   created_at?: string;
   updated_at?: string;
-};
+  isCustom?: boolean;
+  userId?: string;
+}
 
-export type CustomFood = FoodItem & {
-  user_id: string;
-  is_favorite: boolean;
-};
-
-export type MealPlan = {
+export interface CustomFood {
   id: string;
-  user_id: string;
+  userId: string;
+  name: string;
+  brand?: string;
+  servingSize: number;
+  servingUnit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number;
+  sugar?: number;
+  sodium?: number;
+  cholesterol?: number;
+  imageUrl?: string;
+  isFavorite?: boolean;
+  created_at?: string;
+}
+
+export interface MealPlan {
+  id: string;
+  userId: string;
   name: string;
   description?: string;
-  start_date: string;
-  end_date: string;
-  is_active: boolean;
-  is_template: boolean;
-  created_at: string;
-  updated_at: string;
-};
+  startDate?: string;
+  endDate?: string;
+  isActive: boolean;
+  isTemplate?: boolean;
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  created_at?: string;
+  updated_at?: string;
+}
 
-export type MealPlanDetail = {
+export interface MealPlanDetail {
   id: string;
-  meal_plan_id: string;
-  day_of_week: number; // 0-6 (domingo-sábado)
-  meal_type: string; // 'desayuno', 'almuerzo', 'cena', 'snack'
-  food_id?: string;
-  custom_food_id?: string;
-  food_name: string;
-  servings: number;
+  mealPlanId: string;
+  dayOfWeek?: number; // 0-6 (domingo-sábado)
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  foodId: string;
+  foodName: string;
+  servingSize: number;
+  servingUnit: string;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
   notes?: string;
-  alternative_food_ids?: string[]; // IDs de alimentos alternativos
-  created_at: string;
-  updated_at?: string;
-};
+  alternativeFoodIds?: string[]; // IDs de alimentos alternativos
+  created_at?: string;
+}
 
-export type NutritionGoal = {
+export interface NutritionGoal {
   id: string;
-  user_id: string;
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
+  userId: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
   fiber?: number;
   sugar?: number;
   sodium?: number;
-  water?: number; // ml
-  is_active: boolean;
-  start_date: string;
-  end_date?: string;
-  created_at: string;
-  updated_at: string;
-};
+  cholesterol?: number;
+  waterIntake?: number; // ml
+  isActive?: boolean;
+  startDate?: string;
+  endDate?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
-export type WaterLog = {
+export interface WaterLog {
   id: string;
-  user_id: string;
+  userId: string;
   date: string;
-  amount: number; // ml
-  created_at: string;
-};
+  amount: number;
+  unit: 'ml' | 'oz';
+  time: string;
+  created_at?: string;
+}
 
 export type NutritionRecommendation = {
   id: string;
@@ -174,28 +204,99 @@ export type NutritionAnalysis = {
   created_at: string;
 };
 
-export type MacroBreakdown = {
+export interface MacroBreakdown {
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
-};
+}
 
-export type DailyNutrition = MacroBreakdown & {
-  entries: number;
-  meals: {
+export interface DailyNutrition {
+  date: string;
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  totalFiber?: number;
+  totalSugar?: number;
+  totalSodium?: number;
+  totalCholesterol?: number;
+  totalWater?: number;
+  caloriesGoal?: number;
+  proteinGoal?: number;
+  carbsGoal?: number;
+  fatGoal?: number;
+  fiberGoal?: number;
+  sugarGoal?: number;
+  sodiumGoal?: number;
+  cholesterolGoal?: number;
+  waterGoal?: number;
+  caloriesPercentage?: number;
+  proteinPercentage?: number;
+  carbsPercentage?: number;
+  fatPercentage?: number;
+  fiberPercentage?: number;
+  sugarPercentage?: number;
+  sodiumPercentage?: number;
+  cholesterolPercentage?: number;
+  waterPercentage?: number;
+  mealBreakdown?: {
+    breakfast: MacroBreakdown;
+    lunch: MacroBreakdown;
+    dinner: MacroBreakdown;
+    snack: MacroBreakdown;
+  };
+  entries?: number;
+  meals?: {
     [key: string]: NutritionEntry[];
   };
-};
+}
 
-export type MealType = 'desayuno' | 'almuerzo' | 'cena' | 'snack';
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export const MEAL_TYPES: { value: MealType; label: string }[] = [
-  { value: 'desayuno', label: 'Desayuno' },
-  { value: 'almuerzo', label: 'Almuerzo' },
-  { value: 'cena', label: 'Cena' },
+  { value: 'breakfast', label: 'Desayuno' },
+  { value: 'lunch', label: 'Almuerzo' },
+  { value: 'dinner', label: 'Cena' },
   { value: 'snack', label: 'Snack' },
 ];
+
+export interface NutritionSearchOptions {
+  query?: string;
+  date?: string;
+  mealType?: MealType;
+  limit?: number;
+  offset?: number;
+}
+
+export interface NutritionStats {
+  averageCalories: number;
+  averageProtein: number;
+  averageCarbs: number;
+  averageFat: number;
+  caloriesTrend: {
+    date: string;
+    value: number;
+  }[];
+  macroDistribution: {
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  mealTypeDistribution: {
+    breakfast: number;
+    lunch: number;
+    dinner: number;
+    snack: number;
+  };
+  topFoods: {
+    id: string;
+    name: string;
+    count: number;
+  }[];
+  consistencyScore: number;
+  streakDays: number;
+}
 
 // Receta
 export type Recipe = {

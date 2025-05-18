@@ -49,116 +49,44 @@ import PerformanceTracking from "@/components/training/performance-tracking"
 import { getTrainingProfile } from "@/lib/training-personalization-service"
 import { generateWorkoutPlan } from "@/lib/workout-plan-generator"
 import { getActiveWorkoutPlan } from "@/lib/workout-plan-service"
-import {
-  WorkoutRoutine,
-  WorkoutDay,
-  WorkoutLog,
-  getUserRoutines,
-  getWorkoutLogs,
-  saveWorkoutRoutine,
-  deleteWorkoutRoutine
-} from "@/lib/training-service"
+import { WorkoutRoutine, WorkoutDay, WorkoutLog } from "@/lib/types/training"
 import { v4 as uuidv4 } from "uuid"
 import { useToast } from "@/components/ui/use-toast"
-import { supabase } from "@/lib/supabase-client"
 import { useRouter } from "next/navigation"
+
+// Import our new contexts
+import { useAuth } from "@/lib/contexts/auth-context"
+import { useTraining } from "@/lib/contexts/training-context"
 
 import { ExecuteWorkout } from "@/components/training/execute-workout"
 
 export default function TrainingPage() {
   const [activeTab, setActiveTab] = useState("dashboard")
-  const [routines, setRoutines] = useState<WorkoutRoutine[]>([])
-  const [logs, setLogs] = useState<WorkoutLog[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isLoadingLogs, setIsLoadingLogs] = useState(true)
-  const [userId, setUserId] = useState<string | null>(null)
-  const [user, setUser] = useState<any>(null)
   const { toast } = useToast()
   const router = useRouter()
 
-  // Obtener el usuario actual
+  // Use our new contexts
+  const { user } = useAuth()
+  const {
+    routines,
+    logs,
+    isLoadingRoutines: isLoading,
+    isLoadingLogs,
+    refreshRoutines,
+    refreshLogs,
+    saveRoutine,
+    deleteRoutine: deleteWorkoutRoutine
+  } = useTraining()
+
+  // Load data when component mounts
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setUserId(user.id)
-        setUser(user)
-      }
-    }
-
-    fetchUser()
-  }, [])
-
-  // Cargar rutinas de entrenamiento
-  useEffect(() => {
-    const loadRoutines = async () => {
-      if (!userId) return
-
-      try {
-        const { data, error } = await getUserRoutines(userId)
-
-        if (error) {
-          console.error("Error al cargar rutinas:", error)
-          toast({
-            title: "Error",
-            description: "No se pudieron cargar las rutinas de entrenamiento",
-            variant: "destructive"
-          })
-          return
-        }
-
-        if (data) {
-          setRoutines(data)
-        }
-      } catch (error) {
-        console.error("Error al cargar rutinas:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadRoutines()
-  }, [userId, toast])
-
-  // Cargar registros de entrenamiento
-  useEffect(() => {
-    const loadLogs = async () => {
-      if (!userId) return
-
-      setIsLoadingLogs(true)
-      try {
-        const { data, error } = await getWorkoutLogs(userId)
-
-        if (error) {
-          console.error("Error al cargar registros:", error)
-          toast({
-            title: "Error",
-            description: "No se pudieron cargar los registros de entrenamiento",
-            variant: "destructive"
-          })
-          return
-        }
-
-        if (data) {
-          // Ordenar por fecha (más reciente primero)
-          const sortedLogs = [...data].sort((a, b) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-          )
-          setLogs(sortedLogs)
-        }
-      } catch (error) {
-        console.error("Error al cargar registros:", error)
-      } finally {
-        setIsLoadingLogs(false)
-      }
-    }
-
-    loadLogs()
-  }, [userId, toast])
+    refreshRoutines()
+    refreshLogs()
+  }, [refreshRoutines, refreshLogs])
 
   // Crear una nueva rutina - solo para admin
   const createNewRoutine = async () => {
-    if (!userId) {
+    if (!user) {
       toast({
         title: "Error",
         description: "Debes iniciar sesión para crear una rutina",
@@ -185,7 +113,7 @@ export default function TrainingPage() {
 
     const newRoutine: WorkoutRoutine = {
       id: uuidv4(),
-      userId: userId,
+      userId: user.id,
       name: "Nueva rutina",
       description: "Descripción de la rutina",
       days: [
@@ -205,7 +133,7 @@ export default function TrainingPage() {
 
     try {
       console.log("Intentando guardar rutina:", newRoutine)
-      const { data, error } = await saveWorkoutRoutine(newRoutine)
+      const { success, error } = await saveRoutine(newRoutine)
 
       if (error) {
         console.error("Error al crear rutina:", error)
@@ -217,10 +145,7 @@ export default function TrainingPage() {
         return
       }
 
-      if (data) {
-        // Actualizar el estado local
-        setRoutines(prev => [data, ...prev])
-
+      if (success) {
         // Mostrar mensaje de éxito
         toast({
           title: "Éxito",
@@ -229,7 +154,7 @@ export default function TrainingPage() {
 
         // Redirigir a la página de edición después de un breve retraso
         setTimeout(() => {
-          router.push(`/training/edit/${data.id}`)
+          router.push(`/training/edit/${newRoutine.id}`)
         }, 500)
       }
     } catch (error) {
@@ -244,7 +169,7 @@ export default function TrainingPage() {
 
   // Eliminar una rutina - solo para admin
   const handleDeleteRoutine = async (routineId: string) => {
-    if (!userId) return
+    if (!user) return
 
     // Verificar si el usuario es admin
     if (user?.email !== "admin@routinize.com") {
@@ -257,7 +182,7 @@ export default function TrainingPage() {
     }
 
     try {
-      const { success, error } = await deleteWorkoutRoutine(routineId, userId)
+      const { success, error } = await deleteWorkoutRoutine(routineId)
 
       if (error) {
         console.error("Error al eliminar rutina:", error)
@@ -270,7 +195,6 @@ export default function TrainingPage() {
       }
 
       if (success) {
-        setRoutines(prev => prev.filter(routine => routine.id !== routineId))
         toast({
           title: "Éxito",
           description: "Rutina eliminada correctamente",
@@ -289,7 +213,7 @@ export default function TrainingPage() {
   // Editar una rutina - solo para admin
   const editRoutine = (routineId: string) => {
     // Verificar si el usuario es admin
-    if (user?.email !== "admin@routinize.com") {
+    if (!user || user?.email !== "admin@routinize.com") {
       toast({
         title: "Acceso restringido",
         description: "Solo el administrador puede editar rutinas",
@@ -305,58 +229,97 @@ export default function TrainingPage() {
   const renderRoutines = () => {
     if (isLoading) {
       return (
-        <div className="flex justify-center py-8">
-          <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+        <div className="flex flex-col items-center justify-center py-16 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="relative">
+            <div className="h-16 w-16 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Dumbbell className="h-6 w-6 text-indigo-600 animate-pulse" />
+            </div>
+          </div>
+          <p className="text-indigo-700 font-medium mt-4 animate-pulse">Cargando tus rutinas de entrenamiento...</p>
+          <p className="text-gray-500 text-sm mt-2">Esto solo tomará un momento</p>
         </div>
       )
     }
 
     if (routines.length === 0) {
       return (
-        <div className="text-center py-8">
-          <Dumbbell className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-          <h3 className="text-xl font-medium mb-2">No tienes rutinas de entrenamiento</h3>
-          <p className="text-gray-500 mb-6">Crea tu primera rutina para comenzar a entrenar</p>
+        <div className="text-center py-12 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center mx-auto mb-6 border-4 border-white shadow-md">
+            <Dumbbell className="h-12 w-12 text-indigo-400" />
+          </div>
+
+          <h3 className="text-2xl font-bold mb-3 text-gray-800">No tienes rutinas de entrenamiento</h3>
+          <p className="text-gray-600 mb-8 max-w-md mx-auto">Crea tu primera rutina personalizada para comenzar a entrenar y alcanzar tus objetivos fitness</p>
+
           <div className="flex flex-col space-y-3 max-w-xs mx-auto">
             {user?.email === "admin@routinize.com" ? (
               <>
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-100 mb-4 text-left">
+                  <h4 className="font-medium text-indigo-800 mb-2 flex items-center">
+                    <Lightbulb className="h-4 w-4 mr-2 text-indigo-600" />
+                    Recomendación
+                  </h4>
+                  <p className="text-sm text-indigo-700">
+                    Genera un plan de entrenamiento personalizado con IA basado en tus objetivos y nivel de experiencia para obtener mejores resultados.
+                  </p>
+                </div>
+
                 <Button
                   variant="default"
                   onClick={() => router.push("/training/generate-plan")}
-                  className="w-full rounded-full"
+                  className="w-full rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md h-12"
                 >
-                  <Sparkles className="h-4 w-4 mr-2" />
+                  <Sparkles className="h-5 w-5 mr-2" />
                   Generar plan con IA
                 </Button>
+
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200"></div>
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-white px-4 text-sm text-gray-500">O crea manualmente</span>
+                  </div>
+                </div>
+
                 <Button
                   variant="outline"
                   onClick={() => router.push("/training/create-routine")}
-                  className="w-full rounded-full"
+                  className="w-full rounded-full border-indigo-200 text-indigo-700 hover:bg-indigo-50 h-11"
                 >
                   <Dumbbell className="h-4 w-4 mr-2" />
                   Crear rutina personalizada
                 </Button>
+
                 <Button
                   variant="outline"
                   onClick={createNewRoutine}
-                  className="w-full rounded-full"
+                  className="w-full rounded-full border-blue-200 text-blue-700 hover:bg-blue-50 h-11"
                 >
                   <PlusCircle className="h-4 w-4 mr-2" />
                   Crear rutina en blanco
                 </Button>
+
                 <Button
                   variant="ghost"
                   onClick={() => router.push("/training/templates")}
-                  className="w-full rounded-full"
+                  className="w-full rounded-full text-gray-600 hover:bg-gray-100 h-11"
                 >
                   <Calendar className="h-4 w-4 mr-2" />
                   Ver plantillas científicas
                 </Button>
               </>
             ) : (
-              <p className="text-center text-gray-500">
-                Las rutinas son administradas por el entrenador. Contacta con admin@routinize.com para solicitar cambios.
-              </p>
+              <div className="bg-blue-50 p-5 rounded-lg border border-blue-100 text-center">
+                <Info className="h-10 w-10 mx-auto text-blue-500 mb-3" />
+                <p className="text-blue-800 font-medium mb-2">
+                  Acceso restringido
+                </p>
+                <p className="text-blue-700 text-sm">
+                  Las rutinas son administradas por el entrenador. Contacta con <span className="font-medium">admin@routinize.com</span> para solicitar cambios o nuevas rutinas.
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -366,9 +329,16 @@ export default function TrainingPage() {
     return (
       <div className="space-y-6">
         <OrganicElement type="fade">
-          <Card organic={true} hover={true} className="p-6">
+          <Card organic={true} hover={true} className="p-6 border-indigo-100 bg-gradient-to-r from-white to-indigo-50/30">
             <OrganicSection
-              title="Mis rutinas de entrenamiento"
+              title={
+                <div className="flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
+                    <Dumbbell className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-800">Mis rutinas de entrenamiento</h2>
+                </div>
+              }
               action={
                 <div className="flex space-x-2">
                   {user?.email === "admin@routinize.com" && (
@@ -376,7 +346,7 @@ export default function TrainingPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="rounded-full"
+                        className="rounded-full border-indigo-200 text-indigo-700 hover:bg-indigo-50"
                         onClick={() => router.push("/training/generate-plan")}
                       >
                         <Sparkles className="h-4 w-4 mr-2" />
@@ -385,7 +355,7 @@ export default function TrainingPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="rounded-full"
+                        className="rounded-full border-blue-200 text-blue-700 hover:bg-blue-50"
                         onClick={() => router.push("/training/create-routine")}
                       >
                         <Dumbbell className="h-4 w-4 mr-2" />
@@ -393,7 +363,7 @@ export default function TrainingPage() {
                       </Button>
                       <Button
                         size="sm"
-                        className="rounded-full"
+                        className="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                         onClick={createNewRoutine}
                       >
                         <PlusCircle className="h-4 w-4 mr-2" />
@@ -408,38 +378,101 @@ export default function TrainingPage() {
                 {routines.map(routine => (
                   <div
                     key={routine.id}
-                    className="border rounded-lg p-4 hover:border-primary/50 transition-colors"
+                    className="border rounded-lg p-5 hover:shadow-md transition-all duration-300 bg-white relative overflow-hidden group"
+                    style={{
+                      borderLeftWidth: '4px',
+                      borderLeftColor:
+                        routine.goal === 'hipertrofia' ? '#a855f7' :
+                        routine.goal === 'fuerza' ? '#3b82f6' :
+                        routine.goal === 'resistencia' ? '#22c55e' :
+                        '#6366f1'
+                    }}
                   >
+                    {/* Indicador de nivel en la esquina superior derecha */}
+                    <div className="absolute top-0 right-0 w-20 h-20 overflow-hidden">
+                      <div
+                        className={`absolute transform rotate-45 translate-y-[-50%] translate-x-[15%] w-[120%] py-1 text-center text-xs font-medium text-white shadow-sm ${routine.level === 'principiante' ? 'bg-green-500' : routine.level === 'intermedio' ? 'bg-amber-500' : 'bg-red-500'}`}
+                      >
+                        {routine.level}
+                      </div>
+                    </div>
+
                     <div className="flex justify-between items-start">
-                      <div>
+                      <div className="flex-1 pr-16">
                         <div className="flex items-center">
-                          <h3 className="font-semibold">{routine.name}</h3>
-                          {routine.goal === 'hipertrofia' && (
-                            <Badge className="ml-2 bg-purple-500">Hipertrofia</Badge>
-                          )}
-                          {routine.goal === 'fuerza' && (
-                            <Badge className="ml-2 bg-blue-500">Fuerza</Badge>
-                          )}
-                          {routine.goal === 'resistencia' && (
-                            <Badge className="ml-2 bg-green-500">Resistencia</Badge>
-                          )}
+                          <div
+                            className="w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0"
+                            style={{
+                              backgroundColor:
+                                routine.goal === 'hipertrofia' ? '#f3e8ff' :
+                                routine.goal === 'fuerza' ? '#dbeafe' :
+                                routine.goal === 'resistencia' ? '#dcfce7' :
+                                '#e0e7ff'
+                            }}
+                          >
+                            {routine.goal === 'hipertrofia' ? (
+                              <Dumbbell className="h-5 w-5 text-purple-600" />
+                            ) : routine.goal === 'fuerza' ? (
+                              <Flame className="h-5 w-5 text-blue-600" />
+                            ) : routine.goal === 'resistencia' ? (
+                              <Clock className="h-5 w-5 text-green-600" />
+                            ) : (
+                              <Dumbbell className="h-5 w-5 text-indigo-600" />
+                            )}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-gray-800">{routine.name}</h3>
+                            <div className="flex items-center mt-1">
+                              <Badge
+                                className={`${routine.goal === 'hipertrofia' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+                                  routine.goal === 'fuerza' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                                  routine.goal === 'resistencia' ? 'bg-green-100 text-green-800 border-green-200' :
+                                  'bg-indigo-100 text-indigo-800 border-indigo-200'}`}
+                              >
+                                {routine.goal === 'hipertrofia' ? 'Hipertrofia' :
+                                 routine.goal === 'fuerza' ? 'Fuerza' :
+                                 routine.goal === 'resistencia' ? 'Resistencia' :
+                                 'General'}
+                              </Badge>
+                              <Badge className="ml-2 bg-gray-100 text-gray-800 border-gray-200">
+                                {routine.frequency}
+                              </Badge>
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">{routine.description}</p>
-                        <div className="flex items-center text-xs text-gray-400 mt-2">
-                          <span className="capitalize">{routine.level}</span>
+
+                        <p className="text-sm text-gray-600 mt-3 line-clamp-2">{routine.description}</p>
+
+                        <div className="flex items-center mt-3 text-xs text-gray-500">
+                          <div className="flex items-center">
+                            <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                            <span>{routine.days?.length || 0} días</span>
+                          </div>
                           <span className="mx-2">•</span>
-                          <span>{routine.frequency}</span>
-                          <span className="mx-2">•</span>
-                          <span>{routine.days?.length || 0} días</span>
+                          <div className="flex items-center">
+                            <Clock className="h-3.5 w-3.5 mr-1.5" />
+                            <span>~{routine.days?.reduce((acc, day) => acc + (day.estimatedDuration || 45), 0) / (routine.days?.length || 1)} min/día</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
+
+                      <div className="flex space-x-1">
                         {user?.email === "admin@routinize.com" && (
                           <>
-                            <Button variant="ghost" size="icon" onClick={() => editRoutine(routine.id)}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => editRoutine(routine.id)}
+                              className="h-8 w-8 rounded-full hover:bg-blue-50 hover:text-blue-600"
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteRoutine(routine.id)}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteRoutine(routine.id)}
+                              className="h-8 w-8 rounded-full hover:bg-red-50 hover:text-red-600"
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </>
@@ -447,11 +480,19 @@ export default function TrainingPage() {
                       </div>
                     </div>
 
-                    <Separator className="my-3" />
+                    <Separator className="my-4" />
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       <Button
-                        className="w-full rounded-full"
+                        className="rounded-full shadow-sm"
+                        style={{
+                          backgroundColor:
+                            routine.goal === 'hipertrofia' ? '#a855f7' :
+                            routine.goal === 'fuerza' ? '#3b82f6' :
+                            routine.goal === 'resistencia' ? '#22c55e' :
+                            '#6366f1',
+                          borderColor: 'transparent'
+                        }}
                         onClick={() => startWorkout(routine.id)}
                       >
                         <Play className="h-4 w-4 mr-2" />
@@ -459,13 +500,16 @@ export default function TrainingPage() {
                       </Button>
                       <Button
                         variant="outline"
-                        className="w-full rounded-full"
+                        className="rounded-full border-gray-300 hover:border-gray-400 hover:bg-gray-50"
                         onClick={() => router.push(`/training/routine/${routine.id}`)}
                       >
                         <ChevronRight className="h-4 w-4 mr-2" />
                         Ver detalles
                       </Button>
                     </div>
+
+                    {/* Indicador de hover */}
+                    <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-blue-500 to-purple-500 transform scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-bottom"></div>
                   </div>
                 ))}
               </div>
@@ -583,16 +627,16 @@ export default function TrainingPage() {
         {/* Dashboard Tab */}
         {activeTab === 'dashboard' && (
           <div>
-            {userId && <TrainingDashboard userId={userId} />}
+            {user && <TrainingDashboard userId={user.id} />}
           </div>
         )}
 
         {/* Plan Tab */}
         {activeTab === 'plan' && (
           <div>
-            {userId && (
+            {user && (
               <WorkoutPlanDisplay
-                userId={userId}
+                userId={user.id}
                 onGenerateNewPlan={() => router.push("/training/generate-plan")}
               />
             )}
@@ -854,7 +898,7 @@ export default function TrainingPage() {
                 Iniciar rutina
               </Button>
             </div>
-            <ExecuteWorkout userId={userId} setActiveTab={setActiveTab} />
+            {user && <ExecuteWorkout userId={user.id} setActiveTab={setActiveTab} />}
           </div>
         )}
 

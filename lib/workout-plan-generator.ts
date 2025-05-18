@@ -44,6 +44,7 @@ export interface WorkoutExercise {
 
 /**
  * Genera un plan de entrenamiento basado en el perfil del usuario
+ * Utiliza los datos de la evaluación inicial si están disponibles
  */
 export async function generateWorkoutPlan(userId: string, profile: TrainingProfile): Promise<WorkoutPlan | null> {
   try {
@@ -55,13 +56,39 @@ export async function generateWorkoutPlan(userId: string, profile: TrainingProfi
     console.log('Generando plan de entrenamiento para usuario:', userId)
     console.log('Perfil de entrenamiento:', profile)
 
+    // Intentar obtener datos de la evaluación inicial
+    let initialAssessment = null
+    try {
+      const { data, error } = await supabase
+        .from('initial_assessments')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (!error && data) {
+        initialAssessment = data
+        console.log('Evaluación inicial encontrada:', initialAssessment)
+      }
+    } catch (error) {
+      console.error('Error al obtener la evaluación inicial:', error)
+    }
+
     // Determinar el tipo de plan basado en el objetivo principal
-    const planType = determinePlanType(profile.primaryGoal)
+    // Usar datos de la evaluación inicial si están disponibles
+    const primaryGoal = initialAssessment?.training_goals || profile.primaryGoal
+    const planType = determinePlanType(primaryGoal)
     console.log('Tipo de plan determinado:', planType)
 
     // Determinar la estructura del plan basada en la disponibilidad semanal
-    const daysPerWeek = profile.weeklyAvailability
+    // Usar datos de la evaluación inicial si están disponibles
+    const daysPerWeek = initialAssessment?.preferred_days || profile.weeklyAvailability
     console.log('Días por semana:', daysPerWeek)
+
+    // Determinar el nivel de experiencia
+    // Usar datos de la evaluación inicial si están disponibles
+    const experienceLevel = initialAssessment?.experience_level || profile.experienceLevel
 
     // Crear el plan básico
     const planId = crypto.randomUUID()
@@ -70,10 +97,10 @@ export async function generateWorkoutPlan(userId: string, profile: TrainingProfi
     const plan: WorkoutPlan = {
       id: planId,
       userId,
-      name: `Plan de ${translateGoal(profile.primaryGoal)}`,
-      description: `Plan personalizado para ${translateGoal(profile.primaryGoal)} adaptado a tu nivel y disponibilidad.`,
-      level: profile.experienceLevel,
-      goal: profile.primaryGoal,
+      name: `Plan de ${translateGoal(primaryGoal)}`,
+      description: `Plan personalizado para ${translateGoal(primaryGoal)} adaptado a tu nivel y disponibilidad.`,
+      level: experienceLevel as 'beginner' | 'intermediate' | 'advanced' | 'expert',
+      goal: primaryGoal,
       duration: 8, // 8 semanas por defecto
       daysPerWeek,
       createdAt: new Date().toISOString(),
@@ -197,6 +224,7 @@ function determinePlanType(primaryGoal: string): 'strength' | 'hypertrophy' | 'e
 
 /**
  * Genera los días de entrenamiento según el tipo de plan y disponibilidad
+ * Considera lesiones y equipamiento disponible
  */
 function generateWorkoutDays(planType: 'strength' | 'hypertrophy' | 'endurance' | 'general', daysPerWeek: number, profile: TrainingProfile): WorkoutDay[] {
   const days: WorkoutDay[] = []
@@ -216,6 +244,25 @@ function generateWorkoutDays(planType: 'strength' | 'hypertrophy' | 'endurance' 
   const selectedDays = [...profile.trainingDays].sort((a, b) => dayOrder[a] - dayOrder[b])
 
   console.log('Días de entrenamiento seleccionados (ordenados):', selectedDays)
+
+  // Verificar si hay lesiones para adaptar el plan
+  const hasInjuries = profile.injuries && profile.injuries.length > 0
+  if (hasInjuries) {
+    console.log('Lesiones detectadas:', profile.injuries)
+  }
+
+  // Verificar el equipamiento disponible
+  const availableEquipment = profile.equipment || []
+  console.log('Equipamiento disponible:', availableEquipment)
+
+  // Determinar si el usuario tiene acceso a equipamiento básico
+  const hasBasicEquipment = availableEquipment.some(eq =>
+    ['Mancuernas', 'Barras', 'Máquinas', 'Bandas elásticas'].includes(eq)
+  )
+
+  // Determinar si el usuario solo tiene acceso a peso corporal
+  const bodyweightOnly = availableEquipment.length === 0 ||
+    (availableEquipment.length === 1 && availableEquipment.includes('Peso corporal'))
 
   // Si no hay días seleccionados, usar un enfoque basado en la frecuencia
   if (!selectedDays.length) {
@@ -404,17 +451,91 @@ function generateSpecializationWorkout(dayNumber: number, planType: string, prof
   }
 }
 
-// Funciones auxiliares para generar ejercicios (implementación básica)
+// Funciones auxiliares para generar ejercicios adaptados a las necesidades del usuario
 function generateExercisesForFullBody(planType: string, profile: TrainingProfile): WorkoutExercise[] {
-  // Implementación básica con ejercicios genéricos
-  return [
-    createExercise('Sentadilla', 'Piernas', 3, 8, 12),
-    createExercise('Press de Banca', 'Pecho', 3, 8, 12),
-    createExercise('Remo con Barra', 'Espalda', 3, 8, 12),
-    createExercise('Press Militar', 'Hombros', 3, 8, 12),
-    createExercise('Curl de Bíceps', 'Brazos', 3, 8, 12),
-    createExercise('Extensión de Tríceps', 'Brazos', 3, 8, 12)
-  ]
+  // Verificar lesiones y equipamiento disponible
+  const injuries = profile.injuries || []
+  const equipment = profile.equipment || []
+  const bodyweightOnly = equipment.length === 0 || (equipment.length === 1 && equipment.includes('Peso corporal'))
+
+  // Ejercicios base que se adaptarán según las condiciones
+  let exercises: WorkoutExercise[] = []
+
+  // Ejercicios para piernas
+  if (!injuries.some(injury => ['Rodilla', 'Cadera', 'Tobillo'].includes(injury))) {
+    if (bodyweightOnly) {
+      exercises.push(createExercise('Sentadilla sin peso', 'Piernas', 3, 10, 15))
+    } else if (equipment.includes('Mancuernas')) {
+      exercises.push(createExercise('Sentadilla con mancuernas', 'Piernas', 3, 8, 12))
+    } else if (equipment.includes('Barras')) {
+      exercises.push(createExercise('Sentadilla con barra', 'Piernas', 3, 8, 12))
+    } else {
+      exercises.push(createExercise('Sentadilla sin peso', 'Piernas', 3, 12, 15))
+    }
+  } else {
+    // Alternativa para lesiones en piernas
+    exercises.push(createExercise('Elevación de cadera', 'Glúteos', 3, 12, 15))
+  }
+
+  // Ejercicios para pecho
+  if (!injuries.some(injury => ['Hombro', 'Codo', 'Muñeca'].includes(injury))) {
+    if (bodyweightOnly) {
+      exercises.push(createExercise('Flexiones', 'Pecho', 3, 8, 12))
+    } else if (equipment.includes('Mancuernas')) {
+      exercises.push(createExercise('Press de banca con mancuernas', 'Pecho', 3, 8, 12))
+    } else if (equipment.includes('Barras')) {
+      exercises.push(createExercise('Press de banca', 'Pecho', 3, 8, 12))
+    } else {
+      exercises.push(createExercise('Flexiones', 'Pecho', 3, 10, 15))
+    }
+  } else {
+    // Alternativa para lesiones en parte superior
+    exercises.push(createExercise('Aperturas con banda elástica', 'Pecho', 3, 12, 15))
+  }
+
+  // Ejercicios para espalda
+  if (!injuries.some(injury => ['Espalda baja', 'Hombro'].includes(injury))) {
+    if (bodyweightOnly) {
+      exercises.push(createExercise('Remo invertido', 'Espalda', 3, 8, 12))
+    } else if (equipment.includes('Mancuernas')) {
+      exercises.push(createExercise('Remo con mancuerna', 'Espalda', 3, 8, 12))
+    } else if (equipment.includes('Barras')) {
+      exercises.push(createExercise('Remo con barra', 'Espalda', 3, 8, 12))
+    } else {
+      exercises.push(createExercise('Superman', 'Espalda', 3, 12, 15))
+    }
+  } else {
+    // Alternativa para lesiones en espalda
+    exercises.push(createExercise('Retracción escapular', 'Espalda', 3, 12, 15))
+  }
+
+  // Ejercicios para hombros
+  if (!injuries.some(injury => ['Hombro', 'Cuello'].includes(injury))) {
+    if (bodyweightOnly) {
+      exercises.push(createExercise('Elevación de brazos', 'Hombros', 3, 12, 15))
+    } else if (equipment.includes('Mancuernas')) {
+      exercises.push(createExercise('Press militar con mancuernas', 'Hombros', 3, 8, 12))
+    } else {
+      exercises.push(createExercise('Elevaciones laterales', 'Hombros', 3, 12, 15))
+    }
+  }
+
+  // Ejercicios para brazos
+  if (!injuries.some(injury => ['Codo', 'Muñeca'].includes(injury))) {
+    if (bodyweightOnly) {
+      exercises.push(createExercise('Fondos para tríceps', 'Brazos', 3, 8, 12))
+    } else if (equipment.includes('Mancuernas')) {
+      exercises.push(createExercise('Curl de bíceps con mancuernas', 'Brazos', 3, 8, 12))
+      exercises.push(createExercise('Extensión de tríceps', 'Brazos', 3, 8, 12))
+    } else {
+      exercises.push(createExercise('Flexiones diamante', 'Brazos', 3, 10, 15))
+    }
+  }
+
+  // Ejercicios para core (generalmente seguros para la mayoría de lesiones)
+  exercises.push(createExercise('Plancha', 'Core', 3, 20, 60))
+
+  return exercises
 }
 
 function generateExercisesForUpperBody(planType: string, profile: TrainingProfile): WorkoutExercise[] {

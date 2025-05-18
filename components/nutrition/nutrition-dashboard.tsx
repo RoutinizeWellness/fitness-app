@@ -10,84 +10,56 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from "recharts"
 import { CalendarIcon, Utensils, Coffee, Apple, Moon, Droplet, TrendingUp, AlertCircle } from "lucide-react"
-import { getDailyNutritionStats, getUserNutritionGoals, getWaterLog } from "@/lib/nutrition-service"
-import { NutritionEntry, NutritionGoal, WaterLog, MacroBreakdown } from "@/lib/types/nutrition"
+import { useNutrition } from "@/contexts/nutrition-context"
+import { NutritionEntry, NutritionGoal, WaterLog, MacroBreakdown, DailyNutrition } from "@/lib/types/nutrition"
 
-interface NutritionDashboardProps {
-  userId: string
-}
+interface NutritionDashboardProps {}
 
-export default function NutritionDashboard({ userId }: NutritionDashboardProps) {
+export default function NutritionDashboard({}: NutritionDashboardProps) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
-  const [nutritionStats, setNutritionStats] = useState<MacroBreakdown | null>(null)
-  const [nutritionGoals, setNutritionGoals] = useState<NutritionGoal | null>(null)
-  const [waterLog, setWaterLog] = useState<WaterLog[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [waterProgress, setWaterProgress] = useState(0)
   const { toast } = useToast()
 
+  // Usar el contexto de nutrición
+  const {
+    dailyStats,
+    isLoadingDailyStats,
+    loadDailyStats,
+    nutritionGoals,
+    isLoadingGoals,
+    loadNutritionGoals,
+    waterLogs,
+    isLoadingWaterLogs,
+    loadWaterLogs
+  } = useNutrition()
+
   // Cargar datos de nutrición
   useEffect(() => {
-    const loadNutritionData = async () => {
-      setIsLoading(true)
-      try {
-        // Cargar estadísticas de nutrición
-        const { data: stats, error: statsError } = await getDailyNutritionStats(userId, selectedDate)
-
-        if (statsError) {
-          console.error("Error al cargar estadísticas:", statsError)
-          toast({
-            title: "Error",
-            description: "No se pudieron cargar los datos de nutrición",
-            variant: "destructive",
-          })
-        } else if (stats) {
-          setNutritionStats(stats)
-        }
-
-        // Cargar objetivos de nutrición
-        const { data: goals, error: goalsError } = await getUserNutritionGoals(userId)
-
-        if (!goalsError && goals) {
-          setNutritionGoals(goals)
-        }
-
-        // Cargar registro de agua
-        const { data: water, error: waterError } = await getWaterLog(userId, selectedDate)
-
-        if (!waterError && water) {
-          setWaterLog(water)
-        }
-      } catch (error) {
-        console.error("Error al cargar datos de nutrición:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadNutritionData()
-  }, [userId, selectedDate, toast])
+    loadDailyStats(selectedDate)
+    loadNutritionGoals()
+    loadWaterLogs(selectedDate)
+  }, [selectedDate, loadDailyStats, loadNutritionGoals, loadWaterLogs])
 
   // Calcular progreso de agua
   useEffect(() => {
-    if (waterLog && nutritionGoals?.water) {
-      const totalWater = waterLog.reduce((sum, entry) => sum + entry.amount, 0)
-      setWaterProgress(Math.min(100, (totalWater / nutritionGoals.water) * 100))
+    if (waterLogs && nutritionGoals?.waterIntake) {
+      const totalWater = waterLogs.reduce((sum, entry) => sum + entry.amount, 0)
+      setWaterProgress(Math.min(100, (totalWater / nutritionGoals.waterIntake) * 100))
     } else {
       setWaterProgress(0)
     }
-  }, [waterLog, nutritionGoals])
+  }, [waterLogs, nutritionGoals])
 
   // Calcular progreso de calorías
-  const calorieProgress = nutritionGoals?.calories && nutritionStats
-    ? Math.min(100, (nutritionStats.calories / nutritionGoals.calories) * 100)
+  const calorieProgress = nutritionGoals?.calories && dailyStats
+    ? Math.min(100, (dailyStats.totalCalories / nutritionGoals.calories) * 100)
     : 0
 
   // Datos para el gráfico de macronutrientes
-  const macrosData = nutritionStats ? [
-    { name: "Proteínas", value: nutritionStats.protein * 4, color: "#4f46e5" },
-    { name: "Carbohidratos", value: nutritionStats.carbs * 4, color: "#10b981" },
-    { name: "Grasas", value: nutritionStats.fat * 9, color: "#f59e0b" },
+  const macrosData = dailyStats ? [
+    { name: "Proteínas", value: dailyStats.totalProtein * 4, color: "#4f46e5" },
+    { name: "Carbohidratos", value: dailyStats.totalCarbs * 4, color: "#10b981" },
+    { name: "Grasas", value: dailyStats.totalFat * 9, color: "#f59e0b" },
   ] : []
 
   // Renderizar icono según el tipo de comida
@@ -125,7 +97,7 @@ export default function NutritionDashboard({ userId }: NutritionDashboardProps) 
     }
   }
 
-  if (isLoading) {
+  if (isLoadingDailyStats || isLoadingGoals || isLoadingWaterLogs) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-1/3" />
@@ -186,7 +158,7 @@ export default function NutritionDashboard({ userId }: NutritionDashboardProps) 
                 <div className="flex justify-between">
                   <span className="text-sm font-medium">Calorías</span>
                   <span className="text-sm">
-                    {nutritionStats?.calories || 0} / {nutritionGoals?.calories || "---"} kcal
+                    {dailyStats?.totalCalories || 0} / {nutritionGoals?.calories || "---"} kcal
                   </span>
                 </div>
                 <Progress value={calorieProgress} className="h-2" />
@@ -197,12 +169,12 @@ export default function NutritionDashboard({ userId }: NutritionDashboardProps) 
                 <div className="flex justify-between">
                   <span className="text-sm font-medium">Proteínas</span>
                   <span className="text-sm">
-                    {nutritionStats?.protein || 0} / {nutritionGoals?.protein || "---"} g
+                    {dailyStats?.totalProtein || 0} / {nutritionGoals?.protein || "---"} g
                   </span>
                 </div>
                 <Progress
                   value={nutritionGoals?.protein
-                    ? Math.min(100, ((nutritionStats?.protein || 0) / nutritionGoals.protein) * 100)
+                    ? Math.min(100, ((dailyStats?.totalProtein || 0) / nutritionGoals.protein) * 100)
                     : 0}
                   className="h-2 bg-blue-100"
                 />
@@ -213,12 +185,12 @@ export default function NutritionDashboard({ userId }: NutritionDashboardProps) 
                 <div className="flex justify-between">
                   <span className="text-sm font-medium">Carbohidratos</span>
                   <span className="text-sm">
-                    {nutritionStats?.carbs || 0} / {nutritionGoals?.carbs || "---"} g
+                    {dailyStats?.totalCarbs || 0} / {nutritionGoals?.carbs || "---"} g
                   </span>
                 </div>
                 <Progress
                   value={nutritionGoals?.carbs
-                    ? Math.min(100, ((nutritionStats?.carbs || 0) / nutritionGoals.carbs) * 100)
+                    ? Math.min(100, ((dailyStats?.totalCarbs || 0) / nutritionGoals.carbs) * 100)
                     : 0}
                   className="h-2 bg-green-100"
                 />
@@ -229,12 +201,12 @@ export default function NutritionDashboard({ userId }: NutritionDashboardProps) 
                 <div className="flex justify-between">
                   <span className="text-sm font-medium">Grasas</span>
                   <span className="text-sm">
-                    {nutritionStats?.fat || 0} / {nutritionGoals?.fat || "---"} g
+                    {dailyStats?.totalFat || 0} / {nutritionGoals?.fat || "---"} g
                   </span>
                 </div>
                 <Progress
                   value={nutritionGoals?.fat
-                    ? Math.min(100, ((nutritionStats?.fat || 0) / nutritionGoals.fat) * 100)
+                    ? Math.min(100, ((dailyStats?.totalFat || 0) / nutritionGoals.fat) * 100)
                     : 0}
                   className="h-2 bg-yellow-100"
                 />
@@ -299,10 +271,10 @@ export default function NutritionDashboard({ userId }: NutritionDashboardProps) 
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-2xl font-bold">
-              {(waterLog.reduce((sum, entry) => sum + entry.amount, 0) / 1000).toFixed(1)} L
+              {(waterLogs.reduce((sum, entry) => sum + entry.amount, 0) / 1000).toFixed(1)} L
             </div>
             <p className="text-xs text-gray-500">
-              {nutritionGoals?.water
+              {nutritionGoals?.waterIntake
                 ? `${waterProgress.toFixed(0)}% de tu objetivo diario`
                 : "Sin objetivo establecido"}
             </p>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import ModernNavigation from "@/components/modern-navigation"
 import { CircularNavBar } from "@/components/navigation/circular-nav-bar"
 import { NotificationCenter, Notification } from "@/components/notifications/notification-center"
