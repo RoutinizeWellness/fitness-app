@@ -260,11 +260,22 @@ export function AuthProvider({ children }) {
           description: error.message,
           variant: "destructive",
         })
+      } else {
+        // Mostrar mensaje de éxito
+        toast({
+          title: "Redirigiendo a Google",
+          description: "Por favor, completa el proceso de inicio de sesión con Google.",
+        })
       }
 
       return { data, error }
     } catch (error) {
       console.error("Error en signInWithGoogle:", error)
+      toast({
+        title: "Error inesperado",
+        description: "Ocurrió un error al intentar iniciar sesión con Google. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      })
       return { data: null, error }
     } finally {
       setIsLoading(false)
