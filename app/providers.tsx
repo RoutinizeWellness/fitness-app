@@ -3,6 +3,7 @@
 import { ReactNode } from 'react'
 import { AuthProvider } from '@/contexts/auth-context'
 import { TrainingProvider } from '@/contexts/training-context'
+import { AIProvider } from '@/contexts/ai-context'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 
@@ -20,8 +21,10 @@ export function Providers({ children }: ProvidersProps) {
     >
       <AuthProvider>
         <TrainingProvider>
-          {children}
-          <Toaster />
+          <AIProvider>
+            {children}
+            <Toaster />
+          </AIProvider>
         </TrainingProvider>
       </AuthProvider>
     </ThemeProvider>

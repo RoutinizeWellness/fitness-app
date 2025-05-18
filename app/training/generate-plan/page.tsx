@@ -6,25 +6,52 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Slider } from "@/components/ui/slider"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Dumbbell,
   Sparkles,
   ArrowLeft,
-  Loader2
+  Loader2,
+  Brain,
+  Calendar,
+  Clock,
+  Zap,
+  CheckCircle2
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
+import { useAI } from "@/contexts/ai-context"
 import TrainingInitialAssessment from "@/components/training/initial-assessment"
 import { getTrainingProfile } from "@/lib/training-personalization-service"
 import { generateWorkoutPlan } from "@/lib/workout-plan-generator"
 import { generateWorkoutPlanWithEdgeFunction } from "@/lib/edge-functions-service"
+import { AIWorkoutPlan } from "@/lib/ai-types"
 
 export default function GeneratePlanPage() {
   const router = useRouter()
   const { user } = useAuth()
   const { toast } = useToast()
+  const { generateWorkoutPlan, savePlan } = useAI()
+
   const [activeTab, setActiveTab] = useState("assessment")
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [hasAssessment, setHasAssessment] = useState(false)
+  const [generatedPlan, setGeneratedPlan] = useState<AIWorkoutPlan | null>(null)
+
+  // Form state
+  const [goal, setGoal] = useState('hipertrofia')
+  const [level, setLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('intermediate')
+  const [daysPerWeek, setDaysPerWeek] = useState(4)
+  const [duration, setDuration] = useState(8)
+  const [focusAreas, setFocusAreas] = useState<string[]>(['pecho', 'espalda', 'piernas', 'hombros'])
+  const [limitations, setLimitations] = useState<string[]>([])
 
   // Verificar si el usuario ya tiene una evaluación y detectar parámetros de URL
   useEffect(() => {
@@ -53,7 +80,25 @@ export default function GeneratePlanPage() {
     checkAssessment()
   }, [user])
 
-  // Generar plan de entrenamiento
+  // Handle focus area toggle
+  const toggleFocusArea = (area: string) => {
+    if (focusAreas.includes(area)) {
+      setFocusAreas(focusAreas.filter(a => a !== area))
+    } else {
+      setFocusAreas([...focusAreas, area])
+    }
+  }
+
+  // Handle limitation toggle
+  const toggleLimitation = (limitation: string) => {
+    if (limitations.includes(limitation)) {
+      setLimitations(limitations.filter(l => l !== limitation))
+    } else {
+      setLimitations([...limitations, limitation])
+    }
+  }
+
+  // Generar plan de entrenamiento con IA
   const handleGeneratePlan = async () => {
     if (!user) {
       toast({
@@ -64,64 +109,91 @@ export default function GeneratePlanPage() {
       return
     }
 
-    console.log("Iniciando generación de plan para el usuario:", user.id)
+    if (focusAreas.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'Selecciona al menos un área de enfoque',
+        variant: 'destructive'
+      })
+      return
+    }
+
     setIsGenerating(true)
 
     try {
-      // Obtener el perfil de entrenamiento
-      console.log("Obteniendo perfil de entrenamiento...")
-      const { data: profile, error: profileError } = await getTrainingProfile(user.id)
-
-      if (profileError) {
-        console.error("Error al obtener perfil de entrenamiento:", profileError)
-        throw new Error("No se pudo obtener el perfil de entrenamiento")
+      const preferences = {
+        goal,
+        level,
+        daysPerWeek,
+        focusAreas,
+        duration,
+        limitations: limitations.length > 0 ? limitations : undefined
       }
 
-      if (!profile) {
-        console.error("No se encontró perfil de entrenamiento")
-        throw new Error("No se encontró perfil de entrenamiento")
-      }
+      console.log("Generando plan con IA usando preferencias:", preferences)
+      const plan = await generateWorkoutPlan(preferences)
 
-      console.log("Perfil de entrenamiento obtenido:", profile)
+      if (plan) {
+        console.log("Plan generado exitosamente:", plan)
+        setGeneratedPlan(plan)
+        setActiveTab('preview')
 
-      // Intentar generar el plan con la función adaptada
-      console.log("Generando plan de entrenamiento...")
-      const { data, error: generationError } = await generateWorkoutPlanWithEdgeFunction(user.id, profile)
-
-      if (generationError) {
-        console.error("Error al generar plan:", generationError)
-
-        // Intentar con la función local directamente como último recurso
-        console.log("Intentando con la función local directamente...")
-        const plan = await generateWorkoutPlan(user.id, profile)
-
-        if (!plan) {
-          console.error("La función generateWorkoutPlan devolvió null")
-          throw new Error("No se pudo generar el plan de entrenamiento")
-        }
-
-        console.log("Plan generado exitosamente con función local directa:", plan)
+        toast({
+          title: "Plan generado",
+          description: "Tu plan de entrenamiento ha sido generado exitosamente"
+        })
       } else {
-        console.log("Plan generado exitosamente:", data)
+        toast({
+          title: "Error",
+          description: "No se pudo generar el plan de entrenamiento",
+          variant: "destructive"
+        })
       }
-
-      toast({
-        title: "Plan generado",
-        description: "Tu plan de entrenamiento ha sido generado con éxito",
-      })
-
-      // Redirigir a la página del plan
-      console.log("Redirigiendo a la página de entrenamiento...")
-      router.push("/training")
     } catch (error) {
-      console.error("Error al generar el plan:", error)
+      console.error("Error al generar plan:", error)
       toast({
         title: "Error",
-        description: "No se pudo generar el plan de entrenamiento. Por favor, inténtalo de nuevo.",
-        variant: "destructive",
+        description: "No se pudo generar el plan de entrenamiento",
+        variant: "destructive"
       })
     } finally {
       setIsGenerating(false)
+    }
+  }
+
+  // Guardar plan generado
+  const handleSavePlan = async () => {
+    if (!generatedPlan) return
+
+    try {
+      setIsSaving(true)
+
+      const savedPlan = await savePlan(generatedPlan)
+
+      if (savedPlan) {
+        toast({
+          title: 'Plan guardado',
+          description: 'El plan de entrenamiento se ha guardado correctamente'
+        })
+
+        // Redirect to training page
+        router.push('/training')
+      } else {
+        toast({
+          title: 'Error',
+          description: 'No se pudo guardar el plan de entrenamiento',
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      console.error('Error saving plan:', error)
+      toast({
+        title: 'Error',
+        description: 'No se pudo guardar el plan de entrenamiento',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsSaving(false)
     }
   }
 

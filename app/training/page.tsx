@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { StatCardOrganic } from "@/components/ui/stat-card-organic"
 import { FloatingActionButton } from "@/components/ui/floating-action-button"
 import { Separator } from "@/components/ui/separator"
+import AITrainingCoach from "@/components/ai-training-coach"
 import {
   Dumbbell,
   Calendar,
@@ -691,6 +692,11 @@ export default function TrainingPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* AI Training Coach */}
+            <div className="mb-8">
+              <AITrainingCoach />
             </div>
 
             {/* Workout History */}
