@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react'
 import { useAuth } from './auth-context'
 import { useToast } from '@/components/ui/use-toast'
 import {
@@ -11,6 +11,11 @@ import { getAllExercises } from '@/lib/services/exercise-service'
 import { getUserWorkoutLogs, saveWorkoutLog, deleteWorkoutLog, getTrainingStats } from '@/lib/services/workout-log-service'
 import { getUserRoutines, saveWorkoutRoutine, deleteWorkoutRoutine } from '@/lib/services/workout-routine-service'
 
+type PaginationParams = {
+  page: number
+  pageSize: number
+}
+
 type TrainingContextType = {
   routines: WorkoutRoutine[]
   logs: WorkoutLog[]
@@ -20,16 +25,26 @@ type TrainingContextType = {
   isLoadingLogs: boolean
   isLoadingExercises: boolean
   isLoadingStats: boolean
-  refreshRoutines: () => Promise<void>
-  refreshLogs: () => Promise<void>
-  refreshExercises: () => Promise<void>
+  hasMoreRoutines: boolean
+  hasMoreLogs: boolean
+  hasMoreExercises: boolean
+  refreshRoutines: (pagination?: PaginationParams) => Promise<void>
+  refreshLogs: (pagination?: PaginationParams) => Promise<void>
+  refreshExercises: (pagination?: PaginationParams) => Promise<void>
   refreshStats: () => Promise<void>
+  loadMoreRoutines: () => Promise<void>
+  loadMoreLogs: () => Promise<void>
+  loadMoreExercises: () => Promise<void>
   saveRoutine: (routine: WorkoutRoutine) => Promise<{ success: boolean, error: any }>
   deleteRoutine: (routineId: string) => Promise<{ success: boolean, error: any }>
   saveLog: (log: WorkoutLog) => Promise<{ success: boolean, error: any }>
 }
 
 const TrainingContext = createContext<TrainingContextType | undefined>(undefined)
+
+// Default pagination values
+const DEFAULT_PAGE_SIZE = 10
+const INITIAL_PAGE = 1
 
 export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [routines, setRoutines] = useState<WorkoutRoutine[]>([])
@@ -40,19 +55,36 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isLoadingLogs, setIsLoadingLogs] = useState(true)
   const [isLoadingExercises, setIsLoadingExercises] = useState(true)
   const [isLoadingStats, setIsLoadingStats] = useState(true)
+  const [hasMoreRoutines, setHasMoreRoutines] = useState(true)
+  const [hasMoreLogs, setHasMoreLogs] = useState(true)
+  const [hasMoreExercises, setHasMoreExercises] = useState(true)
+  const [routinesPage, setRoutinesPage] = useState(INITIAL_PAGE)
+  const [logsPage, setLogsPage] = useState(INITIAL_PAGE)
+  const [exercisesPage, setExercisesPage] = useState(INITIAL_PAGE)
   const { user } = useAuth()
   const { toast } = useToast()
 
-  const refreshRoutines = async () => {
+  const refreshRoutines = useCallback(async (pagination?: PaginationParams) => {
     if (!user) {
       setRoutines([])
       setIsLoadingRoutines(false)
+      setHasMoreRoutines(false)
       return
+    }
+
+    const page = pagination?.page || INITIAL_PAGE
+    const pageSize = pagination?.pageSize || DEFAULT_PAGE_SIZE
+
+    // Reset pagination state if loading first page
+    if (page === INITIAL_PAGE) {
+      setRoutinesPage(INITIAL_PAGE)
+      setRoutines([])
     }
 
     setIsLoadingRoutines(true)
     try {
-      const { data, error } = await getUserRoutines(user.id)
+      // Modify getUserRoutines to accept pagination parameters
+      const { data, error } = await getUserRoutines(user.id, { page, pageSize })
 
       if (error) {
         console.error('Error fetching routines:', error)
@@ -64,7 +96,16 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return
       }
 
-      setRoutines(data || [])
+      // If this is the first page, replace the data, otherwise append
+      if (page === INITIAL_PAGE) {
+        setRoutines(data || [])
+      } else {
+        setRoutines(prev => [...prev, ...(data || [])])
+      }
+
+      // Update pagination state
+      setRoutinesPage(page)
+      setHasMoreRoutines((data || []).length === pageSize)
     } catch (error) {
       console.error('Unexpected error fetching routines:', error)
       toast({
@@ -75,7 +116,7 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } finally {
       setIsLoadingRoutines(false)
     }
-  }
+  }, [user, toast])
 
   const refreshLogs = async () => {
     if (!user) {
@@ -328,19 +369,38 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }
 
+  // Function to load more routines
+  const loadMoreRoutines = useCallback(async () => {
+    if (isLoadingRoutines || !hasMoreRoutines) return;
+    await refreshRoutines({ page: routinesPage + 1, pageSize: DEFAULT_PAGE_SIZE });
+  }, [isLoadingRoutines, hasMoreRoutines, routinesPage, refreshRoutines]);
+
+  // Function to load more logs
+  const loadMoreLogs = useCallback(async () => {
+    if (isLoadingLogs || !hasMoreLogs) return;
+    await refreshLogs({ page: logsPage + 1, pageSize: DEFAULT_PAGE_SIZE });
+  }, [isLoadingLogs, hasMoreLogs, logsPage, refreshLogs]);
+
+  // Function to load more exercises
+  const loadMoreExercises = useCallback(async () => {
+    if (isLoadingExercises || !hasMoreExercises) return;
+    await refreshExercises({ page: exercisesPage + 1, pageSize: DEFAULT_PAGE_SIZE });
+  }, [isLoadingExercises, hasMoreExercises, exercisesPage, refreshExercises]);
+
   // Load initial data when user changes
   useEffect(() => {
-    refreshRoutines()
-    refreshLogs()
+    refreshRoutines({ page: INITIAL_PAGE, pageSize: DEFAULT_PAGE_SIZE })
+    refreshLogs({ page: INITIAL_PAGE, pageSize: DEFAULT_PAGE_SIZE })
     refreshStats()
-  }, [user])
+  }, [user, refreshRoutines, refreshLogs])
 
   // Load exercises once
   useEffect(() => {
-    refreshExercises()
-  }, [])
+    refreshExercises({ page: INITIAL_PAGE, pageSize: DEFAULT_PAGE_SIZE })
+  }, [refreshExercises])
 
-  const value = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     routines,
     logs,
     exercises,
@@ -349,14 +409,42 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     isLoadingLogs,
     isLoadingExercises,
     isLoadingStats,
+    hasMoreRoutines,
+    hasMoreLogs,
+    hasMoreExercises,
     refreshRoutines,
     refreshLogs,
     refreshExercises,
     refreshStats,
+    loadMoreRoutines,
+    loadMoreLogs,
+    loadMoreExercises,
     saveRoutine,
     deleteRoutine,
     saveLog
-  }
+  }), [
+    routines,
+    logs,
+    exercises,
+    stats,
+    isLoadingRoutines,
+    isLoadingLogs,
+    isLoadingExercises,
+    isLoadingStats,
+    hasMoreRoutines,
+    hasMoreLogs,
+    hasMoreExercises,
+    refreshRoutines,
+    refreshLogs,
+    refreshExercises,
+    refreshStats,
+    loadMoreRoutines,
+    loadMoreLogs,
+    loadMoreExercises,
+    saveRoutine,
+    deleteRoutine,
+    saveLog
+  ])
 
   return <TrainingContext.Provider value={value}>{children}</TrainingContext.Provider>
 }

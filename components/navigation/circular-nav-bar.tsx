@@ -7,7 +7,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Bell, User } from "lucide-react"
 import { Avatar } from "@/components/ui/avatar"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { HighContrastToggle } from "@/components/ui/high-contrast-toggle"
 
 interface CircularNavBarProps {
