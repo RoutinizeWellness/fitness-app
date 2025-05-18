@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { PulseLoader } from "@/components/ui/enhanced-skeletons"
 import SplashScreen from "@/components/splash/SplashScreen"
 

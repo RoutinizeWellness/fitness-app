@@ -15,7 +15,6 @@ import { EnhancedThemeProvider } from "@/components/theme/theme-provider"
 import { OrganicThemeProvider } from "@/components/theme/organic-theme-provider"
 import { HabitBuilderThemeProvider } from "@/components/theme/habit-builder-theme-provider"
 import { ActionFeedbackProvider } from "@/components/feedback/action-feedback"
-import { Providers } from "./providers"
 
 const inter = Inter({ subsets: ["latin"] })
 
