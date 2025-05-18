@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Silueta del cuerpo humano -->
+  <path d="M200,50 
+           C240,50 270,70 270,110 
+           C270,140 260,160 250,170 
+           L260,190 L260,230 
+           C260,280 240,320 240,350 
+           L245,450 L230,500 L220,600 
+           L180,600 L170,500 L155,450 
+           L160,350 C160,320 140,280 140,230 
+           L140,190 L150,170 
+           C140,160 130,140 130,110 
+           C130,70 160,50 200,50 Z" 
+        fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Cabeza -->
+  <circle cx="200" cy="40" r="30" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Brazos -->
+  <path d="M250,170 L300,220 L320,300 L310,310 L290,240 L260,200" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  <path d="M150,170 L100,220 L80,300 L90,310 L110,240 L140,200" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Texto informativo -->
+  <text x="200" y="320" font-family="Arial" font-size="16" text-anchor="middle" fill="#666">
+    Selecciona un ejercicio
+  </text>
+  <text x="200" y="340" font-family="Arial" font-size="12" text-anchor="middle" fill="#999">
+    para ver los músculos trabajados
+  </text>
+</svg>

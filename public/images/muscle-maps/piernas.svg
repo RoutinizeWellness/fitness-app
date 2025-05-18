@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Silueta del cuerpo humano (enfoque en piernas) -->
+  <path d="M200,50 
+           C240,50 270,70 270,110 
+           C270,140 260,160 250,170 
+           L260,190 L260,230 
+           C260,280 240,320 240,350 
+           L245,450 L230,500 L220,600 
+           L180,600 L170,500 L155,450 
+           L160,350 C160,320 140,280 140,230 
+           L140,190 L150,170 
+           C140,160 130,140 130,110 
+           C130,70 160,50 200,50 Z" 
+        fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Cabeza -->
+  <circle cx="200" cy="40" r="30" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Brazos -->
+  <path d="M250,170 L300,220 L320,300 L310,310 L290,240 L260,200" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  <path d="M150,170 L100,220 L80,300 L90,310 L110,240 L140,200" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Cuádriceps (principal) -->
+  <path d="M200,350 
+           C210,350 220,350 230,350 
+           C235,380 240,420 230,450 
+           C225,470 220,490 215,500 
+           C210,510 205,520 200,520 
+           C195,520 190,510 185,500 
+           C180,490 175,470 170,450 
+           C160,420 165,380 170,350 
+           C180,350 190,350 200,350 Z" 
+        fill="#27ae60" stroke="#219653" stroke-width="1" opacity="0.8"/>
+  
+  <!-- Cuádriceps izquierdo -->
+  <path d="M200,350 
+           C190,350 180,350 170,350 
+           C165,380 160,420 170,450 
+           C175,470 180,490 185,500 
+           C190,510 195,520 200,520" 
+        fill="#27ae60" stroke="#219653" stroke-width="1" opacity="0.8"/>
+  
+  <!-- Cuádriceps derecho -->
+  <path d="M200,350 
+           C210,350 220,350 230,350 
+           C235,380 240,420 230,450 
+           C225,470 220,490 215,500 
+           C210,510 205,520 200,520" 
+        fill="#27ae60" stroke="#219653" stroke-width="1" opacity="0.8"/>
+  
+  <!-- Glúteos (secundario) -->
+  <path d="M200,300 
+           C220,300 235,310 240,330 
+           C235,345 220,350 200,350 
+           C180,350 165,345 160,330 
+           C165,310 180,300 200,300 Z" 
+        fill="#9b59b6" stroke="#8e44ad" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Isquiotibiales (secundario) - parte posterior -->
+  <path d="M200,350 
+           C210,350 220,350 230,350 
+           C235,380 240,420 230,450 
+           C225,470 220,490 215,500 
+           C210,510 205,520 200,520 
+           C195,520 190,510 185,500 
+           C180,490 175,470 170,450 
+           C160,420 165,380 170,350 
+           C180,350 190,350 200,350 Z" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Pantorrillas (secundario) -->
+  <path d="M200,520 
+           C205,520 210,530 215,550 
+           C217,570 218,590 220,600 
+           C210,600 190,600 180,600 
+           C182,590 183,570 185,550 
+           C190,530 195,520 200,520 Z" 
+        fill="#ffb347" stroke="#e67e22" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Leyenda -->
+  <rect x="50" y="400" width="20" height="20" fill="#27ae60" stroke="#219653" stroke-width="1"/>
+  <text x="80" y="415" font-family="Arial" font-size="14" fill="#333">Cuádriceps (principal)</text>
+  
+  <rect x="50" y="430" width="20" height="20" fill="#9b59b6" stroke="#8e44ad" stroke-width="1"/>
+  <text x="80" y="445" font-family="Arial" font-size="14" fill="#333">Glúteos</text>
+  
+  <rect x="50" y="460" width="20" height="20" fill="#ffb347" stroke="#e67e22" stroke-width="1"/>
+  <text x="80" y="475" font-family="Arial" font-size="14" fill="#333">Isquiotibiales y pantorrillas</text>
+  
+  <text x="200" y="510" font-family="Arial" font-size="16" text-anchor="middle" fill="#666" font-weight="bold">
+    Ejercicios para piernas
+  </text>
+  <text x="200" y="535" font-family="Arial" font-size="14" text-anchor="middle" fill="#666">
+    Sentadillas, prensa, extensiones
+  </text>
+</svg>
