@@ -24,6 +24,24 @@ import { WorkoutPlan, WorkoutDay, WorkoutExercise } from "@/lib/workout-plan-gen
 import { supabase } from "@/lib/supabase-client"
 import { getActiveWorkoutPlan } from "@/lib/workout-plan-service"
 
+/**
+ * Traduce el objetivo a español para mostrar en la UI
+ */
+function translateGoal(goal: string): string {
+  const translations: Record<string, string> = {
+    'fat_loss': 'Pérdida de Grasa',
+    'muscle_gain': 'Ganancia Muscular',
+    'strength': 'Fuerza',
+    'endurance': 'Resistencia',
+    'general_fitness': 'Fitness General',
+    'athletic_performance': 'Rendimiento Atlético',
+    'mobility': 'Movilidad',
+    'toning': 'Tonificación'
+  }
+
+  return translations[goal] || 'Fitness General'
+}
+
 interface WorkoutPlanDisplayProps {
   userId: string
   onGenerateNewPlan?: () => void
@@ -181,40 +199,52 @@ export default function WorkoutPlanDisplay({ userId, onGenerateNewPlan }: Workou
   const currentDay = activePlan.days.find(day => day.id === activeDay) || activePlan.days[0]
 
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card className="w-full bg-white rounded-3xl shadow-sm">
+      <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="flex items-center">
-              <Dumbbell className="h-5 w-5 mr-2 text-primary" />
+            <CardTitle className="flex items-center text-[#573353] text-xl">
+              <Dumbbell className="h-6 w-6 mr-2 text-[#FDA758]" />
               {activePlan.name}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-[#573353]/70 mt-1">
               {activePlan.description}
             </CardDescription>
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline" size="icon" title="Editar plan">
-              <Edit className="h-4 w-4" />
+            <Button
+              variant="outline"
+              size="icon"
+              title="Editar plan"
+              className="rounded-full hover:bg-[#FDA758]/10 border-[#FDA758]/20"
+              onClick={() => window.location.href = `/training/edit-routine/${activePlan.id}`}
+            >
+              <Edit className="h-4 w-4 text-[#FDA758]" />
             </Button>
-            <Button variant="outline" size="icon" title="Generar nuevo plan" onClick={handleGenerateNewPlan}>
-              <RotateCcw className="h-4 w-4" />
+            <Button
+              variant="outline"
+              size="icon"
+              title="Generar nuevo plan"
+              onClick={handleGenerateNewPlan}
+              className="rounded-full hover:bg-[#FDA758]/10 border-[#FDA758]/20"
+            >
+              <RotateCcw className="h-4 w-4 text-[#FDA758]" />
             </Button>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 mt-2">
-          <Badge variant="outline" className="capitalize">
+        <div className="flex flex-wrap gap-2 mt-3">
+          <Badge variant="outline" className="capitalize bg-[#FFF3E0] text-[#FDA758] border-[#FDA758]/20 rounded-full px-3">
             {activePlan.level}
           </Badge>
-          <Badge variant="outline">
+          <Badge variant="outline" className="bg-[#E8F5E9] text-[#5DE292] border-[#5DE292]/20 rounded-full px-3">
             {activePlan.daysPerWeek} días/semana
           </Badge>
-          <Badge variant="outline">
+          <Badge variant="outline" className="bg-[#E3F2FD] text-[#8C80F8] border-[#8C80F8]/20 rounded-full px-3">
             {activePlan.duration} semanas
           </Badge>
-          <Badge variant="secondary">
-            {activePlan.goal}
+          <Badge variant="secondary" className="bg-[#FDA758] text-white rounded-full px-3">
+            {translateGoal(activePlan.goal)}
           </Badge>
         </div>
       </CardHeader>
@@ -263,50 +293,75 @@ export default function WorkoutPlanDisplay({ userId, onGenerateNewPlan }: Workou
                     ))}
                   </div>
 
-                  <div className="space-y-2">
-                    {day.exercises.map((exercise, index) => (
-                      <div key={exercise.id} className="p-4 border rounded-md">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium">{exercise.name}</h4>
-                            <p className="text-sm text-gray-500">{exercise.muscleGroup}</p>
-                          </div>
-                          <Badge variant="outline">
-                            {exercise.sets} x {exercise.repsMin}-{exercise.repsMax}
-                          </Badge>
-                        </div>
+                  <div className="space-y-4">
+                    {day.exercises.map((exercise, index) => {
+                      // Determinar el color según el grupo muscular
+                      let color = "#FDA758"; // Color por defecto (naranja)
+                      if (exercise.muscleGroup === "Pecho") color = "#FDA758";
+                      else if (exercise.muscleGroup === "Espalda") color = "#5DE292";
+                      else if (exercise.muscleGroup === "Piernas") color = "#8C80F8";
+                      else if (exercise.muscleGroup === "Hombros") color = "#FF7285";
+                      else if (exercise.muscleGroup === "Brazos") color = "#5CC2FF";
+                      else if (exercise.muscleGroup === "Core") color = "#F7B955";
 
-                        <div className="grid grid-cols-3 gap-2 mt-2 text-sm">
-                          <div className="flex items-center">
-                            <Clock className="h-4 w-4 mr-1 text-gray-400" />
-                            <span>{exercise.rest}s descanso</span>
+                      return (
+                        <div
+                          key={exercise.id}
+                          className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-start">
+                              <div
+                                className="w-10 h-10 rounded-full flex items-center justify-center mr-3 text-white"
+                                style={{ backgroundColor: color }}
+                              >
+                                <Dumbbell className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-[#573353]">{exercise.name}</h4>
+                                <p className="text-sm text-[#573353]/70">{exercise.muscleGroup}</p>
+                              </div>
+                            </div>
+                            <Badge
+                              variant="outline"
+                              className="bg-[#FFF3E0] text-[#FDA758] border-[#FDA758]/20 rounded-full px-3"
+                            >
+                              {exercise.sets} x {exercise.repsMin}-{exercise.repsMax}
+                            </Badge>
                           </div>
-                          {exercise.weight > 0 && (
+
+                          <div className="grid grid-cols-3 gap-2 mt-4 text-sm">
                             <div className="flex items-center">
-                              <Dumbbell className="h-4 w-4 mr-1 text-gray-400" />
-                              <span>{exercise.weight}kg</span>
+                              <Clock className="h-4 w-4 mr-1 text-[#573353]/50" />
+                              <span className="text-[#573353]/70">{exercise.rest}s descanso</span>
+                            </div>
+                            {exercise.weight > 0 && (
+                              <div className="flex items-center">
+                                <Dumbbell className="h-4 w-4 mr-1 text-[#573353]/50" />
+                                <span className="text-[#573353]/70">{exercise.weight}kg</span>
+                              </div>
+                            )}
+                            <div className="flex items-center">
+                              <AlertCircle className="h-4 w-4 mr-1 text-[#573353]/50" />
+                              <span className="text-[#573353]/70">RIR: {exercise.rir}</span>
+                            </div>
+                          </div>
+
+                          {exercise.notes && (
+                            <p className="text-sm text-[#573353]/70 mt-3 bg-[#F9F9F9] p-2 rounded-lg">{exercise.notes}</p>
+                          )}
+
+                          {exercise.superset && (
+                            <div className="mt-3 p-3 bg-[#F9F9F9] rounded-lg border-l-2" style={{ borderColor: color }}>
+                              <p className="text-sm font-medium text-[#573353]">Superset con:</p>
+                              <p className="text-sm text-[#573353]/70">
+                                {day.exercises.find(e => e.id === exercise.supersetWith)?.name || 'Ejercicio no encontrado'}
+                              </p>
                             </div>
                           )}
-                          <div className="flex items-center">
-                            <AlertCircle className="h-4 w-4 mr-1 text-gray-400" />
-                            <span>RIR: {exercise.rir}</span>
-                          </div>
                         </div>
-
-                        {exercise.notes && (
-                          <p className="text-sm text-gray-500 mt-2">{exercise.notes}</p>
-                        )}
-
-                        {exercise.superset && (
-                          <div className="mt-2 p-2 bg-gray-50 rounded-md">
-                            <p className="text-sm font-medium">Superset con:</p>
-                            <p className="text-sm">
-                              {day.exercises.find(e => e.id === exercise.supersetWith)?.name || 'Ejercicio no encontrado'}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {day.notes && (
