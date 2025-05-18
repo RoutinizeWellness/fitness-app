@@ -21,6 +21,8 @@ import MealPlanDisplay from "@/components/nutrition/meal-plan-display"
 import EnhancedFoodTracker from "@/components/nutrition/enhanced-food-tracker"
 import HealthyRecipes from "@/components/nutrition/healthy-recipes"
 import AdvancedNutritionAnalysis from "@/components/nutrition/advanced-nutrition-analysis"
+import MealPlanGenerator from "@/components/nutrition/meal-plan-generator"
+import WaterTracker from "@/components/nutrition/water-tracker"
 
 export default function NutritionPage() {
   const [activeTab, setActiveTab] = useState("dashboard")
@@ -143,11 +145,12 @@ export default function NutritionPage() {
         {/* Pestañas principales */}
         <div className="container max-w-md mx-auto px-4 mt-2">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-4 mb-4 bg-white">
+            <TabsList className="grid grid-cols-5 mb-4 bg-white">
               <TabsTrigger value="dashboard" className="rounded-full">Dashboard</TabsTrigger>
               <TabsTrigger value="diary" className="rounded-full">Diario</TabsTrigger>
               <TabsTrigger value="recipes" className="rounded-full">Recetas</TabsTrigger>
-              <TabsTrigger value="analysis" className="rounded-full">Análisis</TabsTrigger>
+              <TabsTrigger value="plan" className="rounded-full">Plan</TabsTrigger>
+              <TabsTrigger value="water" className="rounded-full">Agua</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -369,9 +372,14 @@ export default function NutritionPage() {
           <HealthyRecipes />
         </TabsContent>
 
-        {/* Pestaña de Análisis */}
-        <TabsContent value="analysis" className="mt-0">
-          <AdvancedNutritionAnalysis />
+        {/* Pestaña de Plan de Comidas */}
+        <TabsContent value="plan" className="mt-0">
+          <MealPlanGenerator />
+        </TabsContent>
+
+        {/* Pestaña de Seguimiento de Agua */}
+        <TabsContent value="water" className="mt-0">
+          <WaterTracker />
         </TabsContent>
       </main>
 
