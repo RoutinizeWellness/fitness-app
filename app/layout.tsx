@@ -8,9 +8,7 @@ const klasik = Roboto_Serif({
   variable: '--font-klasik',
   display: 'swap',
 })
-import { AuthProvider } from "@/contexts/auth-context"
-import { SupabaseProvider } from "@/contexts/supabase-context"
-import { Toaster } from "@/components/ui/toaster"
+import { Providers } from "./providers"
 import { ThemeProvider } from "@/components/theme-provider"
 import { EnhancedThemeProvider } from "@/components/theme/theme-provider"
 import { OrganicThemeProvider } from "@/components/theme/organic-theme-provider"
@@ -54,17 +52,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
       </head>
       <body className={`${inter.className} ${klasik.variable} h-full monumental-theme`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="routinize-theme">
+        <ThemeProvider defaultTheme="system" storageKey="routinize-theme">
           <EnhancedThemeProvider defaultTheme="light" storageKey="routinize-ui">
             <OrganicThemeProvider defaultTheme="light" storageKey="routinize-organic">
               <HabitBuilderThemeProvider defaultTheme="light" storageKey="routinize-habit">
                 <ActionFeedbackProvider>
-                  <AuthProvider>
-                    <SupabaseProvider>
-                      {children}
-                      <Toaster />
-                    </SupabaseProvider>
-                  </AuthProvider>
+                  <Providers>
+                    {children}
+                  </Providers>
                 </ActionFeedbackProvider>
               </HabitBuilderThemeProvider>
             </OrganicThemeProvider>

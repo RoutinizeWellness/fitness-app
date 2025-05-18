@@ -69,10 +69,13 @@ export default function Home() {
   // Show loading screen while determining redirection
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a2151] to-[#2d3a80]">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4 text-white">
+      <div className="text-center max-w-md px-4">
+        <h1 className="text-3xl font-bold mb-2 text-white">
           Routinize Wellness
         </h1>
+        <p className="text-blue-200/80 mb-8">
+          Tu compañero de entrenamiento personalizado
+        </p>
         <PulseLoader message="Loading your fitness data..." />
       </div>
     </div>
