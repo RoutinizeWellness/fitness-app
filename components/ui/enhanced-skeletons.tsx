@@ -256,26 +256,26 @@ export function PulseLoader({ message = "Cargando...", fullScreen = true }: { me
           className="drop-shadow-lg animate-pulse"
           priority
         />
-        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-teal-500 animate-spin"></div>
+        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#1B237E] animate-spin"></div>
       </div>
 
       <div className="flex space-x-2 justify-center items-center mb-4">
         {[0, 1, 2].map((index) => (
           <div
             key={index}
-            className="w-3 h-3 bg-teal-500 rounded-full animate-pulse"
+            className="w-3 h-3 bg-[#FEA800] rounded-full animate-pulse"
             style={{ animationDelay: `${index * 0.2}s` }}
           />
         ))}
       </div>
 
-      <p className="text-lg font-medium text-teal-700 dark:text-teal-300">{message}</p>
+      <p className="text-lg font-medium text-[#573353]">{message}</p>
     </>
   )
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+      <div className="fixed inset-0 bg-[#FFF3E9]/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
         {content}
       </div>
     )

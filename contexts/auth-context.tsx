@@ -278,10 +278,13 @@ export function AuthProvider({ children }) {
       console.log("Iniciando sesión con:", email)
 
       // Usar directamente el cliente de Supabase para mayor control
+      console.log("Intentando iniciar sesión con Supabase para:", email)
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
+
+      console.log("Respuesta de Supabase:", { data, error })
 
       if (error) {
         console.error("Error de autenticación:", error)

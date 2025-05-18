@@ -1,0 +1,212 @@
+/* Estilos responsivos para el módulo de entrenamiento */
+
+/* Estilos base para dispositivos móviles */
+.training-mobile-container {
+  max-width: 414px;
+  margin: 0 auto;
+  padding: 1rem;
+  background-color: var(--training-background, #FFF3E9);
+}
+
+/* Estilos para los formularios responsivos */
+.training-form-field {
+  margin-bottom: 1rem;
+}
+
+.training-form-label {
+  display: block;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #573353;
+  margin-bottom: 0.5rem;
+}
+
+.training-form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #DDDCFE;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.training-form-input:focus {
+  outline: none;
+  border-color: #1B237E;
+  box-shadow: 0 0 0 2px rgba(27, 35, 126, 0.2);
+}
+
+/* Estilos para botones táctiles en móviles */
+.training-touch-button {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  padding: 0.75rem 1rem;
+}
+
+.training-touch-button-primary {
+  background-color: #1B237E;
+  color: white;
+}
+
+.training-touch-button-primary:hover {
+  background-color: #161b66;
+}
+
+.training-touch-button-secondary {
+  background-color: #FEA800;
+  color: white;
+}
+
+.training-touch-button-outline {
+  background-color: transparent;
+  border: 1px solid #DDDCFE;
+  color: #573353;
+}
+
+/* Estilos para opciones seleccionables táctiles */
+.training-touch-option {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #DDDCFE;
+  margin-bottom: 0.5rem;
+  min-height: 44px;
+  transition: all 0.2s ease;
+}
+
+.training-touch-option:hover {
+  border-color: #B1AFE9;
+  background-color: rgba(221, 220, 254, 0.1);
+}
+
+.training-touch-option.selected {
+  border-color: #1B237E;
+  background-color: rgba(27, 35, 126, 0.05);
+}
+
+.training-touch-option-icon {
+  margin-right: 0.75rem;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.training-touch-option-label {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #573353;
+}
+
+/* Estilos para grupos de opciones en grid responsivo */
+.training-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+@media (max-width: 360px) {
+  .training-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Estilos para sliders táctiles */
+.training-touch-slider {
+  width: 100%;
+  padding: 1rem 0;
+}
+
+.training-touch-slider-track {
+  height: 6px;
+  background-color: #DDDCFE;
+  border-radius: 3px;
+  position: relative;
+}
+
+.training-touch-slider-progress {
+  height: 6px;
+  background-color: #1B237E;
+  border-radius: 3px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.training-touch-slider-thumb {
+  width: 24px;
+  height: 24px;
+  background-color: white;
+  border: 2px solid #1B237E;
+  border-radius: 50%;
+  position: absolute;
+  top: -9px;
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
+/* Estilos para mensajes de error */
+.training-form-error {
+  color: #FF6767;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Estilos para indicadores de progreso */
+.training-progress-container {
+  margin-bottom: 1.5rem;
+}
+
+.training-progress-bar {
+  height: 6px;
+  background-color: #DDDCFE;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.training-progress-fill {
+  height: 100%;
+  background-color: #1B237E;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.training-progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #573353;
+  margin-top: 0.5rem;
+}
+
+/* Animaciones para transiciones suaves */
+.training-fade-in {
+  animation: trainingFadeIn 0.3s ease-in-out;
+}
+
+.training-slide-in {
+  animation: trainingSlideIn 0.3s ease-in-out;
+}
+
+@keyframes trainingFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes trainingSlideIn {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

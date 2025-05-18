@@ -58,13 +58,13 @@ export function AuthLayout({
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Top left blob */}
-        <div className="absolute top-0 left-0 w-32 h-32 bg-[#F8D0E0] rounded-full opacity-70 blur-md" />
+        <div className="absolute top-0 left-0 w-32 h-32 bg-[#1B237E] rounded-full opacity-20 blur-md" />
 
         {/* Top right blob */}
-        <div className="absolute top-10 right-10 w-24 h-24 bg-[#FDA758] rounded-full opacity-70 blur-md" />
+        <div className="absolute top-10 right-10 w-24 h-24 bg-[#FEA800] rounded-full opacity-30 blur-md" />
 
         {/* Bottom left blob */}
-        <div className="absolute bottom-20 left-10 w-28 h-28 bg-[#9747FF] rounded-full opacity-40 blur-md" />
+        <div className="absolute bottom-20 left-10 w-28 h-28 bg-[#1B237E] rounded-full opacity-20 blur-md" />
       </div>
 
       {/* Header Icons */}

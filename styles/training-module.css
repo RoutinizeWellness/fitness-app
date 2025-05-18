@@ -1,0 +1,245 @@
+/* Estilos para el módulo de entrenamiento */
+
+/* Variables de color para el módulo de entrenamiento */
+:root {
+  --training-primary: #1B237E;
+  --training-secondary: #FEA800;
+  --training-accent: #FF6767;
+  --training-dark-purple: #573353;
+  --training-light-purple: #B1AFE9;
+  --training-very-light-purple: #DDDCFE;
+  --training-background: #FFF3E9;
+}
+
+/* Estilos para los componentes de entrenamiento */
+.training-container {
+  max-width: 414px;
+  margin: 0 auto;
+  background-color: var(--training-background);
+  min-height: 100vh;
+  padding: 1.5rem 1rem;
+  overflow-x: hidden;
+}
+
+.training-header {
+  margin-bottom: 1.5rem;
+}
+
+.training-title {
+  font-family: 'Klasik', 'Roboto Serif', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--training-dark-purple);
+  margin-bottom: 0.5rem;
+}
+
+.training-subtitle {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1rem;
+  color: var(--training-dark-purple);
+  opacity: 0.8;
+  margin-bottom: 1rem;
+}
+
+.training-card {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--training-very-light-purple);
+}
+
+.training-button-primary {
+  background-color: var(--training-primary);
+  color: white;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.training-button-primary:hover {
+  background-color: #161b66;
+}
+
+.training-button-secondary {
+  background-color: var(--training-secondary);
+  color: white;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.training-button-secondary:hover {
+  background-color: #e09600;
+}
+
+.training-button-accent {
+  background-color: var(--training-accent);
+  color: white;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.training-button-accent:hover {
+  background-color: #ff4f4f;
+}
+
+.training-button-outline {
+  background-color: transparent;
+  border: 1px solid var(--training-very-light-purple);
+  color: var(--training-dark-purple);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.training-button-outline:hover {
+  background-color: rgba(221, 220, 254, 0.2);
+}
+
+/* Estilos para formularios */
+.training-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--training-very-light-purple);
+  font-family: 'Manrope', sans-serif;
+  transition: all 0.2s ease;
+}
+
+.training-input:focus {
+  outline: none;
+  border-color: var(--training-primary);
+  box-shadow: 0 0 0 2px rgba(27, 35, 126, 0.2);
+}
+
+.training-label {
+  display: block;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--training-dark-purple);
+  margin-bottom: 0.5rem;
+}
+
+.training-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--training-very-light-purple);
+  font-family: 'Manrope', sans-serif;
+  background-color: white;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23573353' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+}
+
+.training-select:focus {
+  outline: none;
+  border-color: var(--training-primary);
+  box-shadow: 0 0 0 2px rgba(27, 35, 126, 0.2);
+}
+
+/* Estilos para badges */
+.training-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.training-badge-primary {
+  background-color: rgba(27, 35, 126, 0.1);
+  color: var(--training-primary);
+}
+
+.training-badge-secondary {
+  background-color: rgba(254, 168, 0, 0.1);
+  color: var(--training-secondary);
+}
+
+.training-badge-accent {
+  background-color: rgba(255, 103, 103, 0.1);
+  color: var(--training-accent);
+}
+
+.training-badge-outline {
+  background-color: transparent;
+  border: 1px solid var(--training-very-light-purple);
+  color: var(--training-dark-purple);
+}
+
+/* Estilos responsivos para móviles */
+@media (max-width: 640px) {
+  .training-container {
+    padding: 1rem 0.75rem;
+  }
+  
+  .training-title {
+    font-size: 1.25rem;
+  }
+  
+  .training-subtitle {
+    font-size: 0.875rem;
+  }
+  
+  .training-card {
+    padding: 1rem;
+  }
+  
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .mobile-spacing {
+    margin-bottom: 1rem;
+  }
+  
+  .mobile-text {
+    font-size: 0.875rem;
+  }
+  
+  .training-button-primary,
+  .training-button-secondary,
+  .training-button-accent,
+  .training-button-outline {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Animaciones y transiciones */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

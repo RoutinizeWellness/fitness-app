@@ -10,6 +10,8 @@
 @import url('../styles/monumental-habits-theme.css');
 @import url('../styles/pixel-true-habit-builder.css');
 @import url('../styles/splash-screen.css');
+@import url('../styles/training-module.css');
+@import url('../styles/training-responsive.css');
 
 /* Font imports */
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');

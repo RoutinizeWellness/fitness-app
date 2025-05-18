@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("jonathansmth@gmail.com")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
@@ -23,7 +23,15 @@ export default function LoginPage() {
     setIsLoading(true)
     setErrorMessage("")
 
+    // Validación básica
+    if (!email || !password) {
+      setErrorMessage("Por favor, ingresa tu correo electrónico y contraseña")
+      setIsLoading(false)
+      return
+    }
+
     try {
+      console.log("Intentando iniciar sesión con:", email)
       const { data, error } = await signIn(email, password)
 
       if (error) {
@@ -33,15 +41,19 @@ export default function LoginPage() {
       } else if (data) {
         console.log("Inicio de sesión exitoso, redirigiendo al dashboard...")
 
-        // Usar la página de redirección forzada
-        router.push("/force-redirect")
+        // Redirección directa al dashboard usando router.push y window.location como respaldo
+        router.push("/dashboard")
 
-        // Como respaldo, usar redirección directa
+        // Como respaldo, usar redirección directa después de un breve retraso
         setTimeout(() => {
           if (window.location.pathname.includes("/auth/login")) {
+            console.log("Redirección con router.push no funcionó, usando window.location")
             window.location.href = "/dashboard"
           }
         }, 500)
+      } else {
+        setErrorMessage("No se pudo iniciar sesión. Inténtalo de nuevo.")
+        setIsLoading(false)
       }
     } catch (error) {
       console.error("Error inesperado:", error)
@@ -77,8 +89,8 @@ export default function LoginPage() {
         {/* Login Form */}
         <div className="w-full bg-card rounded-lg border border-border shadow-sm p-6">
           {errorMessage && (
-            <Alert className="mb-6 bg-destructive/10 text-destructive border-destructive/20">
-              <AlertDescription>{errorMessage}</AlertDescription>
+            <Alert className="mb-6 bg-red-50 border-red-200 border">
+              <AlertDescription className="text-red-600 font-medium">{errorMessage}</AlertDescription>
             </Alert>
           )}
 
@@ -124,7 +136,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+              className="w-full bg-[#1B237E] hover:bg-[#1B237E]/90 text-white font-medium py-2"
             >
               {isLoading ? (
                 <>
@@ -149,6 +161,26 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
+
+          {/* Script para detectar problemas de redirección */}
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              // Verificar si hay problemas de redirección después de 3 segundos
+              setTimeout(function() {
+                // Si seguimos en la página de login y hay un usuario en localStorage
+                const authData = localStorage.getItem('supabase.auth.token');
+                if (authData && window.location.pathname.includes('/auth/login')) {
+                  console.log('Detectado problema de redirección. Añadiendo botón manual.');
+
+                  // Crear botón de redirección manual
+                  const container = document.getElementById('manual-redirect-container');
+                  if (container) {
+                    container.innerHTML = '<div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md"><p class="text-yellow-800 mb-2">Parece que hay un problema con la redirección automática.</p><button type="button" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 rounded-md" onclick="window.location.href=\'/dashboard\';">Ir al Dashboard manualmente</button></div>';
+                  }
+                }
+              }, 3000);
+            `
+          }} />
         </div>
       </div>
     </div>

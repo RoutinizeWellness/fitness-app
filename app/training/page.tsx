@@ -40,7 +40,7 @@ import { ExerciseDemonstration } from "@/components/training/exercise-demonstrat
 import { ExerciseLibrary } from "@/components/training/exercise-library"
 import { WorkoutTemplates } from "@/components/training/workout-templates"
 import { ProgressTracking } from "@/components/training/progress-tracking"
-import WorkoutPlanDisplay from "@/components/training/workout-plan-display"
+import { MyPlanSection } from "@/components/training/my-plan-section"
 import TrainingInitialAssessment from "@/components/training/initial-assessment"
 import WorkoutCalendar from "@/components/training/workout-calendar"
 import WorkoutExecution from "@/components/training/workout-execution"
@@ -591,10 +591,7 @@ export default function TrainingPage() {
         {activeTab === 'plan' && (
           <div>
             {userId && (
-              <WorkoutPlanDisplay
-                userId={userId}
-                onGenerateNewPlan={() => router.push("/training/generate-plan")}
-              />
+              <MyPlanSection userId={userId} />
             )}
           </div>
         )}
