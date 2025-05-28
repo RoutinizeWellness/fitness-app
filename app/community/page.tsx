@@ -32,6 +32,9 @@ export default function CommunityPage() {
   const [showNewPost, setShowNewPost] = useState(false)
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
   const [bookmarkedPosts, setBookmarkedPosts] = useState<Set<string>>(new Set())
+  const [showComments, setShowComments] = useState<string | null>(null)
+  const [comments, setComments] = useState<Record<string, Array<{id: string, content: string, user: string, timestamp: string}>>>({})
+  const [newComment, setNewComment] = useState("")
 
   // Cargar actividades de la comunidad
   useEffect(() => {
@@ -127,18 +130,42 @@ export default function CommunityPage() {
     }
   }
 
-  // Manejar like de publicación
-  const handleLike = useCallback((postId: string) => {
-    setLikedPosts(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(postId)) {
-        newSet.delete(postId)
-      } else {
-        newSet.add(postId)
-      }
-      return newSet
-    })
-  }, [])
+  // Manejar like de publicación con persistencia
+  const handleLike = useCallback(async (postId: string) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Debes iniciar sesión para dar like",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Optimistic update
+      setLikedPosts(prev => {
+        const newSet = new Set(prev)
+        if (newSet.has(postId)) {
+          newSet.delete(postId)
+        } else {
+          newSet.add(postId)
+        }
+        return newSet
+      })
+
+      // Persist to database (placeholder for now)
+      // TODO: Implement actual database persistence
+      console.log(`Like toggled for post ${postId} by user ${user.id}`)
+
+    } catch (error) {
+      console.error('Error al manejar like:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo procesar el like",
+        variant: "destructive",
+      });
+    }
+  }, [user, toast])
 
   // Manejar bookmark de publicación
   const handleBookmark = useCallback((postId: string) => {
@@ -152,6 +179,34 @@ export default function CommunityPage() {
       return newSet
     })
   }, [])
+
+  // Manejar comentarios
+  const handleComment = useCallback((postId: string) => {
+    setShowComments(showComments === postId ? null : postId)
+  }, [showComments])
+
+  const handleAddComment = useCallback(async (postId: string) => {
+    if (!newComment.trim() || !user) return
+
+    const comment = {
+      id: Date.now().toString(),
+      content: newComment,
+      user: userProfile?.full_name || "Usuario",
+      timestamp: new Date().toISOString()
+    }
+
+    setComments(prev => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), comment]
+    }))
+
+    setNewComment("")
+
+    toast({
+      title: "Comentario añadido",
+      description: "Tu comentario ha sido publicado",
+    })
+  }, [newComment, user, userProfile, toast])
 
   // Filtrar actividades
   const filteredActivities = activities.filter(activity => {
@@ -325,12 +380,17 @@ export default function CommunityPage() {
                           </SafeClientButton>
 
                           <SafeClientButton
+                            onClick={() => handleComment(activity.id || '')}
                             variant="ghost"
                             size="sm"
-                            className="flex items-center gap-1 text-[#573353]/60 hover:text-[#1B237E]"
+                            className={`flex items-center gap-1 ${
+                              showComments === activity.id
+                                ? 'text-[#1B237E] hover:text-[#1B237E]/80'
+                                : 'text-[#573353]/60 hover:text-[#1B237E]'
+                            }`}
                           >
                             <MessageSquare className="h-4 w-4" />
-                            <span className="text-xs">{Math.floor(Math.random() * 20)}</span>
+                            <span className="text-xs">{comments[activity.id || '']?.length || 0}</span>
                           </SafeClientButton>
 
                           <SafeClientButton
@@ -355,6 +415,66 @@ export default function CommunityPage() {
                           <Bookmark className={`h-4 w-4 ${bookmarkedPosts.has(activity.id || '') ? 'fill-current' : ''}`} />
                         </SafeClientButton>
                       </div>
+
+                      {/* Sección de comentarios */}
+                      {showComments === activity.id && (
+                        <div className="mt-4 pt-4 border-t border-[#DDDCFE]/20">
+                          <div className="space-y-3 max-h-40 overflow-y-auto">
+                            {comments[activity.id || '']?.map((comment) => (
+                              <div key={comment.id} className="flex gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarFallback className="bg-[#B1AFE9] text-[#1B237E] text-xs">
+                                    {comment.user.charAt(0).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <div className="bg-[#F8F9FA] rounded-lg px-3 py-2">
+                                    <p className="text-xs font-medium text-[#573353]">{comment.user}</p>
+                                    <p className="text-xs text-[#573353]/80">{comment.content}</p>
+                                  </div>
+                                  <p className="text-xs text-[#573353]/60 mt-1">
+                                    {formatRelativeTime(comment.timestamp)}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="flex gap-2 mt-3">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage
+                                src={userProfile?.avatar_url || "/placeholder.svg"}
+                                alt={userProfile?.full_name || "Usuario"}
+                              />
+                              <AvatarFallback className="bg-[#B1AFE9] text-[#1B237E] text-xs">
+                                {(userProfile?.full_name || "U").charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 flex gap-2">
+                              <input
+                                type="text"
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                placeholder="Escribe un comentario..."
+                                className="flex-1 px-3 py-1 text-xs border border-[#DDDCFE]/30 rounded-full focus:outline-none focus:border-[#1B237E]"
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') {
+                                    handleAddComment(activity.id || '')
+                                  }
+                                }}
+                              />
+                              <SafeClientButton
+                                onClick={() => handleAddComment(activity.id || '')}
+                                disabled={!newComment.trim()}
+                                size="sm"
+                                className="bg-[#1B237E] hover:bg-[#1B237E]/90 text-white px-3 py-1 text-xs"
+                              >
+                                <Send className="h-3 w-3" />
+                              </SafeClientButton>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </motion.div>

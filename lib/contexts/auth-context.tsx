@@ -27,14 +27,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
 
       try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
 
-        if (initialSession) {
+        if (error) {
+          // Handle specific auth errors
+          if (error.message.includes('Invalid Refresh Token') || error.message.includes('refresh_token_not_found')) {
+            console.warn('Token de sesión expirado, limpiando sesión local');
+            await supabase.auth.signOut();
+            setUser(null);
+            setSession(null);
+          } else {
+            console.error('Error de autenticación:', error);
+          }
+        } else if (initialSession) {
           setUser(initialSession.user);
           setSession(initialSession);
         }
       } catch (error) {
         console.error('Error getting initial session:', error);
+        // Clear any corrupted session data
+        setUser(null);
+        setSession(null);
       } finally {
         setIsLoading(false);
       }
@@ -43,9 +56,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initializeAuth();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      async (event, session) => {
+        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          setSession(session);
+          setUser(session?.user ?? null);
+        } else if (event === 'SIGNED_IN') {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
         setIsLoading(false);
       }
     );
@@ -67,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
   }
   return context;
 };

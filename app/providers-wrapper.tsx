@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react'
 import { Providers } from './providers'
-import { AuthProvider } from '@/lib/contexts/auth-context'
 
 export function ProvidersWrapper({ children }: { children: React.ReactNode }) {
   // Use a state to control when to render the full providers
@@ -23,12 +22,10 @@ export function ProvidersWrapper({ children }: { children: React.ReactNode }) {
   // Render a simplified version during initial mount
   if (!mounted) {
     return (
-      <AuthProvider>
-        <div className="min-h-screen bg-background">
-          {/* Render children without other providers during initial mount */}
-          {children}
-        </div>
-      </AuthProvider>
+      <div className="min-h-screen bg-background">
+        {/* Render children without providers during initial mount */}
+        {children}
+      </div>
     )
   }
 
