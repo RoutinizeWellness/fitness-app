@@ -34,7 +34,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { supabase } from "@/lib/supabase-client"
 
 // Tipos para el sistema de recomendación
@@ -112,7 +112,7 @@ export function ProfessionalRecommendationSystem() {
       // Para este ejemplo, generamos datos simulados
       const mockClients = generateMockClients(20)
       const mockProfessionals = generateMockProfessionals(30)
-      
+
       setClients(mockClients)
       setProfessionals(mockProfessionals)
     } catch (error) {
@@ -134,42 +134,42 @@ export function ProfessionalRecommendationSystem() {
       'Tonificación', 'Rehabilitación', 'Mejora de rendimiento deportivo',
       'Nutrición saludable', 'Dieta específica', 'Bienestar general'
     ]
-    
+
     const trainingStyles = [
       'HIIT', 'Entrenamiento de fuerza', 'Cardio', 'Funcional',
       'Yoga', 'Pilates', 'CrossFit', 'Calistenia'
     ]
-    
+
     const dietTypes = [
       'Omnívora', 'Vegetariana', 'Vegana', 'Paleo', 'Keto',
       'Mediterránea', 'Sin gluten', 'Sin lácteos', 'Baja en carbohidratos'
     ]
-    
+
     const medicalConditions = [
       'Diabetes', 'Hipertensión', 'Problemas articulares',
       'Lesiones de espalda', 'Asma', 'Ninguna'
     ]
-    
+
     const allergies = [
       'Frutos secos', 'Lácteos', 'Gluten', 'Mariscos', 'Ninguna'
     ]
-    
+
     return Array.from({ length: count }, (_, i) => {
       // Seleccionar aleatoriamente 1-3 objetivos
       const clientGoals = [...goals].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1)
-      
+
       // Seleccionar aleatoriamente 1-2 estilos de entrenamiento
       const clientTrainingStyles = [...trainingStyles].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2) + 1)
-      
+
       // Seleccionar aleatoriamente 1-2 tipos de dieta
       const clientDietTypes = [...dietTypes].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2) + 1)
-      
+
       // Seleccionar aleatoriamente 0-2 condiciones médicas
       const clientMedicalConditions = [...medicalConditions].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2))
-      
+
       // Seleccionar aleatoriamente 0-1 alergias
       const clientAllergies = [...allergies].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 1))
-      
+
       return {
         id: `client-${i + 1}`,
         userId: `user-${i + 1}`,
@@ -205,34 +205,34 @@ export function ProfessionalRecommendationSystem() {
       'Rehabilitación', 'Entrenamiento deportivo', 'HIIT',
       'Entrenamiento de fuerza', 'Yoga', 'Pilates'
     ]
-    
+
     const nutritionistSpecialties = [
       'Pérdida de peso', 'Nutrición deportiva', 'Dietas vegetarianas/veganas',
       'Alergias alimentarias', 'Trastornos alimentarios', 'Nutrición clínica',
       'Dietas terapéuticas', 'Nutrición para enfermedades crónicas'
     ]
-    
+
     const communicationStyles = [
       'Motivador', 'Analítico', 'Detallista', 'Directo',
       'Empático', 'Paciente', 'Exigente', 'Flexible'
     ]
-    
+
     const languages = ['Español', 'Inglés', 'Francés', 'Alemán', 'Italiano']
-    
+
     return Array.from({ length: count }, (_, i) => {
       const isTrainer = i % 3 !== 2 // 2/3 entrenadores, 1/3 nutricionistas
       const type = isTrainer ? 'trainer' : 'nutritionist'
-      
+
       // Seleccionar especialidades según el tipo de profesional
       const specialtiesPool = isTrainer ? trainerSpecialties : nutritionistSpecialties
       const professionalSpecialties = [...specialtiesPool].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 2)
-      
+
       // Seleccionar estilos de comunicación
       const professionalCommunicationStyles = [...communicationStyles].sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1)
-      
+
       // Seleccionar idiomas
       const professionalLanguages = ['Español', ...languages.slice(1).sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2))]
-      
+
       return {
         id: `professional-${i + 1}`,
         userId: `user-pro-${i + 1}`,
@@ -266,31 +266,31 @@ export function ProfessionalRecommendationSystem() {
   // Generar recomendaciones para un cliente
   const generateRecommendations = (client: Client) => {
     setSelectedClient(client)
-    
+
     // Filtrar profesionales por tipo
     let filteredProfessionals = [...professionals]
     if (professionalType !== 'all') {
       filteredProfessionals = filteredProfessionals.filter(pro => pro.type === professionalType)
     }
-    
+
     // Calcular puntuación de coincidencia para cada profesional
     const professionalMatches = filteredProfessionals.map(professional => {
       let score = 0
       const matchReasons: string[] = []
-      
+
       // 1. Coincidencia de objetivos con especialidades
-      const goalMatches = client.goals.filter(goal => 
-        professional.specialties.some(specialty => 
-          specialty.toLowerCase().includes(goal.toLowerCase()) || 
+      const goalMatches = client.goals.filter(goal =>
+        professional.specialties.some(specialty =>
+          specialty.toLowerCase().includes(goal.toLowerCase()) ||
           goal.toLowerCase().includes(specialty.toLowerCase())
         )
       )
-      
+
       if (goalMatches.length > 0) {
         score += goalMatches.length * 10
         matchReasons.push(`Coincide con ${goalMatches.length} de tus objetivos`)
       }
-      
+
       // 2. Preferencia de género
       if (client.preferences.preferredGender === 'any' || client.preferences.preferredGender === professional.gender) {
         score += 5
@@ -298,7 +298,7 @@ export function ProfessionalRecommendationSystem() {
           matchReasons.push('Coincide con tu preferencia de género')
         }
       }
-      
+
       // 3. Nivel de experiencia
       if (client.preferences.preferredExperienceLevel === 'beginner' && professional.experienceYears >= 1 && professional.experienceYears <= 3) {
         score += 5
@@ -310,7 +310,7 @@ export function ProfessionalRecommendationSystem() {
         score += 5
         matchReasons.push('Alta experiencia para nivel avanzado')
       }
-      
+
       // 4. Disponibilidad horaria
       if (
         (client.preferences.preferredTimeOfDay === 'morning' && professional.availability.morning) ||
@@ -320,7 +320,7 @@ export function ProfessionalRecommendationSystem() {
         score += 8
         matchReasons.push(`Disponible en tu horario preferido (${client.preferences.preferredTimeOfDay})`)
       }
-      
+
       // 5. Valoración
       if (professional.rating >= 4.5) {
         score += 10
@@ -329,7 +329,7 @@ export function ProfessionalRecommendationSystem() {
         score += 7
         matchReasons.push('Muy buena valoración por otros clientes')
       }
-      
+
       // 6. Carga de clientes (disponibilidad)
       if (professional.clientCount < 5) {
         score += 8
@@ -338,22 +338,22 @@ export function ProfessionalRecommendationSystem() {
         score += 5
         matchReasons.push('Disponibilidad moderada para nuevos clientes')
       }
-      
+
       // Ajustar puntuación final (máximo 100)
       score = Math.min(Math.round(score), 100)
-      
+
       return {
         ...professional,
         matchScore: score,
         matchReasons: matchReasons
       }
     })
-    
+
     // Ordenar por puntuación de coincidencia
     const sortedRecommendations = professionalMatches
       .sort((a, b) => b.matchScore! - a.matchScore!)
       .slice(0, 5) // Mostrar solo los 5 mejores
-    
+
     setRecommendedProfessionals(sortedRecommendations)
     setShowRecommendationDialog(true)
   }
@@ -363,7 +363,7 @@ export function ProfessionalRecommendationSystem() {
     setIsRefreshing(true)
     await loadData()
     setIsRefreshing(false)
-    
+
     toast({
       title: "Datos actualizados",
       description: "Los datos se han actualizado correctamente",
@@ -397,7 +397,7 @@ export function ProfessionalRecommendationSystem() {
               <SelectItem value="nutritionist">Solo nutricionistas</SelectItem>
             </SelectContent>
           </Select>
-          
+
           <Button3D variant="outline" onClick={handleRefresh} disabled={isRefreshing}>
             {isRefreshing ? (
               <>
@@ -413,7 +413,7 @@ export function ProfessionalRecommendationSystem() {
           </Button3D>
         </div>
       </div>
-      
+
       <div className="relative flex-1 max-w-md">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
@@ -423,7 +423,7 @@ export function ProfessionalRecommendationSystem() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
-      
+
       <Card3D>
         <Card3DHeader>
           <Card3DTitle>Clientes para recomendación</Card3DTitle>
@@ -445,13 +445,13 @@ export function ProfessionalRecommendationSystem() {
                           <p className="text-sm text-gray-500">{client.email}</p>
                         </div>
                       </div>
-                      
+
                       <Button3D onClick={() => generateRecommendations(client)}>
                         <Sparkles className="h-4 w-4 mr-2" />
                         Recomendar profesionales
                       </Button3D>
                     </div>
-                    
+
                     <div className="mt-3">
                       <div className="flex flex-wrap gap-2 mb-2">
                         {client.goals.map((goal, index) => (
@@ -465,9 +465,9 @@ export function ProfessionalRecommendationSystem() {
                         <span>Prefiere: {client.preferences.preferredTimeOfDay === 'morning' ? 'Mañana' : client.preferences.preferredTimeOfDay === 'afternoon' ? 'Tarde' : 'Noche'}</span>
                         <span className="mx-2">•</span>
                         <Activity className="h-3 w-3 mr-1" />
-                        <span>Nivel: {client.activityLevel === 'sedentary' ? 'Sedentario' : 
-                                      client.activityLevel === 'light' ? 'Ligero' : 
-                                      client.activityLevel === 'moderate' ? 'Moderado' : 
+                        <span>Nivel: {client.activityLevel === 'sedentary' ? 'Sedentario' :
+                                      client.activityLevel === 'light' ? 'Ligero' :
+                                      client.activityLevel === 'moderate' ? 'Moderado' :
                                       client.activityLevel === 'active' ? 'Activo' : 'Muy activo'}</span>
                       </div>
                     </div>
@@ -482,7 +482,7 @@ export function ProfessionalRecommendationSystem() {
           )}
         </Card3DContent>
       </Card3D>
-      
+
       {/* Diálogo de recomendaciones */}
       {showRecommendationDialog && selectedClient && (
         <Dialog open={showRecommendationDialog} onOpenChange={setShowRecommendationDialog}>
@@ -493,7 +493,7 @@ export function ProfessionalRecommendationSystem() {
                 Basado en objetivos, preferencias y compatibilidad
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-6">
               <div className="flex items-center">
                 <Avatar className="h-12 w-12 mr-4">
@@ -511,10 +511,10 @@ export function ProfessionalRecommendationSystem() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <h4 className="font-medium">Mejores coincidencias</h4>
-                
+
                 {recommendedProfessionals.length > 0 ? (
                   <div className="space-y-4">
                     {recommendedProfessionals.map((professional) => (
@@ -544,7 +544,7 @@ export function ProfessionalRecommendationSystem() {
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="text-right">
                             <div className="flex items-center">
                               <span className="text-sm font-medium mr-2">Compatibilidad</span>
@@ -561,7 +561,7 @@ export function ProfessionalRecommendationSystem() {
                             </Button3D>
                           </div>
                         </div>
-                        
+
                         <div className="mt-3">
                           <div className="flex flex-wrap gap-2 mb-2">
                             {professional.specialties.map((specialty, index) => (
@@ -570,7 +570,7 @@ export function ProfessionalRecommendationSystem() {
                               </Badge>
                             ))}
                           </div>
-                          
+
                           <div className="mt-2 space-y-1">
                             <p className="text-sm font-medium">Razones para esta recomendación:</p>
                             <ul className="text-xs text-gray-600 space-y-1">
@@ -591,7 +591,7 @@ export function ProfessionalRecommendationSystem() {
                 )}
               </div>
             </div>
-            
+
             <DialogFooter>
               <DialogClose asChild>
                 <Button3D>Cerrar</Button3D>

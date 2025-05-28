@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { format, subDays, subWeeks, subMonths } from "date-fns"
 import { es } from "date-fns/locale"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CalendarIcon, BarChart, Calendar, Home, User, ArrowLeft } from "lucide-react"
@@ -33,13 +33,13 @@ export default function ImprovedNutritionStatsPage() {
   useEffect(() => {
     const loadNutritionData = async () => {
       if (!user) return
-      
+
       setIsLoading(true)
-      
+
       try {
         let startDate
         const today = new Date()
-        
+
         switch (activeTab) {
           case "week":
             startDate = format(subDays(today, 6), "yyyy-MM-dd")
@@ -53,18 +53,18 @@ export default function ImprovedNutritionStatsPage() {
           default:
             startDate = format(subDays(today, 6), "yyyy-MM-dd")
         }
-        
+
         const endDate = format(today, "yyyy-MM-dd")
-        
+
         const { data, error } = await getNutritionEntries(user.uid, {
           startDate,
           endDate
         })
-        
+
         if (error) {
           throw error
         }
-        
+
         if (data) {
           setNutritionData(data)
         }
@@ -74,7 +74,7 @@ export default function ImprovedNutritionStatsPage() {
         setIsLoading(false)
       }
     }
-    
+
     loadNutritionData()
   }, [user, activeTab])
 
@@ -82,7 +82,7 @@ export default function ImprovedNutritionStatsPage() {
   const getDateRangeTitle = () => {
     const today = new Date()
     let startDate
-    
+
     switch (activeTab) {
       case "week":
         startDate = subDays(today, 6)
@@ -142,7 +142,7 @@ export default function ImprovedNutritionStatsPage() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <button 
+            <button
               className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm"
               onClick={() => router.push('/profile')}
             >
@@ -157,29 +157,29 @@ export default function ImprovedNutritionStatsPage() {
           <p className="text-[#573353]/70 text-sm">Período</p>
           <h2 className="text-lg font-semibold text-[#573353]">{getDateRangeTitle()}</h2>
         </div>
-        
+
         <Tabs defaultValue="week" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-6 bg-white rounded-full p-1 shadow-sm">
-            <TabsTrigger 
-              value="week" 
+            <TabsTrigger
+              value="week"
               className="rounded-full data-[state=active]:bg-[#FDA758] data-[state=active]:text-white"
             >
               Semana
             </TabsTrigger>
-            <TabsTrigger 
-              value="month" 
+            <TabsTrigger
+              value="month"
               className="rounded-full data-[state=active]:bg-[#FDA758] data-[state=active]:text-white"
             >
               Mes
             </TabsTrigger>
-            <TabsTrigger 
-              value="3months" 
+            <TabsTrigger
+              value="3months"
               className="rounded-full data-[state=active]:bg-[#FDA758] data-[state=active]:text-white"
             >
               3 Meses
             </TabsTrigger>
           </TabsList>
-          
+
           <div className="space-y-6">
             {isLoading ? (
               <>
@@ -192,27 +192,27 @@ export default function ImprovedNutritionStatsPage() {
               </>
             ) : (
               <>
-                <CalorieHistoryChart 
-                  entries={nutritionData} 
-                  days={activeTab === "week" ? 7 : activeTab === "month" ? 30 : 90} 
+                <CalorieHistoryChart
+                  entries={nutritionData}
+                  days={activeTab === "week" ? 7 : activeTab === "month" ? 30 : 90}
                 />
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <MacroDistributionChart 
-                    entries={nutritionData} 
-                    period={activeTab === "week" ? "week" : "month"} 
+                  <MacroDistributionChart
+                    entries={nutritionData}
+                    period={activeTab === "week" ? "week" : "month"}
                   />
-                  
-                  <MealTypeStats 
-                    entries={nutritionData} 
-                    period={activeTab === "week" ? "week" : "month"} 
+
+                  <MealTypeStats
+                    entries={nutritionData}
+                    period={activeTab === "week" ? "week" : "month"}
                   />
                 </div>
-                
-                <TopFoodsStats 
-                  entries={nutritionData} 
-                  period={activeTab === "week" ? "week" : "month"} 
-                  limit={5} 
+
+                <TopFoodsStats
+                  entries={nutritionData}
+                  period={activeTab === "week" ? "week" : "month"}
+                  limit={5}
                 />
               </>
             )}

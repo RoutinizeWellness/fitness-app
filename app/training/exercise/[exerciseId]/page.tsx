@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { ChevronLeft, Play, Pause, RotateCcw, Timer, Info, Check, ChevronRight } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { ExerciseAlternatives } from "@/components/training/exercise-alternatives"
 import { Exercise } from "@/lib/types/training"
 
@@ -118,17 +118,17 @@ export default function ExercisePage({ params }: { params: { exerciseId: string 
       try {
         // En un entorno real, aquí cargaríamos los datos de Supabase
         // Para este ejemplo, usamos datos simulados
-        
+
         // Obtener información del ejercicio
         const foundExercise = allExercises.find(ex => ex.id === params.exerciseId)
         if (!foundExercise) {
           throw new Error("Ejercicio no encontrado")
         }
-        
+
         setExercise(foundExercise)
         // Inicializar el temporizador con el tiempo de descanso del ejercicio
         setTimeRemaining(foundExercise.rest || 60)
-        
+
       } catch (error) {
         console.error("Error al cargar los datos del ejercicio:", error)
         toast({
@@ -140,14 +140,14 @@ export default function ExercisePage({ params }: { params: { exerciseId: string 
         setIsLoading(false)
       }
     }
-    
+
     loadExerciseData()
   }, [params.exerciseId, toast])
 
   // Manejar el temporizador
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
-    
+
     if (timerActive && timeRemaining > 0) {
       interval = setInterval(() => {
         setTimeRemaining(prev => prev - 1)
@@ -159,7 +159,7 @@ export default function ExercisePage({ params }: { params: { exerciseId: string 
         description: "Es hora de comenzar la siguiente serie.",
       })
     }
-    
+
     return () => {
       if (interval) clearInterval(interval)
     }
@@ -182,7 +182,7 @@ export default function ExercisePage({ params }: { params: { exerciseId: string 
     if (newExercise) {
       setExercise(newExercise)
       setShowAlternatives(false)
-      
+
       toast({
         title: "Ejercicio cambiado",
         description: `Se ha cambiado a ${newExercise.name}`,
@@ -203,7 +203,7 @@ export default function ExercisePage({ params }: { params: { exerciseId: string 
         title: "¡Ejercicio completado!",
         description: "Avanzando al siguiente ejercicio...",
       })
-      
+
       // Aquí iríamos al siguiente ejercicio
       // Para este ejemplo, volvemos a la página de entrenamiento
       setTimeout(() => {
@@ -297,19 +297,19 @@ export default function ExercisePage({ params }: { params: { exerciseId: string 
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-1">Series y repeticiones</h4>
                 <p className="text-lg font-medium">
                   {exercise.sets} × {exercise.repsMin}{exercise.repsMax ? `-${exercise.repsMax}` : ''}
                 </p>
               </div>
-              
+
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-1">Descanso</h4>
                 <p className="text-lg font-medium">{exercise.rest} segundos</p>
               </div>
-              
+
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-1">Instrucciones</h4>
                 <p className="text-sm">{exercise.instructions}</p>
@@ -333,20 +333,20 @@ export default function ExercisePage({ params }: { params: { exerciseId: string 
                   {currentSet} / {exercise.sets}
                 </div>
               </div>
-              
+
               <div className="text-center">
                 <h3 className="text-lg font-medium mb-1">Tiempo de descanso</h3>
                 <div className="text-4xl font-bold">
                   {formatTime(timeRemaining)}
                 </div>
-                
+
                 <div className="flex justify-center gap-2 mt-4">
                   <Button variant="outline" size="icon" onClick={resetTimer}>
                     <RotateCcw className="h-5 w-5" />
                   </Button>
-                  <Button 
-                    variant={timerActive ? "destructive" : "default"} 
-                    size="lg" 
+                  <Button
+                    variant={timerActive ? "destructive" : "default"}
+                    size="lg"
                     onClick={toggleTimer}
                   >
                     {timerActive ? (
@@ -357,7 +357,7 @@ export default function ExercisePage({ params }: { params: { exerciseId: string 
                   </Button>
                 </div>
               </div>
-              
+
               <Button className="w-full" onClick={nextSet}>
                 <ChevronRight className="h-5 w-5 mr-2" />
                 {currentSet < (exercise.sets || 1) ? "Siguiente serie" : "Completar ejercicio"}
@@ -378,7 +378,7 @@ export default function ExercisePage({ params }: { params: { exerciseId: string 
           <div className="aspect-video bg-muted rounded-md flex items-center justify-center">
             <p className="text-muted-foreground">Video demostrativo del ejercicio</p>
           </div>
-          
+
           <div className="mt-4 space-y-2">
             <h4 className="font-medium">Puntos clave:</h4>
             <ul className="list-disc pl-5 space-y-1 text-sm">

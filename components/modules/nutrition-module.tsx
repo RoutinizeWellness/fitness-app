@@ -158,29 +158,7 @@ export function NutritionModule({
     }
   ]
 
-  // Datos para las métricas de nutrición
-  const nutritionMetrics = {
-    calories: {
-      consumed: 1770,
-      goal: 2200,
-      unit: "kcal"
-    },
-    protein: {
-      consumed: 95,
-      goal: 120,
-      unit: "g"
-    },
-    carbs: {
-      consumed: 210,
-      goal: 250,
-      unit: "g"
-    },
-    fat: {
-      consumed: 58,
-      goal: 70,
-      unit: "g"
-    }
-  }
+  // Las métricas de nutrición se calculan dinámicamente a partir del perfil del usuario
 
   // Función para manejar la navegación
   const handleNavigate = (path: string) => {

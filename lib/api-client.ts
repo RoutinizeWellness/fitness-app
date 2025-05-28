@@ -19,17 +19,8 @@ const createMockWorkout = (userId: string, workout: Omit<Workout, "id" | "create
   };
 };
 
-// Función para obtener el usuario actual
-export const getCurrentUser = async () => {
-  try {
-    const response = await fetch('/api/supabase?action=getCurrentUser');
-    const data = await response.json();
-    return { user: data.user, error: data.error };
-  } catch (e) {
-    console.error("Error en getCurrentUser:", e);
-    return { user: null, error: e instanceof Error ? e : new Error("Error desconocido en getCurrentUser") };
-  }
-};
+// getCurrentUser function has been moved to lib/auth/supabase-auth.ts
+// Use the unified authentication system instead
 
 // Función para obtener el perfil de usuario
 export const getUserProfile = async (userId: string) => {
@@ -58,55 +49,8 @@ export const getUserProfile = async (userId: string) => {
   }
 };
 
-// Función para iniciar sesión
-export const signIn = async (email: string, password: string) => {
-  try {
-    const response = await fetch('/api/supabase', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'signIn',
-        email,
-        password,
-      }),
-    });
-
-    const result = await response.json();
-    return {
-      data: result.data,
-      profile: result.profile,
-      error: result.error
-    };
-  } catch (e) {
-    console.error("Error en signIn:", e);
-    return { data: null, error: e instanceof Error ? e : new Error("Error desconocido en signIn") };
-  }
-};
-
-// Función para registrarse
-export const signUp = async (email: string, password: string) => {
-  try {
-    const response = await fetch('/api/supabase', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'signUp',
-        email,
-        password,
-      }),
-    });
-
-    const result = await response.json();
-    return { data: result.data, error: result.error };
-  } catch (e) {
-    console.error("Error en signUp:", e);
-    return { data: null, error: e instanceof Error ? e : new Error("Error desconocido en signUp") };
-  }
-};
+// Authentication functions have been moved to lib/auth/supabase-auth.ts
+// Use the unified authentication system instead
 
 // Función para crear un perfil de usuario
 export const createUserProfile = async (profile: Omit<UserProfile, "id" | "created_at">) => {

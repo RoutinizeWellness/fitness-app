@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { RoutinizeLayout } from "@/components/routinize-layout"
 import { AdvancedBodybuildingRoutines } from "@/components/training/AdvancedBodybuildingRoutines"
 import { Exercise, WorkoutRoutine } from "@/lib/types/training"

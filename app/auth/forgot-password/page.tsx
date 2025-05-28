@@ -1,53 +1,102 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import Image from "next/image"
-import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Loader2, Mail, ArrowLeft } from "lucide-react"
-import { AuthLayout } from "@/components/auth/auth-layout"
-import { motion } from "framer-motion"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Loader2, Mail, ArrowLeft } from 'lucide-react';
+import { AuthLayout } from '@/components/auth/auth-layout';
+import { MotionComponent } from '@/components/ui/motion-fallback';
+import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/lib/auth/auth-context';
+import { handlePasswordResetError } from '@/lib/auth-error-handler';
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("jonathansmth@gmail.com")
-  const [isLoading, setIsLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
-  const [successMessage, setSuccessMessage] = useState("")
-  const router = useRouter()
-  const { resetPassword } = useAuth()
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const router = useRouter();
 
+  /**
+   * Maneja el envío del formulario de recuperación de contraseña
+   */
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setErrorMessage("")
-    setSuccessMessage("")
+    e.preventDefault();
+
+    // Validar email
+    if (!email || !email.includes('@')) {
+      setErrorMessage('Por favor, ingresa un correo electrónico válido.');
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    // Configurar un timeout para detectar problemas de conexión
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        console.warn('La recuperación de contraseña está tardando demasiado tiempo');
+        setErrorMessage('La conexión está tardando demasiado. Por favor, verifica tu conexión a internet e inténtalo de nuevo.');
+        setIsLoading(false);
+      }
+    }, 15000); // 15 segundos de timeout
 
     try {
-      const { error } = await resetPassword(email)
+      console.log('Enviando correo de recuperación a:', email);
+
+      // Enviar correo de recuperación
+      const { data, error, status, message } = await authService.resetPassword(email);
+
+      // Limpiar el timeout ya que la respuesta llegó
+      clearTimeout(timeoutId);
 
       if (error) {
-        console.error("Error al enviar correo de recuperación:", error)
-        setErrorMessage(error.message || "Error al enviar correo de recuperación. Por favor, inténtalo de nuevo.")
-      } else {
-        setSuccessMessage(`Se ha enviado un correo a ${email} con instrucciones para restablecer tu contraseña.`)
+        console.error('Error al enviar correo de recuperación:', error);
+
+        // Usar el manejador de errores de autenticación para mensajes consistentes
+        const friendlyErrorMessage = handlePasswordResetError(error, true);
+        setErrorMessage(friendlyErrorMessage);
+        setIsLoading(false);
+        return;
       }
+
+      // Mostrar mensaje de éxito
+      setSuccessMessage(`Se ha enviado un correo a ${email} con instrucciones para restablecer tu contraseña.`);
+
+      // Mostrar toast de éxito
+      toast({
+        title: 'Correo enviado',
+        description: 'Revisa tu bandeja de entrada para restablecer tu contraseña.',
+      });
     } catch (error) {
-      console.error("Error inesperado:", error)
-      setErrorMessage("Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.")
+      // Limpiar el timeout ya que la respuesta llegó (con error)
+      clearTimeout(timeoutId);
+
+      console.error('Error inesperado durante la recuperación de contraseña:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Ocurrió un error inesperado';
+      setErrorMessage(`Error: ${errorMsg}. Por favor, inténtalo de nuevo más tarde.`);
+
+      // Mostrar notificación toast
+      toast({
+        title: 'Error al enviar correo',
+        description: 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.',
+        variant: 'destructive',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Forgot password illustration
   const forgotPasswordIllustration = (
     <div className="flex flex-col items-center justify-center space-y-4">
       <div className="w-32 h-32 relative">
         <Image
-          src="/images/xmlid-30.svg"
+          src="/images/forgot-password-illustration-1.svg"
           alt="Forgot Password Illustration"
           width={160}
           height={160}
@@ -67,8 +116,18 @@ export default function ForgotPasswordPage() {
           }}
         />
       </div>
+      <div className="w-16 h-16 relative">
+        <Image
+          src="/images/monumental-logo.svg"
+          alt="Monumental Logo"
+          width={64}
+          height={64}
+          className="object-contain"
+          priority
+        />
+      </div>
     </div>
-  )
+  );
 
   // Footer component
   const forgotPasswordFooter = (
@@ -76,12 +135,6 @@ export default function ForgotPasswordPage() {
       ¿Recordaste tu contraseña? <Link href="/auth/login" className="font-medium text-[#FDA758]">Iniciar sesión</Link>
     </p>
   )
-
-  // Animation variants
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
-  }
 
   return (
     <AuthLayout
@@ -93,7 +146,7 @@ export default function ForgotPasswordPage() {
       <div className="p-6">
         {/* Success Message */}
         {successMessage && (
-          <motion.div
+          <MotionComponent
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 p-4 bg-green-50 text-green-800 border border-green-200 rounded-lg"
@@ -107,18 +160,18 @@ export default function ForgotPasswordPage() {
                 Volver a inicio de sesión
               </Button>
             </div>
-          </motion.div>
+          </MotionComponent>
         )}
 
         {/* Error Message */}
         {errorMessage && (
-          <motion.div
+          <MotionComponent
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg"
           >
             <p className="text-sm">{errorMessage}</p>
-          </motion.div>
+          </MotionComponent>
         )}
 
         {!successMessage && (
@@ -131,7 +184,7 @@ export default function ForgotPasswordPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email Input */}
-              <motion.div variants={itemVariants} className="space-y-2">
+              <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium text-[#573353]">
                   Correo electrónico
                 </label>
@@ -149,10 +202,10 @@ export default function ForgotPasswordPage() {
                     placeholder="correo@ejemplo.com"
                   />
                 </div>
-              </motion.div>
+              </div>
 
               {/* Submit Button */}
-              <motion.div variants={itemVariants}>
+              <div>
                 <Button
                   type="submit"
                   disabled={isLoading}
@@ -167,7 +220,18 @@ export default function ForgotPasswordPage() {
                     "Enviar instrucciones"
                   )}
                 </Button>
-              </motion.div>
+              </div>
+
+              {/* Loading Overlay */}
+              {isLoading && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white p-6 rounded-xl shadow-lg text-center">
+                    <Loader2 className="h-10 w-10 animate-spin mx-auto text-[#FDA758]" />
+                    <p className="mt-4 text-[#573353] font-medium">Enviando correo...</p>
+                    <p className="mt-2 text-[#573353]/70 text-sm">Por favor, espera mientras procesamos tu solicitud</p>
+                  </div>
+                </div>
+              )}
             </form>
           </>
         )}

@@ -114,23 +114,8 @@ export type Exercise = {
   tags?: string[] | null;
 };
 
-// Exportar funcionalidades de autenticación
-export {
-  signUpWithEmail,
-  signInWithEmail,
-  signInWithProvider,
-  resetPassword,
-  updatePassword,
-  signOut,
-  getCurrentUser,
-  getSession,
-  onAuthStateChange
-} from './supabase-auth';
-
-export type {
-  AuthResponse,
-  AuthProviderOptions
-} from './supabase-auth';
+// Exportar funcionalidades de autenticación desde el cliente unificado
+export { supabase } from './supabase-unified';
 
 // Exportar funcionalidades de queries
 export {

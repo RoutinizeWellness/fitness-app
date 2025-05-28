@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { OrganicLayout, OrganicSection } from "@/components/organic-layout"
+import { OrganicSection } from "@/components/organic-layout"
 import { OrganicElement, OrganicStaggeredList } from "@/components/transitions/organic-transitions"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -25,7 +25,7 @@ import { MoodEntry, WellnessActivity, getWellnessActivities, getMoodEntries } fr
 import { v4 as uuidv4 } from "uuid"
 import { useToast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { SiestaTimer } from "@/components/wellness/siesta-timer"
 import { MindfulnessExercises } from "@/components/wellness/mindfulness-exercises"
 import EnhancedMindfulness from "@/components/wellness/enhanced-mindfulness"
@@ -204,14 +204,6 @@ export default function WellnessPage() {
   }
 
   return (
-    <OrganicLayout
-      activeTab="wellness"
-      title="Bienestar"
-      profile={user}
-      showFloatingAction={true}
-      floatingActionIcon={<Heart className="h-6 w-6" />}
-      onFloatingActionClick={() => setActiveTab("mood")}
-    >
       <OrganicElement type="fade">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList className="grid grid-cols-5 mb-4 rounded-full p-1">
@@ -375,7 +367,6 @@ export default function WellnessPage() {
           </TabsContent>
         </Tabs>
       </OrganicElement>
-    </OrganicLayout>
   )
 }
 

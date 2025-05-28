@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CalendarIcon, BarChart, Calendar, Home, User, ArrowLeft } from "lucide-react"
 import { getNutritionEntries } from "@/lib/nutrition-service"
@@ -14,41 +14,41 @@ export default function ImprovedNutritionCalendarPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+
   const [isLoading, setIsLoading] = useState(true)
   const [nutritionData, setNutritionData] = useState<NutritionEntry[]>([])
   const [selectedDate, setSelectedDate] = useState(
     searchParams.get("date") || new Date().toISOString().split("T")[0]
   )
-  
+
   // Redirigir a login si no hay usuario autenticado
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/auth/login")
     }
   }, [user, authLoading, router])
-  
+
   // Cargar datos de nutrición
   useEffect(() => {
     const loadNutritionData = async () => {
       if (!user) return
-      
+
       setIsLoading(true)
-      
+
       try {
         // Cargar datos para el mes actual y el anterior para tener suficientes datos
         const today = new Date()
         const firstDayOfPreviousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
         const startDate = firstDayOfPreviousMonth.toISOString().split("T")[0]
-        
+
         const { data, error } = await getNutritionEntries(user.uid, {
           startDate
         })
-        
+
         if (error) {
           throw error
         }
-        
+
         if (data) {
           setNutritionData(data)
         }
@@ -58,23 +58,23 @@ export default function ImprovedNutritionCalendarPage() {
         setIsLoading(false)
       }
     }
-    
+
     loadNutritionData()
   }, [user])
-  
+
   // Manejar selección de fecha
   const handleDateSelect = (date: string) => {
     setSelectedDate(date)
-    
+
     // Actualizar URL sin recargar la página
     const url = new URL(window.location.href)
     url.searchParams.set("date", date)
     window.history.pushState({}, "", url.toString())
   }
-  
+
   // Filtrar entradas para la fecha seleccionada
   const selectedDateEntries = nutritionData.filter(entry => entry.date === selectedDate)
-  
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#FFF5EB]">
@@ -97,7 +97,7 @@ export default function ImprovedNutritionCalendarPage() {
       </div>
     )
   }
-  
+
   return (
     <div className="min-h-screen bg-[#FFF5EB]">
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#FFF5EB]">
@@ -115,7 +115,7 @@ export default function ImprovedNutritionCalendarPage() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <button 
+            <button
               className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm"
               onClick={() => router.push('/profile')}
             >
@@ -134,13 +134,13 @@ export default function ImprovedNutritionCalendarPage() {
             </>
           ) : (
             <>
-              <NutritionCalendar 
+              <NutritionCalendar
                 entries={nutritionData}
                 onDateSelect={handleDateSelect}
                 selectedDate={selectedDate}
               />
-              
-              <SelectedDaySummary 
+
+              <SelectedDaySummary
                 date={selectedDate}
                 entries={selectedDateEntries}
               />

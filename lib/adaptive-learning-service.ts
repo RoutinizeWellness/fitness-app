@@ -674,35 +674,82 @@ const getFatigueMessage = (fatigueLevel: number): string => {
 }
 
 /**
- * Calcula el peso ideal para un ejercicio basado en la fatiga acumulada
+ * Calcula el peso ideal para un ejercicio basado en la fatiga acumulada y el rendimiento anterior
  * @param userId - ID del usuario
  * @param exerciseId - ID del ejercicio
  * @param targetReps - Repeticiones objetivo
  * @param targetRir - RIR objetivo
- * @returns - Peso recomendado en kg
+ * @param options - Opciones adicionales para el cálculo
+ * @returns - Peso recomendado en kg con explicación detallada
  */
 export const calculateIdealWeight = async (
   userId: string,
   exerciseId: string,
   targetReps: number,
-  targetRir: number
-): Promise<number | null> => {
+  targetRir: number,
+  options: {
+    considerFatigue?: boolean,
+    considerSleep?: boolean,
+    considerNutrition?: boolean,
+    considerRecovery?: boolean,
+    timeAvailable?: number, // en minutos
+    equipmentAvailable?: string[],
+    isDeloadWeek?: boolean,
+    trainingPhase?: 'volume' | 'strength' | 'power' | 'deload' | 'maintenance',
+    previousPerformance?: 'improved' | 'maintained' | 'decreased'
+  } = {}
+): Promise<{
+  recommendedWeight: number,
+  explanation: string,
+  factors: {factor: string, impact: number}[],
+  alternativeWeights: {conservative: number, standard: number, aggressive: number}
+} | null> => {
   try {
     // Obtener datos de fatiga
     const fatigue = await getUserFatigue(userId)
+
+    // Obtener datos de sueño si está habilitado
+    let sleepQuality = null
+    if (options.considerSleep) {
+      const { data: sleepData } = await supabase
+        .from('sleep_logs')
+        .select('quality, duration')
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+        .limit(1)
+
+      if (sleepData && sleepData.length > 0) {
+        sleepQuality = sleepData[0].quality
+      }
+    }
+
+    // Obtener datos de nutrición si está habilitado
+    let nutritionAdherence = null
+    if (options.considerNutrition) {
+      const { data: nutritionData } = await supabase
+        .from('nutrition_logs')
+        .select('adherence_score')
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+        .limit(1)
+
+      if (nutritionData && nutritionData.length > 0) {
+        nutritionAdherence = nutritionData[0].adherence_score
+      }
+    }
 
     if (!fatigue) {
       return null
     }
 
-    // Obtener historial del ejercicio
+    // Obtener historial del ejercicio con más detalles
     const { data: exerciseHistory, error } = await supabase
       .from('exercise_history')
-      .select('*')
+      .select('*, workout_logs(date, perceived_exertion, notes)')
       .eq('user_id', userId)
       .eq('exercise_id', exerciseId)
       .order('date', { ascending: false })
-      .limit(5)
+      .limit(10)
 
     if (error) {
       console.error('Error al obtener historial del ejercicio:', error)
@@ -717,15 +764,24 @@ export const calculateIdealWeight = async (
     // Obtener el último peso utilizado
     const lastWeight = exerciseHistory[0].weight
 
+    // Inicializar factores de ajuste
+    const factors: {factor: string, impact: number}[] = []
+
     // Calcular ajuste basado en fatiga
     let fatigueAdjustment = 0
+    if (options.considerFatigue !== false) { // Por defecto considerar fatiga
+      if (fatigue.currentFatigue > 70) {
+        // Fatiga alta: reducir peso
+        fatigueAdjustment = -0.1 // -10%
+      } else if (fatigue.currentFatigue < 30) {
+        // Fatiga baja: aumentar peso
+        fatigueAdjustment = 0.05 // +5%
+      }
 
-    if (fatigue.currentFatigue > 70) {
-      // Fatiga alta: reducir peso
-      fatigueAdjustment = -0.1 // -10%
-    } else if (fatigue.currentFatigue < 30) {
-      // Fatiga baja: aumentar peso
-      fatigueAdjustment = 0.05 // +5%
+      factors.push({
+        factor: `Nivel de fatiga (${fatigue.currentFatigue}/100)`,
+        impact: fatigueAdjustment * 100 // Convertir a porcentaje
+      })
     }
 
     // Calcular ajuste basado en RIR
@@ -733,18 +789,126 @@ export const calculateIdealWeight = async (
     const lastRir = exerciseHistory[0].rir || 2
     const rirDifference = lastRir - targetRir
     const rirAdjustment = rirDifference * 0.025 // 2.5% por cada punto de RIR
+    factors.push({
+      factor: `Cambio en RIR objetivo (de ${lastRir} a ${targetRir})`,
+      impact: rirAdjustment * 100
+    })
 
     // Calcular ajuste basado en repeticiones
     // Si las repeticiones objetivo son menores, aumentar peso
     const lastReps = exerciseHistory[0].reps
     const repsDifference = lastReps - targetReps
     const repsAdjustment = repsDifference > 0 ? repsDifference * 0.02 : 0 // 2% por cada repetición menos
+    if (repsDifference !== 0) {
+      factors.push({
+        factor: `Cambio en repeticiones objetivo (de ${lastReps} a ${targetReps})`,
+        impact: repsAdjustment * 100
+      })
+    }
 
-    // Calcular peso recomendado
-    const recommendedWeight = lastWeight * (1 + fatigueAdjustment + rirAdjustment + repsAdjustment)
+    // Ajuste basado en calidad del sueño
+    let sleepAdjustment = 0
+    if (options.considerSleep && sleepQuality !== null) {
+      // sleepQuality en escala 1-10
+      sleepAdjustment = ((sleepQuality - 5) / 10) * 0.05 // -2.5% a +2.5%
+      factors.push({
+        factor: `Calidad del sueño (${sleepQuality}/10)`,
+        impact: sleepAdjustment * 100
+      })
+    }
 
-    // Redondear a incrementos de 2.5kg
-    return Math.round(recommendedWeight / 2.5) * 2.5
+    // Ajuste basado en nutrición
+    let nutritionAdjustment = 0
+    if (options.considerNutrition && nutritionAdherence !== null) {
+      // nutritionAdherence en escala 1-10
+      nutritionAdjustment = ((nutritionAdherence - 5) / 10) * 0.05 // -2.5% a +2.5%
+      factors.push({
+        factor: `Adherencia nutricional (${nutritionAdherence}/10)`,
+        impact: nutritionAdjustment * 100
+      })
+    }
+
+    // Ajuste basado en fase de entrenamiento
+    let phaseAdjustment = 0
+    if (options.trainingPhase) {
+      switch (options.trainingPhase) {
+        case 'strength':
+          phaseAdjustment = 0.05 // +5% para fase de fuerza
+          break
+        case 'power':
+          phaseAdjustment = 0.075 // +7.5% para fase de potencia
+          break
+        case 'deload':
+          phaseAdjustment = -0.15 // -15% para fase de descarga
+          break
+        case 'maintenance':
+          phaseAdjustment = 0 // 0% para mantenimiento
+          break
+        default: // 'volume'
+          phaseAdjustment = -0.05 // -5% para fase de volumen
+      }
+      factors.push({
+        factor: `Fase de entrenamiento (${options.trainingPhase})`,
+        impact: phaseAdjustment * 100
+      })
+    }
+
+    // Ajuste basado en rendimiento anterior
+    let performanceAdjustment = 0
+    if (options.previousPerformance) {
+      switch (options.previousPerformance) {
+        case 'improved':
+          performanceAdjustment = 0.025 // +2.5% si mejoró
+          break
+        case 'decreased':
+          performanceAdjustment = -0.025 // -2.5% si empeoró
+          break
+        default: // 'maintained'
+          performanceAdjustment = 0 // 0% si se mantuvo
+      }
+      factors.push({
+        factor: `Rendimiento anterior (${options.previousPerformance})`,
+        impact: performanceAdjustment * 100
+      })
+    }
+
+    // Calcular peso recomendado con todos los factores
+    const totalAdjustment = fatigueAdjustment + rirAdjustment + repsAdjustment +
+                           sleepAdjustment + nutritionAdjustment + phaseAdjustment +
+                           performanceAdjustment
+
+    const recommendedWeight = lastWeight * (1 + totalAdjustment)
+
+    // Redondear a incrementos de 2.5kg para mejor aplicación práctica
+    const roundedWeight = Math.round(recommendedWeight / 2.5) * 2.5
+
+    // Generar pesos alternativos
+    const conservativeWeight = Math.round((recommendedWeight * 0.95) / 2.5) * 2.5
+    const aggressiveWeight = Math.round((recommendedWeight * 1.05) / 2.5) * 2.5
+
+    // Generar explicación
+    let explanation = `Basado en tu último peso (${lastWeight}kg), `
+
+    if (totalAdjustment > 0) {
+      explanation += `se recomienda un aumento del ${Math.round(totalAdjustment * 100)}% `
+    } else if (totalAdjustment < 0) {
+      explanation += `se recomienda una reducción del ${Math.abs(Math.round(totalAdjustment * 100))}% `
+    } else {
+      explanation += `se recomienda mantener el mismo peso `
+    }
+
+    explanation += `considerando tu nivel de fatiga, objetivos de repeticiones y RIR.`
+
+    return {
+      recommendedWeight: roundedWeight,
+      explanation,
+      factors,
+      alternativeWeights: {
+        conservative: conservativeWeight,
+        standard: roundedWeight,
+        aggressive: aggressiveWeight
+      }
+    }
   } catch (error) {
     console.error('Error al calcular peso ideal:', error)
     return null

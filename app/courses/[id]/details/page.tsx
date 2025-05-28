@@ -6,7 +6,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Loader2, ArrowLeft, Play, Lock, CheckCircle } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { CourseService } from "@/lib/services/course-service"
 import { Course, Lesson } from "@/lib/types/courses"
 import { toast } from "@/components/ui/use-toast"
@@ -30,7 +30,7 @@ export default function CourseDetailsPage({ params }: CourseDetailsPageProps) {
       try {
         setIsLoading(true)
         const { data, error } = await CourseService.getCourseById(params.id, user?.id)
-        
+
         if (error) {
           console.error("Error loading course:", error)
           toast({
@@ -96,28 +96,28 @@ export default function CourseDetailsPage({ params }: CourseDetailsPageProps) {
     <div className="w-[414px] h-[896px] bg-[#FFF3E9] overflow-hidden mx-auto relative">
       {/* Header */}
       <div className="absolute left-[162px] top-[45px] w-[91px] h-[32px]"></div>
-      
+
       {/* Video Preview */}
       <div className="absolute left-[20px] top-[121px] w-[374px] h-[200px]">
         <img className="absolute left-[0px] top-[0px]" src="/images/habit-builder/mask-group0.svg" alt="" />
       </div>
-      
+
       {/* Back Button */}
       <div className="absolute left-[10px] top-[28px] w-[64px] h-[65px] overflow-hidden">
         <div className="absolute left-[15.62%] top-[16.92%] right-[15.62%] bottom-[15.38%] bg-[#573353] rounded-[25px] opacity-10"></div>
         <img className="absolute left-[24px] top-[27px] w-[16.5px] h-[12px]" src="/images/habit-builder/back-icon0.svg" alt="" />
       </div>
-      
+
       {/* Course Title */}
       <div className="absolute left-[96px] top-[45px] w-[222px] h-[32px]">
         <div className="absolute left-[0px] top-[0px] right-[0px] bottom-[21.88%] text-[#573353] text-center font-['Manrope-Bold'] text-[18px] leading-[25px] tracking-[-0.03em] font-bold">
           30 Day Journal Challenge...
         </div>
       </div>
-      
+
       {/* Content Background */}
       <img className="absolute left-[20px] top-[332px] w-[374px] h-[393px]" src="/images/habit-builder/background0.svg" alt="" />
-      
+
       {/* Lessons */}
       {/* Lesson 5 */}
       <div className="absolute left-[26px] top-[680px] w-[352px] h-[38px]">
@@ -132,7 +132,7 @@ export default function CourseDetailsPage({ params }: CourseDetailsPageProps) {
           3:38
         </div>
       </div>
-      
+
       {/* Lesson 4 */}
       <div className="absolute left-[26px] top-[630px] w-[352px] h-[38px]">
         <div className="absolute left-[0px] top-[0px] w-[38px] h-[38px]">
@@ -146,7 +146,7 @@ export default function CourseDetailsPage({ params }: CourseDetailsPageProps) {
           4. Optional Supplies
         </div>
       </div>
-      
+
       {/* Lesson 3 */}
       <div className="absolute left-[26px] top-[530px] w-[352px] h-[38px]">
         <div className="absolute left-[0px] top-[0px] w-[38px] h-[38px]">
@@ -160,7 +160,7 @@ export default function CourseDetailsPage({ params }: CourseDetailsPageProps) {
           2. Adopting Prompts to Covid-19...
         </div>
       </div>
-      
+
       {/* Lesson 2 */}
       <div className="absolute left-[26px] top-[580px] w-[352px] h-[38px]">
         <div className="absolute left-[0px] top-[0px] w-[38px] h-[38px]">
@@ -174,7 +174,7 @@ export default function CourseDetailsPage({ params }: CourseDetailsPageProps) {
           3. Choosing a Notebook
         </div>
       </div>
-      
+
       {/* Lesson 1 */}
       <div className="absolute left-[26px] top-[480px] w-[352px] h-[38px]">
         <div className="absolute left-[0px] top-[0px] w-[38px] h-[38px]">
@@ -194,16 +194,16 @@ export default function CourseDetailsPage({ params }: CourseDetailsPageProps) {
           2:16
         </div>
       </div>
-      
+
       {/* Course Info */}
       <div className="absolute left-[37px] top-[443px] text-[#573353] font-['Manrope-Bold'] text-[16px] leading-[14px] tracking-[-0.03em] font-bold">
         37 Lessons (2h 41m)
       </div>
-      
+
       <div className="absolute left-[37px] top-[357px] text-[#573353] font-['Manrope-Bold'] text-[18px] leading-[25px] tracking-[-0.03em] font-bold w-[324px]">
         30 Day Journal Challenge - Establish a Habit of Daily Journaling
       </div>
-      
+
       {/* Bottom Menu */}
       <div className="absolute left-[0px] top-[772px] w-[414px] h-[124px]">
         <img className="absolute left-[0px] top-[44px] right-[0px] bottom-[0px] w-full h-[64.52%]" src="/images/habit-builder/menu1.svg" alt="" />

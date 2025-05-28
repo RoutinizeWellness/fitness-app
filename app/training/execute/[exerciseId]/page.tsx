@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
 import { ChevronLeft, ChevronRight, Minus, Plus, Camera, Dumbbell, Timer, RotateCcw } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { Exercise } from "@/lib/types/training"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { ExerciseAlternatives } from "@/components/training/exercise-alternatives"
@@ -117,18 +117,18 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
       try {
         // En un entorno real, aquí cargaríamos los datos de Supabase
         // Para este ejemplo, usamos datos simulados
-        
+
         // Obtener información del ejercicio
         const foundExercise = allExercises.find(ex => ex.id === params.exerciseId)
         if (!foundExercise) {
           throw new Error("Ejercicio no encontrado")
         }
-        
+
         setExercise(foundExercise)
-        
+
         // Inicializar valores
         setReps(foundExercise.repsMin || 12)
-        
+
       } catch (error) {
         console.error("Error al cargar los datos del ejercicio:", error)
         toast({
@@ -140,7 +140,7 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
         setIsLoading(false)
       }
     }
-    
+
     loadExerciseData()
   }, [params.exerciseId, toast])
 
@@ -150,7 +150,7 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
     if (newExercise) {
       setExercise(newExercise)
       setShowAlternatives(false)
-      
+
       toast({
         title: "Ejercicio cambiado",
         description: `Se ha cambiado a ${newExercise.name}`,
@@ -174,9 +174,9 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
     if (exercise && currentSet < (exercise.sets || 1)) {
       // Guardar datos de la serie actual (en un entorno real, esto se enviaría a Supabase)
       console.log(`Serie ${currentSet} completada: ${reps} reps con ${weight}kg, RIR: ${rir}`)
-      
+
       setCurrentSet(prev => prev + 1)
-      
+
       toast({
         title: "Serie completada",
         description: `Has completado la serie ${currentSet} de ${exercise.sets}`,
@@ -191,12 +191,12 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
   const completeExercise = () => {
     // Guardar datos de la última serie
     console.log(`Serie ${currentSet} completada: ${reps} reps con ${weight}kg, RIR: ${rir}`)
-    
+
     toast({
       title: "¡Ejercicio completado!",
       description: "Avanzando al siguiente ejercicio...",
     })
-    
+
     // Encontrar el siguiente ejercicio en el día actual
     const currentDay = workoutDays[dayId]
     if (currentDay) {
@@ -257,7 +257,7 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
           <h1 className="text-xl font-bold text-[#573353]">Training</h1>
           <div className="w-10"></div> {/* Spacer para centrar el título */}
         </div>
-        
+
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-2 mb-4 bg-white">
@@ -265,7 +265,7 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
             <TabsTrigger value="camara" className="rounded-full">Cámara</TabsTrigger>
           </TabsList>
         </Tabs>
-        
+
         {/* Slider de navegación */}
         <div className="flex items-center justify-between mb-4">
           <button className="w-8 h-8 flex items-center justify-center">
@@ -279,7 +279,7 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
           </button>
         </div>
       </div>
-      
+
       {/* Contenido principal */}
       <div className="px-6 pb-20">
         <div className="mb-4">
@@ -303,7 +303,7 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
             </DialogContent>
           </Dialog>
         </div>
-        
+
         <div className="bg-white rounded-lg p-4 mb-4">
           <div className="flex justify-between items-center mb-2">
             <Badge className="bg-blue-500 text-white">
@@ -314,13 +314,13 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
             </h3>
             <div className="w-10"></div> {/* Spacer para centrar el título */}
           </div>
-          
+
           <div className="text-center mb-4">
             <Badge variant="outline" className="mb-1">
               {exercise.muscleGroup.join(", ")}
             </Badge>
           </div>
-          
+
           <div className="space-y-6">
             {/* Peso */}
             <div>
@@ -328,35 +328,35 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
                 <span className="text-sm font-medium text-[#573353]">Serie:</span>
                 <span className="text-sm font-medium text-[#573353]">{currentSet} de {exercise.sets}</span>
               </div>
-              
+
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-[#573353]">Repeticiones:</span>
                 <span className="text-sm font-medium text-[#573353]">{exercise.repsMin}-{exercise.repsMax}</span>
               </div>
-              
+
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-[#573353]">Descanso:</span>
                 <span className="text-sm font-medium text-[#573353]">{exercise.rest}s</span>
               </div>
             </div>
-            
+
             {/* Peso (kg) */}
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-[#573353]">Peso (kg)</span>
                 <div className="flex items-center">
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
+                  <Button
+                    variant="outline"
+                    size="icon"
                     className="h-8 w-8 rounded-full"
                     onClick={() => adjustWeight(-2.5)}
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
                   <span className="mx-4 font-bold text-lg">{weight}</span>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
+                  <Button
+                    variant="outline"
+                    size="icon"
                     className="h-8 w-8 rounded-full"
                     onClick={() => adjustWeight(2.5)}
                   >
@@ -365,24 +365,24 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
                 </div>
               </div>
             </div>
-            
+
             {/* Repeticiones */}
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-[#573353]">Repeticiones</span>
                 <div className="flex items-center">
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
+                  <Button
+                    variant="outline"
+                    size="icon"
                     className="h-8 w-8 rounded-full"
                     onClick={() => adjustReps(-1)}
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
                   <span className="mx-4 font-bold text-lg">{reps}</span>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
+                  <Button
+                    variant="outline"
+                    size="icon"
                     className="h-8 w-8 rounded-full"
                     onClick={() => adjustReps(1)}
                   >
@@ -391,7 +391,7 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
                 </div>
               </div>
             </div>
-            
+
             {/* RIR (Repeticiones en Reserva) */}
             <div>
               <div className="flex justify-between items-center mb-2">
@@ -414,7 +414,7 @@ export default function ExecuteExercisePage({ params }: { params: { exerciseId: 
                 <span>5</span>
               </div>
             </div>
-            
+
             <Button className="w-full" onClick={nextSet}>
               {currentSet < (exercise.sets || 1) ? "Completar serie" : "Completar ejercicio"}
             </Button>

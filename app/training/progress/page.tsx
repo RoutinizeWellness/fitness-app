@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { 
-  ArrowLeft, 
-  TrendingUp, 
-  Dumbbell, 
-  Clock, 
-  Calendar, 
+import {
+  ArrowLeft,
+  TrendingUp,
+  Dumbbell,
+  Clock,
+  Calendar,
   BarChart,
   Award,
   Target
@@ -32,14 +32,14 @@ export default function TrainingProgressPage() {
     longestStreak: 0,
     currentStreak: 0
   })
-  
+
   // Cargar estadísticas
   useEffect(() => {
     const loadStats = async () => {
       if (!user) return
-      
+
       setIsLoading(true)
-      
+
       try {
         // Obtener todos los entrenamientos
         const { data, error } = await supabase
@@ -47,21 +47,21 @@ export default function TrainingProgressPage() {
           .select('id, date, duration, completed_sets')
           .eq('user_id', user.id)
           .order('date', { ascending: false })
-        
+
         if (error) {
           console.error('Error al cargar los datos de entrenamiento:', error)
           return
         }
-        
+
         if (data) {
           // Calcular estadísticas básicas
           const totalWorkouts = data.length
           const totalDuration = data.reduce((sum, log) => sum + (log.duration || 0), 0)
           const averageDuration = totalWorkouts > 0 ? Math.round(totalDuration / totalWorkouts) : 0
-          
+
           // Calcular ejercicio más frecuente
           const exerciseCounts: Record<string, number> = {}
-          
+
           data.forEach(log => {
             if (log.completed_sets && Array.isArray(log.completed_sets)) {
               log.completed_sets.forEach(exercise => {
@@ -72,23 +72,23 @@ export default function TrainingProgressPage() {
               })
             }
           })
-          
+
           let mostFrequentExercise = { name: '', count: 0 }
-          
+
           Object.entries(exerciseCounts).forEach(([name, count]) => {
             if (count > mostFrequentExercise.count) {
               mostFrequentExercise = { name, count }
             }
           })
-          
+
           // Calcular peso más alto
           let highestWeight = { exercise: '', weight: 0 }
-          
+
           data.forEach(log => {
             if (log.completed_sets && Array.isArray(log.completed_sets)) {
               log.completed_sets.forEach(exercise => {
                 const exerciseName = exercise.exerciseName || ''
-                
+
                 if (exercise.sets && Array.isArray(exercise.sets)) {
                   exercise.sets.forEach((set: any) => {
                     if (set.weight > highestWeight.weight) {
@@ -99,25 +99,25 @@ export default function TrainingProgressPage() {
               })
             }
           })
-          
+
           // Calcular rachas
           let currentStreak = 0
           let longestStreak = 0
           let previousDate: Date | null = null
-          
+
           // Ordenar por fecha ascendente para calcular rachas
-          const sortedData = [...data].sort((a, b) => 
+          const sortedData = [...data].sort((a, b) =>
             new Date(a.date).getTime() - new Date(b.date).getTime()
           )
-          
+
           sortedData.forEach(log => {
             const currentDate = new Date(log.date)
-            
+
             if (previousDate) {
               // Calcular diferencia en días
               const diffTime = Math.abs(currentDate.getTime() - previousDate.getTime())
               const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-              
+
               if (diffDays === 1) {
                 // Días consecutivos
                 currentStreak++
@@ -131,15 +131,15 @@ export default function TrainingProgressPage() {
             } else {
               currentStreak = 1
             }
-            
+
             previousDate = currentDate
           })
-          
+
           // Actualizar racha más larga si la actual es mayor
           if (currentStreak > longestStreak) {
             longestStreak = currentStreak
           }
-          
+
           setStats({
             totalWorkouts,
             totalDuration,
@@ -156,17 +156,17 @@ export default function TrainingProgressPage() {
         setIsLoading(false)
       }
     }
-    
+
     loadStats()
   }, [user])
-  
+
   // Redirigir a login si no hay usuario autenticado
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/auth/login")
     }
   }, [user, authLoading, router])
-  
+
   if (isLoading || authLoading) {
     return (
       <div className="container mx-auto py-6">
@@ -176,7 +176,7 @@ export default function TrainingProgressPage() {
       </div>
     )
   }
-  
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center mb-6">
@@ -186,7 +186,7 @@ export default function TrainingProgressPage() {
         </Button>
         <h1 className="text-2xl font-bold">Progreso de Entrenamiento</h1>
       </div>
-      
+
       {/* Estadísticas generales */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
@@ -204,7 +204,7 @@ export default function TrainingProgressPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -220,7 +220,7 @@ export default function TrainingProgressPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -237,7 +237,7 @@ export default function TrainingProgressPage() {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Logros */}
       <Card>
         <CardHeader>
@@ -264,7 +264,7 @@ export default function TrainingProgressPage() {
                 )}
               </p>
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex items-center mb-2">
                 <Dumbbell className="h-5 w-5 text-purple-600 mr-2" />
@@ -278,7 +278,7 @@ export default function TrainingProgressPage() {
                 )}
               </p>
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex items-center mb-2">
                 <Calendar className="h-5 w-5 text-green-600 mr-2" />
@@ -286,7 +286,7 @@ export default function TrainingProgressPage() {
               </div>
               <p className="text-lg">{stats.longestStreak} días consecutivos</p>
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex items-center mb-2">
                 <Clock className="h-5 w-5 text-amber-600 mr-2" />
@@ -297,7 +297,7 @@ export default function TrainingProgressPage() {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Gráficos de progreso */}
       {user && <ProgressCharts userId={user.id} />}
     </div>

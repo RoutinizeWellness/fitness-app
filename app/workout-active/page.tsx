@@ -601,6 +601,7 @@ export default function WorkoutActivePage() {
                   </div>
                 </div>
               </div>
+            </div>
           </div>
         )}
       </main>

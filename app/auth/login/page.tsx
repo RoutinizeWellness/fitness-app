@@ -1,109 +1,232 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import Image from "next/image"
-import { useAuth } from "@/lib/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Eye, EyeOff, Mail, Lock } from "lucide-react"
-import { AuthLayout } from "@/components/auth/auth-layout"
-import { Checkbox } from "@/components/ui/checkbox"
-import { motion } from "framer-motion"
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { useAuth } from "@/lib/auth/auth-context";
+import { useRequireNoAuth, usePostLoginRedirect } from "@/lib/hooks/use-auth-redirect";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { AuthLayout } from "@/components/auth/auth-layout";
+import { Checkbox } from "@/components/ui/checkbox";
+import { MotionComponent } from "@/components/ui/motion-fallback";
+import { toast } from "@/components/ui/use-toast";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("jonathansmth@gmail.com")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(true)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
-  const [isFacebookLoading, setIsFacebookLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
-  const [successMessage, setSuccessMessage] = useState("")
-  const router = useRouter()
-  const { signIn, signInWithGoogle } = useAuth()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isFacebookLoading, setIsFacebookLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [authErrorReason, setAuthErrorReason] = useState<string | null>(null);
+  const [returnUrl, setReturnUrl] = useState<string | null>(null);
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { signIn, signInWithGoogle } = useAuth();
+
+  // Hook para redirigir usuarios ya autenticados
+  useRequireNoAuth('/dashboard');
+
+  // Hook para manejar redirección post-login
+  const { handlePostLoginRedirect } = usePostLoginRedirect();
+
+  // Check for error reason and return URL in query parameters
+  useEffect(() => {
+    const reason = searchParams.get('reason');
+    const returnPath = searchParams.get('returnUrl');
+
+    if (reason) {
+      setAuthErrorReason(reason);
+
+      // Show appropriate error message based on reason
+      switch (reason) {
+        case 'session_expired':
+          setErrorMessage('Tu sesión ha expirado. Por favor, inicia sesión de nuevo.');
+          break;
+        case 'session_missing':
+          setErrorMessage('No se encontró una sesión válida. Por favor, inicia sesión de nuevo.');
+          break;
+        case 'signed_out':
+          setErrorMessage('Has cerrado sesión correctamente.');
+          break;
+        default:
+          setErrorMessage(`Error de autenticación: ${reason}`);
+      }
+    }
+
+    if (returnPath) {
+      setReturnUrl(returnPath);
+      console.log('Return URL set to:', returnPath);
+    }
+  }, [searchParams]);
+
+  /**
+   * Maneja el envío del formulario de inicio de sesión
+   */
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setErrorMessage("")
-    setSuccessMessage("")
+    e.preventDefault();
+    setIsLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    // Configurar un timeout para detectar problemas de conexión
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        console.warn("La autenticación está tardando demasiado tiempo");
+        setErrorMessage("La conexión está tardando demasiado. Por favor, verifica tu conexión a internet e inténtalo de nuevo.");
+        setIsLoading(false);
+      }
+    }, 15000); // 15 segundos de timeout
 
     try {
-      const { data, error } = await signIn(email, password)
+      console.log("Iniciando proceso de autenticación...");
+
+      // Almacenar información de inicio de sesión para depuración
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('login_attempt', new Date().toISOString());
+        if (returnUrl) {
+          localStorage.setItem('login_return_url', returnUrl);
+        }
+      }
+
+      // Intentar iniciar sesión
+      const { data, error } = await signIn(email, password);
+
+      // Limpiar el timeout ya que la respuesta llegó
+      clearTimeout(timeoutId);
 
       if (error) {
-        console.error("Error de inicio de sesión:", error)
-        setErrorMessage(error.message || "Credenciales inválidas. Por favor, inténtalo de nuevo.")
-        setIsLoading(false)
-      } else if (data) {
-        setSuccessMessage("Inicio de sesión exitoso")
-        console.log("Inicio de sesión exitoso, redirigiendo al dashboard...")
+        console.error("❌ Error de inicio de sesión:", error);
+        setIsLoading(false);
+        return;
+      }
 
-        // Usar la página de redirección forzada
-        router.push("/force-redirect")
+      // Si llegamos aquí, el inicio de sesión fue exitoso
+      setSuccessMessage("Inicio de sesión exitoso");
+      console.log("✅ Inicio de sesión exitoso, preparando redirección...");
 
-        // Como respaldo, usar redirección directa
+      // Verificar que tenemos datos de sesión
+      if (data?.session && data?.user) {
+        console.log("✅ Datos de sesión válidos recibidos");
+        console.log("👤 Usuario:", data.user.id);
+        console.log("🍪 Sesión expira:", new Date(data.session.expires_at * 1000).toISOString());
+
+        // Mostrar toast de éxito
+        toast({
+          title: "Inicio de sesión exitoso",
+          description: "Redirigiendo al dashboard...",
+        });
+
+        // Determinar la URL de redirección
+        const redirectUrl = returnUrl || "/dashboard";
+        console.log("🔄 Redirigiendo a:", redirectUrl);
+
+        // Almacenar información de depuración
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('last_redirect', redirectUrl);
+          localStorage.setItem('redirect_time', new Date().toISOString());
+          localStorage.setItem('login_redirect_success', 'true');
+        }
+
+        // Usar el hook de redirección post-login
         setTimeout(() => {
-          if (window.location.pathname.includes("/auth/login")) {
-            window.location.href = "/dashboard"
-          }
-        }, 500)
+          console.log("🚀 Ejecutando redirección con hook...");
+          handlePostLoginRedirect(redirectUrl);
+        }, 100);
+      } else {
+        console.error("❌ Login exitoso pero datos de sesión inválidos");
+        setErrorMessage("Error: No se pudo establecer la sesión correctamente");
+        setIsLoading(false);
       }
     } catch (error) {
-      console.error("Error inesperado:", error)
-      setErrorMessage("Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.")
-      setIsLoading(false)
-    }
-  }
+      // Limpiar el timeout ya que la respuesta llegó (con error)
+      clearTimeout(timeoutId);
 
+      console.error("Error inesperado durante el inicio de sesión:", error);
+      const errorMsg = error instanceof Error ? error.message : "Ocurrió un error inesperado";
+      setErrorMessage(`Error: ${errorMsg}. Por favor, inténtalo de nuevo más tarde.`);
+      setIsLoading(false);
+    }
+  };
+  /**
+   * Maneja el inicio de sesión con Google
+   */
   const handleGoogleSignIn = async () => {
-    setIsGoogleLoading(true)
-    setErrorMessage("")
-    setSuccessMessage("")
+    setIsGoogleLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
-      const { error } = await signInWithGoogle()
+      // Almacenar la URL de retorno en localStorage para usarla después de la redirección OAuth
+      if (returnUrl) {
+        localStorage.setItem('auth_return_url', returnUrl);
+        console.log('URL de retorno almacenada para después de redirección OAuth:', returnUrl);
+      }
+
+      // Almacenar información adicional para depuración
+      localStorage.setItem('google_auth_start', new Date().toISOString());
+      localStorage.setItem('google_auth_path', window.location.pathname);
+
+      // Intentar iniciar sesión con Google
+      const { error } = await signInWithGoogle();
 
       if (error) {
-        console.error("Error de inicio de sesión con Google:", error)
-        setErrorMessage(error.message || "Error al iniciar sesión con Google. Por favor, inténtalo de nuevo.")
+        console.error("Error de inicio de sesión con Google:", error);
+        setErrorMessage("Error al iniciar sesión con Google. Por favor, intenta de nuevo.");
+        setIsGoogleLoading(false);
+
+        // Limpiar datos de autenticación en caso de error
+        localStorage.removeItem('google_auth_start');
+        localStorage.removeItem('auth_return_url');
       } else {
-        setSuccessMessage("Iniciando sesión con Google...")
+        setSuccessMessage("Iniciando sesión con Google...");
+
+        // Mostrar toast de éxito
+        toast({
+          title: "Redirigiendo a Google",
+          description: "Por favor, completa el inicio de sesión con Google.",
+        });
       }
       // No necesitamos redireccionar aquí, ya que la redirección la maneja Supabase
     } catch (error) {
-      console.error("Error inesperado:", error)
-      setErrorMessage("Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.")
-    } finally {
-      setIsGoogleLoading(false)
+      console.error("Error inesperado en inicio de sesión con Google:", error);
+      setErrorMessage("Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.");
+      setIsGoogleLoading(false);
+
+      // Limpiar datos de autenticación en caso de error
+      localStorage.removeItem('google_auth_start');
+      localStorage.removeItem('auth_return_url');
     }
-  }
+  };
 
   const handleFacebookSignIn = async () => {
-    setIsFacebookLoading(true)
-    setErrorMessage("")
-    setSuccessMessage("")
+    setIsFacebookLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
       // Implementación pendiente para Facebook
       setTimeout(() => {
-        setIsFacebookLoading(false)
-        setErrorMessage("Inicio de sesión con Facebook no implementado aún")
-      }, 1000)
+        setIsFacebookLoading(false);
+        setErrorMessage("Inicio de sesión con Facebook no implementado aún");
+      }, 1000);
     } catch (error) {
-      console.error("Error inesperado:", error)
-      setErrorMessage("Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.")
-      setIsFacebookLoading(false)
+      console.error("Error inesperado:", error);
+      setErrorMessage("Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.");
+      setIsFacebookLoading(false);
     }
-  }
+  };
 
   const toggleShowPassword = () => {
-    setShowPassword(!showPassword)
-  }
+    setShowPassword(!showPassword);
+  };
 
   // Login illustration component
   const loginIllustration = (
@@ -141,20 +264,15 @@ export default function LoginPage() {
         />
       </div>
     </div>
-  )
-
+  );
   // Login footer component
   const loginFooter = (
     <p className="text-[#573353] text-sm">
       ¿No tienes una cuenta? <Link href="/auth/register" className="font-medium text-[#FDA758]">Regístrate</Link>
     </p>
-  )
+  );
 
-  // Animation variants for form elements
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
-  }
+  // Eliminamos las animaciones para evitar problemas con framer-motion
 
   return (
     <AuthLayout
@@ -166,29 +284,29 @@ export default function LoginPage() {
       <div className="p-6">
         {/* Success Message */}
         {successMessage && (
-          <motion.div
+          <MotionComponent
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded-lg"
           >
             <p className="text-sm">{successMessage}</p>
-          </motion.div>
+          </MotionComponent>
         )}
 
         {/* Error Message */}
         {errorMessage && (
-          <motion.div
+          <MotionComponent
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg"
           >
             <p className="text-sm">{errorMessage}</p>
-          </motion.div>
+          </MotionComponent>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email Input */}
-          <motion.div variants={itemVariants} className="space-y-2">
+          <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium text-[#573353]">
               Correo electrónico
             </label>
@@ -206,10 +324,10 @@ export default function LoginPage() {
                 placeholder="correo@ejemplo.com"
               />
             </div>
-          </motion.div>
+          </div>
 
           {/* Password Input */}
-          <motion.div variants={itemVariants} className="space-y-2">
+          <div className="space-y-2">
             <div className="flex justify-between">
               <label htmlFor="password" className="text-sm font-medium text-[#573353]">
                 Contraseña
@@ -243,10 +361,10 @@ export default function LoginPage() {
                 )}
               </button>
             </div>
-          </motion.div>
+          </div>
 
           {/* Remember Me Checkbox */}
-          <motion.div variants={itemVariants} className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
             <Checkbox
               id="remember-me"
               checked={rememberMe}
@@ -256,10 +374,10 @@ export default function LoginPage() {
             <label htmlFor="remember-me" className="text-sm text-[#573353]">
               Mantener sesión iniciada
             </label>
-          </motion.div>
+          </div>
 
           {/* Login Button */}
-          <motion.div variants={itemVariants}>
+          <div>
             <Button
               type="submit"
               disabled={isLoading}
@@ -274,7 +392,18 @@ export default function LoginPage() {
                 "Iniciar sesión"
               )}
             </Button>
-          </motion.div>
+          </div>
+
+          {/* Loading Overlay */}
+          {isLoading && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-xl shadow-lg text-center">
+                <Loader2 className="h-10 w-10 animate-spin mx-auto text-[#FDA758]" />
+                <p className="mt-4 text-[#573353] font-medium">Iniciando sesión...</p>
+                <p className="mt-2 text-[#573353]/70 text-sm">Por favor, espera mientras te conectamos</p>
+              </div>
+            </div>
+          )}
         </form>
 
         {/* Social Login Divider */}
@@ -326,5 +455,5 @@ export default function LoginPage() {
         </div>
       </div>
     </AuthLayout>
-  )
+  );
 }

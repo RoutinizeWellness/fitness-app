@@ -6,16 +6,19 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { 
-  Play, 
-  Calendar, 
-  Dumbbell, 
-  Clock, 
+import {
+  Play,
+  Calendar,
+  Dumbbell,
+  Clock,
   ChevronRight,
   BarChart,
-  Activity
+  Activity,
+  AlertTriangle
 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
+import { WorkoutPlanVerification } from "@/components/training/workout-plan-verification"
+import { useAuth } from "@/lib/contexts/auth-context"
 
 // Datos simulados para los días de entrenamiento
 const workoutDays = [
@@ -65,8 +68,10 @@ interface ExecuteWorkoutProps {
 export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
   const router = useRouter()
   const { toast } = useToast()
+  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
+  const [showVerification, setShowVerification] = useState(true)
 
   useEffect(() => {
     // Simular carga de datos
@@ -77,7 +82,7 @@ export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
         setIsLoading(false)
       }, 500)
     }
-    
+
     loadData()
   }, [userId])
 
@@ -97,7 +102,29 @@ export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
       return
     }
 
-    router.push(`/training/execute-workout/${selectedDay}`)
+    try {
+      console.log("Iniciando entrenamiento para día:", selectedDay);
+
+      // Usar una navegación directa para evitar problemas
+      const url = `/training/execute-workout/${selectedDay}`;
+      console.log("Navegando a:", url);
+
+      // Usar el método push básico para mayor compatibilidad
+      router.push(url);
+
+      // Mostrar feedback al usuario
+      toast({
+        title: "Iniciando entrenamiento",
+        description: "Preparando tu sesión de entrenamiento...",
+      })
+    } catch (error) {
+      console.error("Error al iniciar entrenamiento:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo iniciar el entrenamiento. Inténtalo de nuevo.",
+        variant: "destructive"
+      })
+    }
   }
 
   if (isLoading) {
@@ -108,8 +135,31 @@ export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
     )
   }
 
+  // Manejar el cambio de plan
+  const handlePlanChange = (planId: string) => {
+    // Recargar los datos después de cambiar el plan
+    setIsLoading(true)
+    setTimeout(() => {
+      setIsLoading(false)
+      setShowVerification(false)
+      toast({
+        title: "Plan actualizado",
+        description: "Se ha actualizado tu plan de entrenamiento",
+        variant: "default"
+      })
+    }, 500)
+  }
+
   return (
     <div className="space-y-6">
+      {/* Componente de verificación de plan */}
+      {showVerification && (
+        <WorkoutPlanVerification
+          currentDay={selectedDay || undefined}
+          onPlanChange={handlePlanChange}
+        />
+      )}
+
       <Card className="bg-white shadow-sm">
         <CardContent className="p-4">
           <div className="flex items-center mb-4">
@@ -123,16 +173,16 @@ export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
               </p>
             </div>
           </div>
-          
+
           <Separator className="my-4" />
-          
+
           <div className="space-y-4">
             {workoutDays.map(day => (
-              <div 
+              <div
                 key={day.id}
                 className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                  selectedDay === day.id 
-                    ? 'border-primary border-2' 
+                  selectedDay === day.id
+                    ? 'border-primary border-2'
                     : 'hover:border-primary/50'
                 }`}
                 onClick={() => handleSelectDay(day.id)}
@@ -141,7 +191,7 @@ export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
                   <div>
                     <h4 className="font-medium">{day.name}</h4>
                     <p className="text-sm text-muted-foreground mt-1">{day.description}</p>
-                    
+
                     <div className="flex flex-wrap gap-1 mt-2">
                       {day.muscleGroups.map(group => (
                         <Badge key={group} variant="outline" className="text-xs">
@@ -150,7 +200,7 @@ export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
                       ))}
                     </div>
                   </div>
-                  
+
                   {selectedDay === day.id && (
                     <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -159,7 +209,7 @@ export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="grid grid-cols-3 gap-2 mt-3 text-xs text-muted-foreground">
                   <div className="flex items-center">
                     <Dumbbell className="h-3.5 w-3.5 mr-1" />
@@ -182,20 +232,39 @@ export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
               </div>
             ))}
           </div>
-          
-          <div className="mt-6">
-            <Button 
-              className="w-full" 
+
+          <div className="mt-6 space-y-3">
+            <Button
+              className="w-full"
               onClick={handleStartWorkout}
               disabled={!selectedDay}
             >
               <Play className="h-4 w-4 mr-2" />
               Iniciar Entrenamiento
             </Button>
+
+            {!showVerification ? (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowVerification(true)}
+              >
+                <AlertTriangle className="h-4 w-4 mr-2" />
+                Verificar plan de entrenamiento
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowVerification(false)}
+              >
+                Ocultar verificación
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
-      
+
       <Card className="bg-white shadow-sm">
         <CardContent className="p-4">
           <div className="flex items-center mb-4">
@@ -209,9 +278,9 @@ export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
               </p>
             </div>
           </div>
-          
+
           <Separator className="my-4" />
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-50 p-3 rounded-lg">
               <div className="flex items-center text-sm text-muted-foreground mb-1">
@@ -221,7 +290,7 @@ export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
               <p className="text-2xl font-bold">12</p>
               <p className="text-xs text-muted-foreground">Últimos 30 días</p>
             </div>
-            
+
             <div className="bg-gray-50 p-3 rounded-lg">
               <div className="flex items-center text-sm text-muted-foreground mb-1">
                 <Clock className="h-4 w-4 mr-1" />
@@ -231,10 +300,10 @@ export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
               <p className="text-xs text-muted-foreground">Últimos 30 días</p>
             </div>
           </div>
-          
+
           <div className="mt-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full"
               onClick={() => {
                 if (setActiveTab) {

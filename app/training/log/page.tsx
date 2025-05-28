@@ -3,19 +3,19 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { RoutinizeLayout } from "@/components/routinize-layout";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/lib/contexts/auth-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -79,7 +79,7 @@ export default function LogWorkoutPage() {
   // Cargar rutinas del usuario
   useEffect(() => {
     if (authLoading || !user) return;
-    
+
     const loadRoutines = async () => {
       try {
         // Cargar rutinas de Supabase
@@ -87,7 +87,7 @@ export default function LogWorkoutPage() {
           .from('workout_routines')
           .select('id, name')
           .eq('user_id', user.id);
-        
+
         if (error) {
           console.error("Error al cargar rutinas:", error);
           // Usar datos de ejemplo si hay error
@@ -103,7 +103,7 @@ export default function LogWorkoutPage() {
         setIsLoadingRoutines(false);
       }
     };
-    
+
     loadRoutines();
   }, [user, authLoading]);
 
@@ -115,7 +115,7 @@ export default function LogWorkoutPage() {
       sets: [{ weight: 0, reps: 0, rir: 2 }],
       notes: ""
     };
-    
+
     setExercises([...exercises, newExercise]);
   };
 
@@ -126,7 +126,7 @@ export default function LogWorkoutPage() {
 
   // Actualizar nombre de ejercicio
   const updateExerciseName = (exerciseId: string, name: string) => {
-    setExercises(exercises.map(exercise => 
+    setExercises(exercises.map(exercise =>
       exercise.id === exerciseId ? { ...exercise, name } : exercise
     ));
   };
@@ -171,7 +171,7 @@ export default function LogWorkoutPage() {
 
   // Actualizar notas de ejercicio
   const updateExerciseNotes = (exerciseId: string, notes: string) => {
-    setExercises(exercises.map(exercise => 
+    setExercises(exercises.map(exercise =>
       exercise.id === exerciseId ? { ...exercise, notes } : exercise
     ));
   };
@@ -179,7 +179,7 @@ export default function LogWorkoutPage() {
   // Guardar registro de entrenamiento
   const handleSave = async () => {
     if (!user) return;
-    
+
     // Validar que hay al menos un ejercicio
     if (exercises.length === 0) {
       toast({
@@ -189,7 +189,7 @@ export default function LogWorkoutPage() {
       });
       return;
     }
-    
+
     // Validar que todos los ejercicios tienen nombre
     const invalidExercise = exercises.find(exercise => !exercise.name.trim());
     if (invalidExercise) {
@@ -200,9 +200,9 @@ export default function LogWorkoutPage() {
       });
       return;
     }
-    
+
     setIsSaving(true);
-    
+
     const newWorkoutLog: WorkoutLog = {
       id: uuidv4(),
       userId: user.id,
@@ -216,7 +216,7 @@ export default function LogWorkoutPage() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
+
     try {
       // Guardar en Supabase
       const { error } = await supabase
@@ -234,17 +234,17 @@ export default function LogWorkoutPage() {
           created_at: newWorkoutLog.createdAt,
           updated_at: newWorkoutLog.updatedAt
         });
-      
+
       if (error) {
         console.error("Error al guardar entrenamiento:", error);
         throw error;
       }
-      
+
       toast({
         title: "Entrenamiento guardado",
         description: "Tu entrenamiento se ha guardado correctamente",
       });
-      
+
       // Redirigir a la página de entrenamiento
       setTimeout(() => {
         router.push("/training");
@@ -275,9 +275,9 @@ export default function LogWorkoutPage() {
     <RoutinizeLayout activeTab="training" title="Registrar entrenamiento">
       <div className="container mx-auto p-4 pb-20">
         <div className="flex items-center mb-6">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="mr-2"
             onClick={() => router.back()}
           >
@@ -310,11 +310,11 @@ export default function LogWorkoutPage() {
                 </PopoverContent>
               </Popover>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="routine">Rutina (opcional)</Label>
-              <Select 
-                value={routineId} 
+              <Select
+                value={routineId}
                 onValueChange={(value) => {
                   setRoutineId(value);
                   if (value) {
@@ -338,7 +338,7 @@ export default function LogWorkoutPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Label htmlFor="duration">Duración (minutos)</Label>
@@ -357,12 +357,12 @@ export default function LogWorkoutPage() {
                 <span>180 min</span>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <Label>Ejercicios</Label>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={addExercise}
                 >
@@ -370,7 +370,7 @@ export default function LogWorkoutPage() {
                   Añadir ejercicio
                 </Button>
               </div>
-              
+
               {exercises.length > 0 ? (
                 <div className="space-y-4">
                   {exercises.map((exercise, index) => (
@@ -387,15 +387,15 @@ export default function LogWorkoutPage() {
                             className="max-w-xs"
                           />
                         </div>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => removeExercise(exercise.id)}
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <div className="grid grid-cols-4 gap-2 text-xs font-medium text-gray-500 mb-1">
                           <div>Serie</div>
@@ -403,14 +403,14 @@ export default function LogWorkoutPage() {
                           <div>Reps</div>
                           <div>RIR</div>
                         </div>
-                        
+
                         {exercise.sets.map((set, setIndex) => (
                           <div key={setIndex} className="grid grid-cols-4 gap-2 items-center">
                             <div className="flex items-center">
                               <span className="text-sm font-medium">{setIndex + 1}</span>
                               {exercise.sets.length > 1 && (
-                                <Button 
-                                  variant="ghost" 
+                                <Button
+                                  variant="ghost"
                                   size="sm"
                                   className="ml-1 h-6 w-6 p-0"
                                   onClick={() => removeSet(exercise.id, setIndex)}
@@ -434,8 +434,8 @@ export default function LogWorkoutPage() {
                               min="0"
                               className="h-8"
                             />
-                            <Select 
-                              value={set.rir.toString()} 
+                            <Select
+                              value={set.rir.toString()}
                               onValueChange={(value) => updateSet(exercise.id, setIndex, 'rir', parseInt(value))}
                             >
                               <SelectTrigger className="h-8">
@@ -451,9 +451,9 @@ export default function LogWorkoutPage() {
                             </Select>
                           </div>
                         ))}
-                        
-                        <Button 
-                          variant="outline" 
+
+                        <Button
+                          variant="outline"
                           size="sm"
                           className="w-full mt-2"
                           onClick={() => addSet(exercise.id)}
@@ -462,7 +462,7 @@ export default function LogWorkoutPage() {
                           Añadir serie
                         </Button>
                       </div>
-                      
+
                       <div className="mt-3">
                         <Label htmlFor={`notes-${exercise.id}`}>Notas</Label>
                         <Textarea
@@ -480,7 +480,7 @@ export default function LogWorkoutPage() {
                 <div className="text-center py-8 border rounded-md">
                   <Dumbbell className="h-12 w-12 text-gray-300 mx-auto mb-2" />
                   <p className="text-gray-500 mb-4">No hay ejercicios añadidos</p>
-                  <Button 
+                  <Button
                     variant="outline"
                     onClick={addExercise}
                   >
@@ -490,7 +490,7 @@ export default function LogWorkoutPage() {
                 </div>
               )}
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Label>Valoración del entrenamiento</Label>
@@ -508,7 +508,7 @@ export default function LogWorkoutPage() {
                 <span>Excelente</span>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="notes">Notas generales (opcional)</Label>
               <Textarea
@@ -523,14 +523,14 @@ export default function LogWorkoutPage() {
         </Card>
 
         <div className="flex space-x-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="flex-1"
             onClick={() => router.push("/training")}
           >
             Cancelar
           </Button>
-          <Button 
+          <Button
             className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
             onClick={handleSave}
             disabled={isSaving || exercises.length === 0}

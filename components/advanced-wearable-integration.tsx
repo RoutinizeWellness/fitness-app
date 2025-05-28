@@ -7,12 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/components/ui/use-toast"
-import { 
-  Watch, 
-  Heart, 
-  Activity, 
-  BarChart2, 
-  Zap, 
+import {
+  Watch,
+  Heart,
+  Activity,
+  BarChart2,
+  Zap,
   RefreshCw,
   Footprints,
   Flame,
@@ -29,7 +29,7 @@ import {
 } from "lucide-react"
 import { BluetoothService } from "@/lib/bluetooth-service"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 import { Map } from "@/components/ui/map"
 
@@ -123,34 +123,34 @@ export default function AdvancedWearableIntegration() {
   const [historyData, setHistoryData] = useState<any[]>([])
   const [bluetoothService, setBluetoothService] = useState<BluetoothService | null>(null)
   const [showMap, setShowMap] = useState(false)
-  
+
   // Inicializar el servicio Bluetooth
   useEffect(() => {
     const service = new BluetoothService()
     setBluetoothService(service)
-    
+
     if (user?.id) {
       service.setUserId(user.id)
     }
-    
+
     return () => {
       // Limpiar recursos si es necesario
     }
   }, [user?.id])
-  
+
   // Cargar datos de actividad y dispositivos
   useEffect(() => {
     if (!user?.id) return
-    
+
     const loadData = async () => {
       setIsLoading(true)
       try {
         // Cargar dispositivos
         await loadDevices()
-        
+
         // Cargar datos de actividad
         await loadActivityData()
-        
+
         // Cargar datos históricos
         await loadHistoryData()
       } catch (error) {
@@ -159,10 +159,10 @@ export default function AdvancedWearableIntegration() {
         setIsLoading(false)
       }
     }
-    
+
     loadData()
   }, [user?.id])
-  
+
   // Cargar dispositivos conectados
   const loadDevices = async () => {
     try {
@@ -171,15 +171,15 @@ export default function AdvancedWearableIntegration() {
         .from('connected_wearables')
         .select('*')
         .eq('user_id', user?.id)
-      
+
       if (error) {
         console.warn("Error al cargar dispositivos:", error)
         // Usar datos de ejemplo si hay error
         setDevices([
-          { 
-            id: "device-1", 
-            name: "Garmin Forerunner 945", 
-            type: "smartwatch", 
+          {
+            id: "device-1",
+            name: "Garmin Forerunner 945",
+            type: "smartwatch",
             connected: true,
             batteryLevel: 78,
             lastSynced: new Date(Date.now() - 3600000), // 1 hora atrás
@@ -187,10 +187,10 @@ export default function AdvancedWearableIntegration() {
             sensors: ["heart_rate", "gps", "accelerometer", "gyroscope", "barometer", "thermometer", "pulse_ox"],
             capabilities: ["activity_tracking", "sleep_tracking", "stress_tracking", "workout_detection", "gps_tracking", "heart_rate_variability"]
           },
-          { 
-            id: "device-2", 
-            name: "Polar H10", 
-            type: "heart_rate", 
+          {
+            id: "device-2",
+            name: "Polar H10",
+            type: "heart_rate",
             connected: false,
             batteryLevel: 92,
             lastSynced: new Date(Date.now() - 86400000), // 1 día atrás
@@ -201,7 +201,7 @@ export default function AdvancedWearableIntegration() {
         ])
         return
       }
-      
+
       if (data && data.length > 0) {
         const formattedDevices = data.map(device => ({
           id: device.device_id,
@@ -218,10 +218,10 @@ export default function AdvancedWearableIntegration() {
       } else {
         // Usar datos de ejemplo si no hay dispositivos
         setDevices([
-          { 
-            id: "device-1", 
-            name: "Garmin Forerunner 945", 
-            type: "smartwatch", 
+          {
+            id: "device-1",
+            name: "Garmin Forerunner 945",
+            type: "smartwatch",
             connected: true,
             batteryLevel: 78,
             lastSynced: new Date(Date.now() - 3600000), // 1 hora atrás
@@ -235,10 +235,10 @@ export default function AdvancedWearableIntegration() {
       console.error("Error al cargar dispositivos:", error)
       // Usar datos de ejemplo en caso de error
       setDevices([
-        { 
-          id: "device-1", 
-          name: "Garmin Forerunner 945", 
-          type: "smartwatch", 
+        {
+          id: "device-1",
+          name: "Garmin Forerunner 945",
+          type: "smartwatch",
           connected: true,
           batteryLevel: 78,
           lastSynced: new Date(Date.now() - 3600000), // 1 hora atrás
@@ -249,7 +249,7 @@ export default function AdvancedWearableIntegration() {
       ])
     }
   }
-  
+
   // Cargar datos de actividad
   const loadActivityData = async () => {
     try {
@@ -260,14 +260,14 @@ export default function AdvancedWearableIntegration() {
         .eq('user_id', user?.id)
         .order('date', { ascending: false })
         .limit(1)
-      
+
       if (error) {
         console.warn("Error al cargar datos de actividad:", error)
         // Usar datos de ejemplo si hay error
         generateSampleActivityData()
         return
       }
-      
+
       if (data && data.length > 0) {
         const latestData = data[0]
         setActivityData({
@@ -330,14 +330,14 @@ export default function AdvancedWearableIntegration() {
       generateSampleActivityData()
     }
   }
-  
+
   // Generar datos de actividad de ejemplo
   const generateSampleActivityData = () => {
     const now = new Date()
     const steps = Math.floor(Math.random() * 5000) + 3000
     const caloriesBurned = Math.floor(steps * 0.05)
     const activeMinutes = Math.floor(steps / 100)
-    
+
     setActivityData({
       steps,
       caloriesBurned,
@@ -389,7 +389,7 @@ export default function AdvancedWearableIntegration() {
       lastUpdated: now
     })
   }
-  
+
   // Cargar datos históricos
   const loadHistoryData = async () => {
     try {
@@ -400,14 +400,14 @@ export default function AdvancedWearableIntegration() {
         .eq('user_id', user?.id)
         .order('date', { ascending: false })
         .limit(7)
-      
+
       if (error) {
         console.warn("Error al cargar datos históricos:", error)
         // Usar datos de ejemplo si hay error
         generateSampleHistoryData()
         return
       }
-      
+
       if (data && data.length > 0) {
         const formattedData = data.map(item => ({
           date: new Date(item.date).toLocaleDateString('es-ES', { weekday: 'short' }),
@@ -418,7 +418,7 @@ export default function AdvancedWearableIntegration() {
           stress: item.stress_level || 0,
           bloodOxygen: item.blood_oxygen || 0
         })).reverse()
-        
+
         setHistoryData(formattedData)
       } else {
         // Usar datos de ejemplo si no hay datos
@@ -430,7 +430,7 @@ export default function AdvancedWearableIntegration() {
       generateSampleHistoryData()
     }
   }
-  
+
   // Generar datos históricos de ejemplo
   const generateSampleHistoryData = () => {
     const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
@@ -443,17 +443,17 @@ export default function AdvancedWearableIntegration() {
       stress: Math.floor(Math.random() * 50) + 20,
       bloodOxygen: Math.floor(Math.random() * 3) + 96
     }))
-    
+
     setHistoryData(data)
   }
-  
+
   // Refrescar datos
   const handleRefresh = async () => {
     setIsRefreshing(true)
     try {
       await loadActivityData()
       await loadHistoryData()
-      
+
       toast({
         title: "Datos actualizados",
         description: "Los datos de actividad han sido actualizados correctamente"
@@ -469,7 +469,7 @@ export default function AdvancedWearableIntegration() {
       setIsRefreshing(false)
     }
   }
-  
+
   // Conectar nuevo dispositivo
   const handleConnectDevice = async () => {
     if (!bluetoothService) {
@@ -480,17 +480,17 @@ export default function AdvancedWearableIntegration() {
       })
       return
     }
-    
+
     setIsConnecting(true)
     try {
       const newDevices = await bluetoothService.scanForHeartRateDevices()
-      
+
       if (newDevices && newDevices.length > 0) {
         toast({
           title: "Dispositivo encontrado",
           description: `Se ha conectado a ${newDevices[0].name}`
         })
-        
+
         // Actualizar lista de dispositivos
         await loadDevices()
       } else {
@@ -510,7 +510,7 @@ export default function AdvancedWearableIntegration() {
       setIsConnecting(false)
     }
   }
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -519,8 +519,8 @@ export default function AdvancedWearableIntegration() {
           <p className="text-muted-foreground">Monitorea tu actividad física con datos avanzados de tus dispositivos</p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
@@ -532,7 +532,7 @@ export default function AdvancedWearableIntegration() {
             )}
             <span className="ml-2 hidden md:inline">Actualizar</span>
           </Button>
-          <Button 
+          <Button
             size="sm"
             onClick={handleConnectDevice}
             disabled={isConnecting}
@@ -546,7 +546,7 @@ export default function AdvancedWearableIntegration() {
           </Button>
         </div>
       </div>
-      
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2 md:grid-cols-4 mb-6">
           <TabsTrigger value="overview" className="flex items-center gap-2">
@@ -566,7 +566,7 @@ export default function AdvancedWearableIntegration() {
             <span>Dispositivos</span>
           </TabsTrigger>
         </TabsList>
-        
+
         {/* Resto del contenido se implementará con el editor str-replace */}
       </Tabs>
     </div>

@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { OrganicNavigation } from "@/components/organic-navigation"
-import { OrganicElement, OrganicStaggeredList } from "@/components/transitions/organic-transitions"
+import { StaticNavigation } from "@/components/static-navigation"
+import {
+  StaticElement as OrganicElement,
+  StaticStaggeredList as OrganicStaggeredList
+} from "@/components/transitions/static-transitions"
 import { Plus } from "lucide-react"
 import { useOrganicTheme } from "@/components/theme/organic-theme-provider"
 import { User } from "@supabase/supabase-js"
@@ -38,12 +41,12 @@ export function OrganicLayout({
   const router = useRouter()
   const { isDark } = useOrganicTheme()
   const [currentTab, setCurrentTab] = useState(activeTab)
-  
+
   // Actualizar el tab activo cuando cambia la prop
   useEffect(() => {
     setCurrentTab(activeTab)
   }, [activeTab])
-  
+
   // Manejar cambio de tab
   const handleTabChange = (tab: string) => {
     setCurrentTab(tab)
@@ -54,8 +57,8 @@ export function OrganicLayout({
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* Navegación */}
-      <OrganicNavigation
+      {/* Navegación (usando la versión estática) */}
+      <StaticNavigation
         activeTab={currentTab}
         setActiveTab={handleTabChange}
         showBackButton={showBackButton}
@@ -66,7 +69,7 @@ export function OrganicLayout({
         onFloatingActionClick={onFloatingActionClick}
         notifications={notifications}
       />
-      
+
       {/* Contenido principal */}
       <main className="flex-1 container max-w-md mx-auto px-4 pt-20 pb-24">
         <OrganicElement type="fade" className="h-full">

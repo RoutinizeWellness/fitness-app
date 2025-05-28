@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Utensils, Clock, ChevronRight, Sparkles, Flame, Salad, Beef, Fish, Egg, Wheat, Milk, X } from "lucide-react"
+import { Utensils, Clock, ChevronRight, Sparkles, Flame, Salad, Beef, Fish, Egg, Wheat, Milk, X, Coffee, Apple, Moon } from "lucide-react"
 
 // Tipos de datos
 interface MealPlanSettings {
@@ -99,13 +99,13 @@ export default function MealPlanGenerator() {
   // Generar plan de comidas
   const handleGeneratePlan = () => {
     setIsGenerating(true)
-    
+
     // Simulamos una llamada a la API
     setTimeout(() => {
       // Plan de comidas de ejemplo
       const samplePlan: MealPlan = {
         id: "plan-1",
-        name: settings.goal === "weightLoss" ? "Plan de pérdida de peso" : 
+        name: settings.goal === "weightLoss" ? "Plan de pérdida de peso" :
               settings.goal === "maintenance" ? "Plan de mantenimiento" : "Plan de ganancia muscular",
         description: `Plan personalizado de ${settings.calories} calorías con ${settings.meals} comidas diarias`,
         calories: settings.calories,
@@ -218,7 +218,7 @@ export default function MealPlanGenerator() {
           }
         }
       }
-      
+
       setGeneratedPlan(samplePlan)
       setIsGenerating(false)
       setActiveTab("plan")
@@ -231,8 +231,8 @@ export default function MealPlanGenerator() {
       <div className="space-y-6">
         <div className="space-y-3">
           <Label>Objetivo</Label>
-          <Select 
-            value={settings.goal} 
+          <Select
+            value={settings.goal}
             onValueChange={(value) => handleSettingChange('goal', value)}
           >
             <SelectTrigger>
@@ -250,11 +250,11 @@ export default function MealPlanGenerator() {
           <div className="flex justify-between">
             <Label>Calorías diarias: {settings.calories}</Label>
           </div>
-          <Slider 
-            value={[settings.calories]} 
-            min={1200} 
-            max={3000} 
-            step={50} 
+          <Slider
+            value={[settings.calories]}
+            min={1200}
+            max={3000}
+            step={50}
             onValueChange={(value) => handleSettingChange('calories', value[0])}
           />
           <div className="flex justify-between text-xs text-muted-foreground">
@@ -268,11 +268,11 @@ export default function MealPlanGenerator() {
           <div className="flex justify-between">
             <Label>Número de comidas: {settings.meals}</Label>
           </div>
-          <Slider 
-            value={[settings.meals]} 
-            min={3} 
-            max={6} 
-            step={1} 
+          <Slider
+            value={[settings.meals]}
+            min={3}
+            max={6}
+            step={1}
             onValueChange={(value) => handleSettingChange('meals', value[0])}
           />
           <div className="flex justify-between text-xs text-muted-foreground">
@@ -285,8 +285,8 @@ export default function MealPlanGenerator() {
 
         <div className="space-y-3">
           <Label>Tipo de dieta</Label>
-          <Select 
-            value={settings.dietType} 
+          <Select
+            value={settings.dietType}
             onValueChange={(value) => handleSettingChange('dietType', value)}
           >
             <SelectTrigger>
@@ -316,14 +316,14 @@ export default function MealPlanGenerator() {
               { id: "shellfish", label: "Mariscos" }
             ].map((item) => (
               <div key={item.id} className="flex items-center space-x-2">
-                <Checkbox 
-                  id={`allergy-${item.id}`} 
+                <Checkbox
+                  id={`allergy-${item.id}`}
                   checked={settings.allergies.includes(item.id)}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     handleArraySettingChange('allergies', item.id, checked as boolean)
                   }
                 />
-                <label 
+                <label
                   htmlFor={`allergy-${item.id}`}
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
@@ -346,14 +346,14 @@ export default function MealPlanGenerator() {
               { id: "lowSugar", label: "Bajo en azúcar" }
             ].map((item) => (
               <div key={item.id} className="flex items-center space-x-2">
-                <Checkbox 
-                  id={`pref-${item.id}`} 
+                <Checkbox
+                  id={`pref-${item.id}`}
                   checked={settings.preferences.includes(item.id)}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     handleArraySettingChange('preferences', item.id, checked as boolean)
                   }
                 />
-                <label 
+                <label
                   htmlFor={`pref-${item.id}`}
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
@@ -367,8 +367,8 @@ export default function MealPlanGenerator() {
         <div className="space-y-3">
           <Label>Alimentos a excluir</Label>
           <div className="flex space-x-2">
-            <Input 
-              placeholder="Ej: champiñones, berenjenas..." 
+            <Input
+              placeholder="Ej: champiñones, berenjenas..."
               id="excludedFood"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -377,8 +377,8 @@ export default function MealPlanGenerator() {
                 }
               }}
             />
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 const input = document.getElementById('excludedFood') as HTMLInputElement
                 handleAddExcludedFood(input.value)
@@ -388,12 +388,12 @@ export default function MealPlanGenerator() {
               Añadir
             </Button>
           </div>
-          
+
           <div className="flex flex-wrap gap-2 mt-2">
             {settings.excludedFoods.map((food) => (
               <Badge key={food} variant="secondary" className="flex items-center gap-1">
                 {food}
-                <button 
+                <button
                   onClick={() => handleRemoveExcludedFood(food)}
                   className="ml-1 rounded-full hover:bg-gray-200 p-0.5"
                 >
@@ -404,8 +404,8 @@ export default function MealPlanGenerator() {
           </div>
         </div>
 
-        <Button 
-          className="w-full" 
+        <Button
+          className="w-full"
           onClick={handleGeneratePlan}
           disabled={isGenerating}
         >
@@ -468,7 +468,7 @@ export default function MealPlanGenerator() {
 
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Día 1</h3>
-          
+
           {generatedPlan.days["day-1"].meals.map((meal, index) => (
             <Card key={index}>
               <CardHeader className="pb-2">

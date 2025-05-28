@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import { 
-  Home, Dumbbell, Utensils, Moon, Heart, 
-  Menu, Bell, Search, X, ChevronLeft, 
+import dynamic from "next/dynamic"
+import {
+  Home, Dumbbell, Utensils, Moon, Heart,
+  Menu, Bell, Search, X, ChevronLeft,
   Settings, LogOut, User, Shield, Plus,
   BarChart2, Users, Activity, Calendar, Sparkles
 } from "lucide-react"
@@ -19,6 +19,69 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { FloatingActionButton } from "@/components/ui/floating-action-button"
 import { useOrganicTheme } from "@/components/theme/organic-theme-provider"
 import { OrganicElement } from "@/components/transitions/organic-transitions"
+
+// Create static fallback components
+const StaticDiv = ({ className, children, onClick }: {
+  className?: string,
+  children?: React.ReactNode,
+  onClick?: () => void
+}) => (
+  <div className={className} onClick={onClick}>
+    {children}
+  </div>
+);
+
+// Simple wrapper that just renders children
+const StaticAnimatePresence = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+
+// Use a completely different approach to avoid webpack issues
+// Create non-dynamic components first that will be used during SSR and initial render
+const NonDynamicDiv = ({ children, className, ...props }: any) => (
+  <div className={className} {...props}>{children}</div>
+);
+
+const NonDynamicAnimatePresence = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+
+// Then create the dynamic components with noSSR option
+const MotionDiv = dynamic(
+  () => new Promise((resolve) => {
+    // Delay import to ensure it only happens in browser
+    if (typeof window !== 'undefined') {
+      import("framer-motion")
+        .then((mod) => {
+          if (mod && mod.motion && typeof mod.motion.div === 'function') {
+            resolve(mod.motion.div);
+          } else {
+            resolve(NonDynamicDiv);
+          }
+        })
+        .catch(() => resolve(NonDynamicDiv));
+    } else {
+      resolve(NonDynamicDiv);
+    }
+  }),
+  { ssr: false, loading: () => <NonDynamicDiv /> }
+);
+
+const AnimatePresence = dynamic(
+  () => new Promise((resolve) => {
+    // Delay import to ensure it only happens in browser
+    if (typeof window !== 'undefined') {
+      import("framer-motion")
+        .then((mod) => {
+          if (mod && typeof mod.AnimatePresence === 'function') {
+            resolve(mod.AnimatePresence);
+          } else {
+            resolve(NonDynamicAnimatePresence);
+          }
+        })
+        .catch(() => resolve(NonDynamicAnimatePresence));
+    } else {
+      resolve(NonDynamicAnimatePresence);
+    }
+  }),
+  { ssr: false, loading: () => <NonDynamicAnimatePresence /> }
+);
 
 interface NavigationItem {
   title: string
@@ -245,7 +308,8 @@ export function OrganicNavigation({
       <AnimatePresence>
         {isMenuOpen && (
           <>
-            <motion.div
+            {/* Backdrop overlay */}
+            <MotionDiv
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -253,7 +317,8 @@ export function OrganicNavigation({
               onClick={() => setIsMenuOpen(false)}
             />
 
-            <motion.div
+            {/* Side menu panel */}
+            <MotionDiv
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
@@ -359,7 +424,7 @@ export function OrganicNavigation({
                   </div>
                 </div>
               </ScrollArea>
-            </motion.div>
+            </MotionDiv>
           </>
         )}
       </AnimatePresence>

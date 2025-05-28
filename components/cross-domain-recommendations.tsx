@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/components/ui/use-toast"
-import { 
-  Brain, 
-  Dumbbell, 
-  Utensils, 
-  Moon, 
-  Zap, 
-  RefreshCw, 
-  ThumbsUp, 
+import {
+  Brain,
+  Dumbbell,
+  Utensils,
+  Moon,
+  Zap,
+  RefreshCw,
+  ThumbsUp,
   ThumbsDown,
   Loader2,
   ArrowRight,
@@ -21,7 +21,7 @@ import {
   Lightbulb
 } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { AdvancedAIService, CrossDomainRecommendation } from "@/lib/advanced-ai-service"
 
 export default function CrossDomainRecommendations() {
@@ -30,11 +30,11 @@ export default function CrossDomainRecommendations() {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [recommendations, setRecommendations] = useState<CrossDomainRecommendation[]>([])
-  
+
   // Cargar recomendaciones
   useEffect(() => {
     if (!user?.id) return
-    
+
     const loadRecommendations = async () => {
       setIsLoading(true)
       try {
@@ -44,14 +44,14 @@ export default function CrossDomainRecommendations() {
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-        
+
         if (error) {
           console.warn("Error al cargar recomendaciones cruzadas:", error)
           // Generar recomendaciones con el servicio avanzado
           await generateNewRecommendations()
           return
         }
-        
+
         if (data && data.length > 0) {
           // Convertir datos de la base de datos al formato CrossDomainRecommendation
           const formattedRecommendations: CrossDomainRecommendation[] = data.map(item => ({
@@ -68,7 +68,7 @@ export default function CrossDomainRecommendations() {
             tags: item.tags,
             createdAt: item.created_at
           }))
-          
+
           setRecommendations(formattedRecommendations)
         } else {
           // No hay recomendaciones, generar nuevas
@@ -82,18 +82,18 @@ export default function CrossDomainRecommendations() {
         setIsLoading(false)
       }
     }
-    
+
     loadRecommendations()
   }, [user?.id])
-  
+
   // Generar nuevas recomendaciones
   const generateNewRecommendations = async () => {
     try {
       if (!user?.id) return
-      
+
       const aiService = new AdvancedAIService(user.id)
       const newRecommendations = await aiService.generateCrossDomainRecommendations()
-      
+
       setRecommendations(newRecommendations)
     } catch (error) {
       console.error("Error al generar nuevas recomendaciones:", error)
@@ -101,7 +101,7 @@ export default function CrossDomainRecommendations() {
       setRecommendations(generateSampleRecommendations())
     }
   }
-  
+
   // Generar recomendaciones de ejemplo
   const generateSampleRecommendations = (): CrossDomainRecommendation[] => {
     return [
@@ -151,13 +151,13 @@ export default function CrossDomainRecommendations() {
       }
     ]
   }
-  
+
   // Refrescar recomendaciones
   const handleRefresh = async () => {
     setIsRefreshing(true)
     try {
       await generateNewRecommendations()
-      
+
       toast({
         title: "Recomendaciones actualizadas",
         description: "Se han generado nuevas recomendaciones personalizadas"
@@ -173,7 +173,7 @@ export default function CrossDomainRecommendations() {
       setIsRefreshing(false)
     }
   }
-  
+
   // Dar feedback a una recomendación
   const handleFeedback = async (id: string, feedback: 'positive' | 'negative') => {
     try {
@@ -183,11 +183,11 @@ export default function CrossDomainRecommendations() {
         .update({ feedback })
         .eq('id', id)
         .eq('user_id', user?.id)
-      
+
       if (error) {
         console.warn("Error al guardar feedback:", error)
       }
-      
+
       toast({
         title: "Feedback registrado",
         description: "Gracias por tu feedback. Nos ayudará a mejorar las recomendaciones."
@@ -196,29 +196,29 @@ export default function CrossDomainRecommendations() {
       console.error("Error al dar feedback:", error)
     }
   }
-  
+
   // Marcar como completada
   const handleComplete = async (id: string) => {
     try {
       // Actualizar en la base de datos
       const { error } = await supabase
         .from('cross_domain_recommendations')
-        .update({ 
+        .update({
           is_completed: true,
           updated_at: new Date().toISOString()
         })
         .eq('id', id)
         .eq('user_id', user?.id)
-      
+
       if (error) {
         console.warn("Error al marcar como completada:", error)
       }
-      
+
       // Actualizar estado local
-      setRecommendations(prev => 
+      setRecommendations(prev =>
         prev.filter(rec => rec.id !== id)
       )
-      
+
       toast({
         title: "Recomendación completada",
         description: "¡Excelente trabajo! Has completado esta recomendación."
@@ -227,7 +227,7 @@ export default function CrossDomainRecommendations() {
       console.error("Error al marcar como completada:", error)
     }
   }
-  
+
   // Renderizar icono según el dominio
   const renderIcon = (domain: string) => {
     switch (domain) {
@@ -245,7 +245,7 @@ export default function CrossDomainRecommendations() {
         return <Lightbulb className="h-5 w-5" />
     }
   }
-  
+
   // Obtener color según el dominio
   const getDomainColor = (domain: string) => {
     switch (domain) {
@@ -263,7 +263,7 @@ export default function CrossDomainRecommendations() {
         return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
     }
   }
-  
+
   // Obtener texto según el dominio
   const getDomainText = (domain: string) => {
     switch (domain) {
@@ -281,7 +281,7 @@ export default function CrossDomainRecommendations() {
         return domain
     }
   }
-  
+
   // Obtener color según la prioridad
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -295,7 +295,7 @@ export default function CrossDomainRecommendations() {
         return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
     }
   }
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -303,8 +303,8 @@ export default function CrossDomainRecommendations() {
           <h2 className="text-2xl font-bold tracking-tight">Recomendaciones Holísticas</h2>
           <p className="text-muted-foreground">Sugerencias que conectan diferentes áreas de tu bienestar</p>
         </div>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="sm"
           onClick={handleRefresh}
           disabled={isRefreshing}
@@ -317,7 +317,7 @@ export default function CrossDomainRecommendations() {
           Actualizar Recomendaciones
         </Button>
       </div>
-      
+
       <div className="space-y-4">
         {isLoading ? (
           <Card>
@@ -354,7 +354,7 @@ export default function CrossDomainRecommendations() {
                           {getDomainText(recommendation.secondaryDomain)}
                         </Badge>
                         <Badge variant="outline" className={getPriorityColor(recommendation.priority)}>
-                          {recommendation.priority === 'high' ? 'Alta prioridad' : 
+                          {recommendation.priority === 'high' ? 'Alta prioridad' :
                            recommendation.priority === 'medium' ? 'Media prioridad' : 'Baja prioridad'}
                         </Badge>
                       </CardDescription>
@@ -369,7 +369,7 @@ export default function CrossDomainRecommendations() {
                     <strong>Por qué te lo recomendamos:</strong> {recommendation.reason}
                   </p>
                 </div>
-                
+
                 <div className="mt-4 space-y-3">
                   <h4 className="text-sm font-medium">Impacto esperado:</h4>
                   {Object.entries(recommendation.impact).map(([domain, impact]) => (
@@ -384,7 +384,7 @@ export default function CrossDomainRecommendations() {
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2 mt-4">
                   {recommendation.tags.map(tag => (
                     <Badge key={tag} variant="outline">{tag}</Badge>
@@ -396,23 +396,23 @@ export default function CrossDomainRecommendations() {
                   Generado el {new Date(recommendation.createdAt).toLocaleDateString()}
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => handleFeedback(recommendation.id, 'positive')}
                   >
                     <ThumbsUp className="h-4 w-4 mr-1" />
                     Útil
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => handleFeedback(recommendation.id, 'negative')}
                   >
                     <ThumbsDown className="h-4 w-4 mr-1" />
                     No útil
                   </Button>
-                  <Button 
+                  <Button
                     size="sm"
                     onClick={() => handleComplete(recommendation.id)}
                   >
@@ -428,7 +428,7 @@ export default function CrossDomainRecommendations() {
               <div className="flex flex-col items-center justify-center">
                 <Lightbulb className="h-8 w-8 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">No hay recomendaciones holísticas disponibles.</p>
-                <Button 
+                <Button
                   className="mt-4"
                   onClick={handleRefresh}
                   disabled={isRefreshing}

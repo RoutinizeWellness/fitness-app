@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -12,7 +12,7 @@ import ImprovedWorkoutHistory from "@/components/training/improved-workout-histo
 export default function ImprovedWorkoutHistoryPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
-  
+
   // If loading or no user, show skeleton
   if (authLoading) {
     return (
@@ -25,13 +25,13 @@ export default function ImprovedWorkoutHistoryPage() {
       </div>
     )
   }
-  
+
   // If no user, redirect to login
   if (!user) {
     router.push("/auth/login")
     return null
   }
-  
+
   return (
     <div className="container max-w-md mx-auto px-4 py-8">
       <div className="flex items-center mb-6">
@@ -45,13 +45,13 @@ export default function ImprovedWorkoutHistoryPage() {
         </Button>
         <h1 className="text-2xl font-bold text-[#573353]">Historial de Entrenamientos</h1>
       </div>
-      
-      <ImprovedWorkoutHistory 
-        userId={user.uid} 
-        limit={20} 
-        showViewAll={false} 
+
+      <ImprovedWorkoutHistory
+        userId={user.uid}
+        limit={20}
+        showViewAll={false}
       />
-      
+
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around p-3 z-10 shadow-sm">
         <button

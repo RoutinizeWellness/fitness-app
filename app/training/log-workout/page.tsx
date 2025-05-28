@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import WorkoutLogForm from "@/components/training/workout-log-form"
@@ -18,10 +18,10 @@ export default function LogWorkoutPage() {
     name: string;
     exercises: any[];
   } | null>(null)
-  
+
   // Obtener ID de rutina de los parámetros de búsqueda
   const routineId = searchParams.get('routineId')
-  
+
   // Cargar datos de la rutina si se proporciona un ID
   useEffect(() => {
     const loadRoutineData = async () => {
@@ -29,7 +29,7 @@ export default function LogWorkoutPage() {
         setIsLoading(false)
         return
       }
-      
+
       try {
         // Obtener datos de la rutina
         const { data: routineData, error: routineError } = await supabase
@@ -38,18 +38,18 @@ export default function LogWorkoutPage() {
           .eq('id', routineId)
           .eq('user_id', user.id)
           .single()
-        
+
         if (routineError) {
           console.error('Error al cargar la rutina:', routineError)
           setIsLoading(false)
           return
         }
-        
+
         if (routineData) {
           // Extraer ejercicios de la rutina
           // Asumimos que days es un array de objetos con ejercicios
           const allExercises: any[] = []
-          
+
           if (routineData.days && Array.isArray(routineData.days)) {
             routineData.days.forEach((day: any) => {
               if (day.exercises && Array.isArray(day.exercises)) {
@@ -68,7 +68,7 @@ export default function LogWorkoutPage() {
               }
             })
           }
-          
+
           setRoutineData({
             id: routineData.id,
             name: routineData.name,
@@ -81,27 +81,27 @@ export default function LogWorkoutPage() {
         setIsLoading(false)
       }
     }
-    
+
     loadRoutineData()
   }, [user, routineId])
-  
+
   // Redirigir a login si no hay usuario autenticado
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/auth/login")
     }
   }, [user, authLoading, router])
-  
+
   // Manejar cancelación
   const handleCancel = () => {
     router.back()
   }
-  
+
   // Manejar éxito
   const handleSuccess = () => {
     router.push("/training/history")
   }
-  
+
   if (isLoading || authLoading) {
     return (
       <div className="container mx-auto py-6">
@@ -111,7 +111,7 @@ export default function LogWorkoutPage() {
       </div>
     )
   }
-  
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center mb-6">
@@ -121,7 +121,7 @@ export default function LogWorkoutPage() {
         </Button>
         <h1 className="text-2xl font-bold">Registrar Entrenamiento</h1>
       </div>
-      
+
       <div className="max-w-4xl mx-auto">
         {user && (
           <WorkoutLogForm

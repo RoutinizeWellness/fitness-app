@@ -1,4 +1,4 @@
-import { supabase, handleSupabaseError, TABLES, COLUMNS, STORAGE } from "../supabase-client-enhanced"
+import { supabase } from "../supabase-unified"
 import { Exercise } from "@/lib/types/training"
 import { v4 as uuidv4 } from "uuid"
 
@@ -9,12 +9,12 @@ import { v4 as uuidv4 } from "uuid"
 export const getAllExercises = async () => {
   try {
     const { data, error } = await supabase
-      .from(TABLES.EXERCISES)
+      .from("exercises")
       .select("*")
       .order("name")
 
     if (error) {
-      return { data: [], error: handleSupabaseError(error, "Error al obtener ejercicios") }
+      return { data: [], error: new Error(error.message || "Error al obtener ejercicios") }
     }
 
     // Transformar datos al formato esperado por la aplicación
@@ -58,13 +58,13 @@ export const searchExercises = async (query: string) => {
     const normalizedQuery = query.toLowerCase().trim()
 
     const { data, error } = await supabase
-      .from(TABLES.EXERCISES)
+      .from("exercises")
       .select("*")
       .or(`name.ilike.%${normalizedQuery}%,category.ilike.%${normalizedQuery}%`)
       .order("name")
 
     if (error) {
-      return { data: [], error: handleSupabaseError(error, "Error al buscar ejercicios") }
+      return { data: [], error: new Error(error.message || "Error al buscar ejercicios") }
     }
 
     // Transformar datos al formato esperado por la aplicación
@@ -106,13 +106,13 @@ export const getExerciseById = async (exerciseId: string) => {
     }
 
     const { data, error } = await supabase
-      .from(TABLES.EXERCISES)
+      .from("exercises")
       .select("*")
       .eq("id", exerciseId)
       .single()
 
     if (error) {
-      return { data: null, error: handleSupabaseError(error, "Error al obtener ejercicio") }
+      return { data: null, error: new Error(error.message || "Error al obtener ejercicio") }
     }
 
     // Transformar datos al formato esperado por la aplicación
@@ -174,12 +174,12 @@ export const createExercise = async (exercise: Partial<Exercise>) => {
     }
 
     const { data, error } = await supabase
-      .from(TABLES.EXERCISES)
+      .from("exercises")
       .insert([exerciseData])
       .select()
 
     if (error) {
-      return { data: null, error: handleSupabaseError(error, "Error al crear ejercicio") }
+      return { data: null, error: new Error(error.message || "Error al crear ejercicio") }
     }
 
     // Transformar datos al formato esperado por la aplicación
@@ -247,13 +247,13 @@ export const updateExercise = async (exerciseId: string, updates: Partial<Exerci
     })
 
     const { data, error } = await supabase
-      .from(TABLES.EXERCISES)
+      .from("exercises")
       .update(exerciseData)
       .eq("id", exerciseId)
       .select()
 
     if (error) {
-      return { data: null, error: handleSupabaseError(error, "Error al actualizar ejercicio") }
+      return { data: null, error: new Error(error.message || "Error al actualizar ejercicio") }
     }
 
     // Transformar datos al formato esperado por la aplicación
@@ -295,12 +295,12 @@ export const deleteExercise = async (exerciseId: string) => {
     }
 
     const { error } = await supabase
-      .from(TABLES.EXERCISES)
+      .from("exercises")
       .delete()
       .eq("id", exerciseId)
 
     if (error) {
-      return { success: false, error: handleSupabaseError(error, "Error al eliminar ejercicio") }
+      return { success: false, error: new Error(error.message || "Error al eliminar ejercicio") }
     }
 
     return { success: true, error: null }
@@ -338,20 +338,20 @@ export const uploadExerciseImage = async (exerciseId: string, file: File) => {
     // Subir el archivo a Supabase Storage
     const { data, error } = await supabase
       .storage
-      .from(STORAGE.EXERCISE_IMAGES)
+      .from("exercise-images")
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true
       })
 
     if (error) {
-      return { url: null, error: handleSupabaseError(error, "Error al subir imagen de ejercicio") }
+      return { url: null, error: new Error(error.message || "Error al subir imagen de ejercicio") }
     }
 
     // Obtener la URL pública del archivo
     const { data: { publicUrl } } = supabase
       .storage
-      .from(STORAGE.EXERCISE_IMAGES)
+      .from("exercise-images")
       .getPublicUrl(data.path)
 
     // Actualizar el ejercicio con la nueva URL de la imagen
@@ -360,7 +360,7 @@ export const uploadExerciseImage = async (exerciseId: string, file: File) => {
     })
 
     if (updateError) {
-      return { url: publicUrl, error: handleSupabaseError(updateError, "Error al actualizar ejercicio con nueva imagen") }
+      return { url: publicUrl, error: new Error(updateError.message || "Error al actualizar ejercicio con nueva imagen") }
     }
 
     return { url: publicUrl, error: null }
@@ -398,20 +398,20 @@ export const uploadExerciseVideo = async (exerciseId: string, file: File) => {
     // Subir el archivo a Supabase Storage
     const { data, error } = await supabase
       .storage
-      .from(STORAGE.EXERCISE_VIDEOS)
+      .from("exercise-videos")
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true
       })
 
     if (error) {
-      return { url: null, error: handleSupabaseError(error, "Error al subir video de ejercicio") }
+      return { url: null, error: new Error(error.message || "Error al subir video de ejercicio") }
     }
 
     // Obtener la URL pública del archivo
     const { data: { publicUrl } } = supabase
       .storage
-      .from(STORAGE.EXERCISE_VIDEOS)
+      .from("exercise-videos")
       .getPublicUrl(data.path)
 
     // Actualizar el ejercicio con la nueva URL del video
@@ -420,7 +420,7 @@ export const uploadExerciseVideo = async (exerciseId: string, file: File) => {
     })
 
     if (updateError) {
-      return { url: publicUrl, error: handleSupabaseError(updateError, "Error al actualizar ejercicio con nuevo video") }
+      return { url: publicUrl, error: new Error(updateError.message || "Error al actualizar ejercicio con nuevo video") }
     }
 
     return { url: publicUrl, error: null }

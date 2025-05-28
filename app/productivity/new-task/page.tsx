@@ -3,18 +3,18 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { RoutinizeLayout } from "@/components/routinize-layout"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -48,7 +48,7 @@ export default function NewTaskPage() {
   // Guardar tarea
   const handleSave = async () => {
     if (!user) return
-    
+
     if (!title.trim()) {
       toast({
         title: "Error",
@@ -57,9 +57,9 @@ export default function NewTaskPage() {
       })
       return
     }
-    
+
     setIsSaving(true)
-    
+
     const newTask = {
       id: uuidv4(),
       title: title.trim(),
@@ -72,23 +72,23 @@ export default function NewTaskPage() {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }
-    
+
     try {
       // Guardar en Supabase
       const { error } = await supabase
         .from('tasks')
         .insert(newTask)
-      
+
       if (error) {
         console.error("Error al guardar tarea:", error)
         throw error
       }
-      
+
       toast({
         title: "Tarea creada",
         description: "La tarea se ha creado correctamente",
       })
-      
+
       // Redirigir a la página de productividad
       setTimeout(() => {
         router.push("/productivity")
@@ -119,9 +119,9 @@ export default function NewTaskPage() {
     <RoutinizeLayout activeTab="productivity" title="Nueva tarea">
       <div className="container mx-auto p-4 pb-20">
         <div className="flex items-center mb-6">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="mr-2"
             onClick={() => router.back()}
           >
@@ -141,7 +141,7 @@ export default function NewTaskPage() {
                 placeholder="¿Qué necesitas hacer?"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="description">Descripción (opcional)</Label>
               <Textarea
@@ -152,7 +152,7 @@ export default function NewTaskPage() {
                 className="min-h-[100px]"
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="priority">Prioridad</Label>
@@ -167,7 +167,7 @@ export default function NewTaskPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="category">Categoría</Label>
                 <Select value={category} onValueChange={setCategory}>
@@ -184,7 +184,7 @@ export default function NewTaskPage() {
                 </Select>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Fecha límite (opcional)</Label>
               <Popover>
@@ -210,9 +210,9 @@ export default function NewTaskPage() {
                 </PopoverContent>
               </Popover>
               {dueDate && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="text-gray-500"
                   onClick={() => setDueDate(undefined)}
                 >
@@ -224,14 +224,14 @@ export default function NewTaskPage() {
         </Card>
 
         <div className="flex space-x-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="flex-1"
             onClick={() => router.push("/productivity")}
           >
             Cancelar
           </Button>
-          <Button 
+          <Button
             className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
             onClick={handleSave}
             disabled={isSaving || !title.trim()}

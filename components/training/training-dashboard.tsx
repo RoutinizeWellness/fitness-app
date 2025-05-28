@@ -9,6 +9,7 @@ import { StatCardOrganic } from "@/components/ui/stat-card-organic"
 import { Separator } from "@/components/ui/separator"
 import { OrganicElement } from "@/components/transitions/organic-transitions"
 import { AIWorkoutRecommendations } from "@/components/training/ai-workout-recommendations"
+import { StrengthProgressCard } from "@/components/training/strength-progress-card"
 import {
   BarChart,
   Calendar,
@@ -169,43 +170,15 @@ export function TrainingDashboard({ userId }: TrainingDashboardProps) {
         <AIWorkoutRecommendations userId={userId} />
       </Card>
 
+      {/* Nuevo componente de progreso de fuerza y gestión de fatiga */}
+      <StrengthProgressCard />
+
+      {/* Tarjeta de recomendaciones de entrenamiento */}
       <Card organic={true} hover={true} className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium flex items-center">
-            <TrendingUp className="h-5 w-5 mr-2 text-blue-500" />
-            Progreso de fuerza
-          </h3>
-          <Button variant="ghost" size="sm" className="text-xs">
-            Ver todo
-            <ChevronRight className="h-3 w-3 ml-1" />
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          {strengthProgress.map((progress, index) => (
-            <div key={index}>
-              <div className="flex justify-between items-center mb-1">
-                <div className="flex items-center">
-                  <span className="font-medium text-sm">{progress.exercise_name}</span>
-                  <Badge className="ml-2 bg-blue-100 text-blue-800 border-blue-200">
-                    {progress.muscle_group}
-                  </Badge>
-                </div>
-                <span className={`text-sm font-bold ${progress.progress_percentage > 5 ? 'text-green-600' : progress.progress_percentage > 0 ? 'text-amber-600' : 'text-red-600'}`}>
-                  {progress.progress_percentage > 0 ? '+' : ''}{progress.current_weight - progress.previous_weight} kg
-                </span>
-              </div>
-              <Progress value={progress.progress_percentage * 10} className="h-2" />
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card organic={true} hover={true} className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium flex items-center">
-            <Flame className="h-5 w-5 mr-2 text-orange-500" />
-            Gestión de fatiga
+            <Brain className="h-5 w-5 mr-2 text-purple-500" />
+            Recomendaciones de entrenamiento
           </h3>
           <Button variant="ghost" size="sm" className="text-xs">
             Ver detalles
@@ -214,49 +187,24 @@ export function TrainingDashboard({ userId }: TrainingDashboardProps) {
         </div>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-2">
-            <div className="border rounded-md p-3 text-center">
-              <div className={`text-2xl font-bold ${fatigueData?.recoveryStatus === 'excellent' || fatigueData?.recoveryStatus === 'good' ? 'text-green-600' : 'text-amber-600'}`}>
-                {fatigueData?.recoveryStatus === 'excellent' ? '90%' :
-                 fatigueData?.recoveryStatus === 'good' ? '75%' :
-                 fatigueData?.recoveryStatus === 'moderate' ? '50%' : '25%'}
-              </div>
-              <div className="text-xs text-gray-500">Recuperación</div>
-            </div>
-            <div className="border rounded-md p-3 text-center">
-              <div className={`text-2xl font-bold ${fatigueData?.currentFatigue < 50 ? 'text-green-600' : fatigueData?.currentFatigue < 75 ? 'text-amber-600' : 'text-red-600'}`}>
-                {fatigueData?.currentFatigue || 50}%
-              </div>
-              <div className="text-xs text-gray-500">Fatiga CNS</div>
-            </div>
-            <div className="border rounded-md p-3 text-center">
-              <div className={`text-2xl font-bold ${fatigueData?.readyToTrain ? 'text-blue-600' : 'text-amber-600'}`}>
-                {fatigueData?.readyToTrain ? '85%' : '40%'}
-              </div>
-              <div className="text-xs text-gray-500">Prontitud</div>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-medium mb-2">Fatiga por grupo muscular</h4>
-            <div className="space-y-2">
-              {fatigueData?.muscleGroupFatigue && Object.entries(fatigueData.muscleGroupFatigue).map(([muscle, fatigue]: [string, any]) => (
-                <div key={muscle}>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs capitalize">{muscle}</span>
-                    <span className="text-xs font-medium">{fatigue}%</span>
-                  </div>
-                  <Progress
-                    value={fatigue}
-                    className="h-1.5"
-                    indicatorClassName={
-                      fatigue < 30 ? 'bg-green-500' :
-                      fatigue < 70 ? 'bg-amber-500' :
-                      'bg-red-500'
-                    }
-                  />
+          <div className="border rounded-lg p-4 bg-blue-50">
+            <h4 className="font-medium mb-2 text-blue-800">Entrenamiento óptimo para hoy</h4>
+            <p className="text-sm text-blue-700 mb-3">
+              Basado en tu nivel de fatiga actual y tu historial de entrenamiento, te recomendamos:
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white rounded-md p-3 shadow-sm">
+                <div className="text-sm font-medium mb-1">Intensidad</div>
+                <div className="text-lg font-bold text-blue-600">
+                  {fatigueData?.readyToTrain ? '85%' : '70%'} 1RM
                 </div>
-              ))}
+              </div>
+              <div className="bg-white rounded-md p-3 shadow-sm">
+                <div className="text-sm font-medium mb-1">Volumen</div>
+                <div className="text-lg font-bold text-blue-600">
+                  {fatigueData?.readyToTrain ? 'Normal' : 'Reducido'}
+                </div>
+              </div>
             </div>
           </div>
         </div>

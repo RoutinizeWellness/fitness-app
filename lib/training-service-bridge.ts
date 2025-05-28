@@ -43,3 +43,4 @@ export {
 
 // Exportar también las versiones con nombres antiguos para mantener la compatibilidad
 export const getUserRoutineById = getWorkoutRoutine
+export const getWorkoutRoutineById = getWorkoutRoutine

@@ -9,9 +9,19 @@ export interface MicroCycle {
   description?: string;
   days: WorkoutDay[];
   duration: number; // Duración en días (típicamente 7 o 10)
-  intensity: 'low' | 'moderate' | 'high';
-  volume: 'low' | 'moderate' | 'high';
+  intensity: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
+  volume: 'very_low' | 'low' | 'moderate' | 'high' | 'very_high';
   isDeload: boolean; // Indica si es un microciclo de descarga
+  deloadType?: 'volume' | 'intensity' | 'frequency' | 'complete'; // Tipo de descarga
+  weekNumber: number; // Número de semana dentro del mesociclo
+  totalSets?: number; // Total de series en el microciclo
+  averageRIR?: number; // RIR promedio objetivo
+  averageRPE?: number; // RPE promedio objetivo
+  repRangeMin?: number; // Rango mínimo de repeticiones recomendado
+  repRangeMax?: number; // Rango máximo de repeticiones recomendado
+  restBetweenSets?: [number, number]; // Rango de descanso entre series en segundos
+  tempoGuidelines?: string; // Recomendaciones de tempo (ej: "3-1-2-0")
+  techniqueVariations?: string[]; // Variaciones técnicas a implementar
   notes?: string;
 }
 
@@ -22,10 +32,26 @@ export interface MesoCycle {
   description?: string;
   microCycles: MicroCycle[];
   duration: number; // Duración en semanas
-  focus: 'strength' | 'hypertrophy' | 'endurance' | 'power' | 'mixed';
-  progressionModel: 'linear' | 'undulating' | 'block' | 'custom';
+  focus: 'strength' | 'hypertrophy' | 'endurance' | 'power' | 'mixed' | 'maintenance' | 'recovery';
+  progressionModel: 'linear' | 'undulating' | 'block' | 'wave' | 'step' | 'custom';
   includesDeload: boolean;
-  deloadStrategy?: 'volume' | 'intensity' | 'both' | 'frequency';
+  deloadStrategy?: 'volume' | 'intensity' | 'both' | 'frequency' | 'complete' | 'active_recovery';
+  deloadWeek?: number; // Semana en la que se realiza el deload (ej: 4 para deload en la semana 4)
+  deloadFrequency?: number; // Cada cuántas semanas se realiza un deload
+  volumeProgression: 'ascending' | 'descending' | 'wave' | 'step' | 'constant';
+  intensityProgression: 'ascending' | 'descending' | 'wave' | 'step' | 'constant';
+  startingVolume: number; // Volumen inicial (series por grupo muscular por semana)
+  peakVolume: number; // Volumen máximo (series por grupo muscular por semana)
+  startingIntensity: number; // Intensidad inicial (% 1RM o RPE)
+  peakIntensity: number; // Intensidad máxima (% 1RM o RPE)
+  frequencyPerMuscleGroup: Record<string, number>; // Frecuencia por grupo muscular
+  primaryMuscleGroups: string[]; // Grupos musculares prioritarios
+  secondaryMuscleGroups: string[]; // Grupos musculares secundarios
+  exerciseRotation: 'fixed' | 'rotating' | 'undulating'; // Estrategia de selección de ejercicios
+  specialTechniques?: string[]; // Técnicas especiales a utilizar
+  recommendedSupplements?: string[]; // Suplementos recomendados para esta fase
+  expectedOutcomes?: string[]; // Resultados esperados
+  cycleNumber?: number; // Número de ciclo dentro del macrociclo
   notes?: string;
 }
 
@@ -36,9 +62,38 @@ export interface MacroCycle {
   description?: string;
   mesoCycles: MesoCycle[];
   duration: number; // Duración en meses
-  periodizationType: 'linear' | 'undulating' | 'block' | 'conjugate' | 'custom';
-  primaryGoal: 'strength' | 'hypertrophy' | 'endurance' | 'weight_loss' | 'general_fitness';
-  secondaryGoal?: 'strength' | 'hypertrophy' | 'endurance' | 'weight_loss' | 'general_fitness';
+  periodizationType: 'linear' | 'undulating' | 'block' | 'conjugate' | 'reverse_linear' | 'concurrent' | 'custom';
+  primaryGoal: 'strength' | 'hypertrophy' | 'endurance' | 'weight_loss' | 'general_fitness' | 'power' | 'recomposition';
+  secondaryGoal?: 'strength' | 'hypertrophy' | 'endurance' | 'weight_loss' | 'general_fitness' | 'power' | 'recomposition';
+  startDate: string; // Fecha de inicio
+  endDate: string; // Fecha de finalización
+  trainingLevel: 'beginner' | 'intermediate' | 'advanced' | 'elite';
+  trainingAge?: number; // Años de entrenamiento
+  trainingPhases: {
+    preparatory?: number; // Duración en semanas
+    hypertrophy?: number; // Duración en semanas
+    strength?: number; // Duración en semanas
+    power?: number; // Duración en semanas
+    peaking?: number; // Duración en semanas
+    transition?: number; // Duración en semanas
+  };
+  nutritionPhases?: {
+    maintenance?: number; // Duración en semanas
+    surplus?: number; // Duración en semanas
+    deficit?: number; // Duración en semanas
+    refeed?: number; // Duración en semanas
+  };
+  deloadStrategy: 'regular' | 'autoregulated' | 'performance_based' | 'custom';
+  deloadFrequency: number; // Cada cuántas semanas se programa un deload
+  expectedProgressions: {
+    strength?: number; // % de mejora esperado
+    muscle_mass?: number; // % de mejora esperado
+    endurance?: number; // % de mejora esperado
+    body_composition?: number; // % de mejora esperado
+  };
+  seasonality?: 'off_season' | 'pre_season' | 'in_season' | 'post_season';
+  competitionDates?: string[]; // Fechas de competición si aplica
+  testingWeeks?: number[]; // Semanas en las que se realizan tests de rendimiento
   notes?: string;
 }
 
@@ -48,16 +103,43 @@ export interface TrainingProgram {
   userId: string;
   name: string;
   description?: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
-  type: 'full_body' | 'upper_lower' | 'push_pull_legs' | 'body_part_split' | 'custom';
+  level: 'beginner' | 'intermediate' | 'advanced' | 'elite';
+  type: 'full_body' | 'upper_lower' | 'push_pull_legs' | 'body_part_split' | 'bro_split' | 'ppl_arnold' | 'custom';
   duration: number; // Duración en semanas
   frequency: number; // Días de entrenamiento por semana
-  goal: 'strength' | 'hypertrophy' | 'endurance' | 'weight_loss' | 'general_fitness';
+  goal: 'strength' | 'hypertrophy' | 'endurance' | 'weight_loss' | 'general_fitness' | 'power' | 'recomposition';
   targetMuscleGroups?: string[]; // Grupos musculares prioritarios
   structure: 'mesocycle' | 'macrocycle' | 'simple';
   mesoCycles?: MesoCycle[]; // Si structure es 'mesocycle'
   macroCycle?: MacroCycle; // Si structure es 'macrocycle'
   routines?: WorkoutRoutine[]; // Si structure es 'simple'
+  createdAt: string;
+  updatedAt: string;
+  startDate?: string;
+  endDate?: string;
+  isActive: boolean;
+  isTemplate?: boolean;
+  templateSource?: string; // Origen de la plantilla (ej: "Jeff Nippard PPL", "Chris Bumstead Split")
+  deloadStrategy: 'regular' | 'autoregulated' | 'performance_based' | 'none';
+  deloadFrequency?: number; // Cada cuántas semanas se programa un deload
+  progressionStrategy: 'linear' | 'double_progression' | 'undulating' | 'percentage_based' | 'rpe_based' | 'custom';
+  trainingSpecifics: {
+    preferredRepRanges?: [number, number]; // Rango de repeticiones preferido
+    preferredRIR?: number; // RIR (Reps In Reserve) preferido
+    preferredRPE?: number; // RPE (Rate of Perceived Exertion) preferido
+    restBetweenSets?: [number, number]; // Rango de descanso entre series en segundos
+    tempoPreference?: string; // Preferencia de tempo (ej: "3-1-2-0")
+    specialTechniques?: string[]; // Técnicas especiales preferidas
+  };
+  nutritionSyncEnabled?: boolean; // Indica si la sincronización con nutrición está habilitada
+  adaptiveAdjustments?: boolean; // Indica si se permiten ajustes adaptativos basados en rendimiento
+  userFeedback?: {
+    recoveryRating?: number; // Valoración de recuperación (1-10)
+    enjoymentRating?: number; // Valoración de disfrute (1-10)
+    difficultyRating?: number; // Valoración de dificultad (1-10)
+    effectivenessRating?: number; // Valoración de efectividad (1-10)
+    comments?: string; // Comentarios del usuario
+  };
   createdBy: string; // ID del usuario que creó el programa (admin o entrenador)
   assignedTo?: string[]; // IDs de usuarios a los que está asignado
   isTemplate: boolean;

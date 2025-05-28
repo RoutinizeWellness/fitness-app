@@ -1,4 +1,4 @@
-import { supabase } from './supabase-client';
+import { createClient } from './supabase/client';
 import { PostgrestError } from '@supabase/supabase-js';
 import {
   NutritionEntry,
@@ -21,6 +21,9 @@ type QueryResponse<T> = {
   data: T | null;
   error: PostgrestError | Error | null;
 };
+
+// Initialize Supabase client
+const supabase = createClient();
 
 // Funciones para entradas de nutrición
 export const getNutritionEntries = async (
@@ -184,6 +187,28 @@ export const getFoodById = async (id: string): Promise<QueryResponse<FoodItem>> 
 // Funciones para alimentos personalizados
 export const getUserCustomFoods = async (userId: string): Promise<QueryResponse<CustomFood[]>> => {
   try {
+    // Verificar si la tabla existe antes de hacer la consulta
+    try {
+      const { error: tableCheckError } = await supabase
+        .from('custom_foods')
+        .select('count', { count: 'exact', head: true })
+        .limit(1);
+
+      if (tableCheckError) {
+        console.error('La tabla custom_foods podría no existir:', tableCheckError);
+        return {
+          data: [],
+          error: new Error('La tabla custom_foods no existe o no es accesible. Por favor, crea la tabla en Supabase.')
+        };
+      }
+    } catch (tableError) {
+      console.error('Error al verificar la tabla custom_foods:', tableError);
+      return {
+        data: [],
+        error: new Error('Error al verificar la tabla custom_foods. Por favor, crea la tabla en Supabase.')
+      };
+    }
+
     const { data, error } = await supabase
       .from('custom_foods')
       .select('*')
@@ -194,7 +219,7 @@ export const getUserCustomFoods = async (userId: string): Promise<QueryResponse<
   } catch (e) {
     console.error(`Error en getUserCustomFoods:`, e);
     return {
-      data: null,
+      data: [],
       error: e instanceof PostgrestError ? e : new Error(`Error desconocido en getUserCustomFoods`)
     };
   }
@@ -399,6 +424,28 @@ export const deleteMealPlan = async (id: string): Promise<{ error: PostgrestErro
 // Funciones para objetivos nutricionales
 export const getUserNutritionGoals = async (userId: string): Promise<QueryResponse<NutritionGoal>> => {
   try {
+    // Verificar si la tabla existe antes de hacer la consulta
+    try {
+      const { error: tableCheckError } = await supabase
+        .from('nutrition_goals')
+        .select('count', { count: 'exact', head: true })
+        .limit(1);
+
+      if (tableCheckError) {
+        console.error('La tabla nutrition_goals podría no existir:', tableCheckError);
+        return {
+          data: null,
+          error: new Error('La tabla nutrition_goals no existe o no es accesible. Por favor, crea la tabla en Supabase.')
+        };
+      }
+    } catch (tableError) {
+      console.error('Error al verificar la tabla nutrition_goals:', tableError);
+      return {
+        data: null,
+        error: new Error('Error al verificar la tabla nutrition_goals. Por favor, crea la tabla en Supabase.')
+      };
+    }
+
     const { data, error } = await supabase
       .from('nutrition_goals')
       .select('*')
@@ -449,6 +496,28 @@ export const getWaterLog = async (
   date: string
 ): Promise<QueryResponse<WaterLog[]>> => {
   try {
+    // Verificar si la tabla existe antes de hacer la consulta
+    try {
+      const { error: tableCheckError } = await supabase
+        .from('water_log')
+        .select('count', { count: 'exact', head: true })
+        .limit(1);
+
+      if (tableCheckError) {
+        console.error('La tabla water_log podría no existir:', tableCheckError);
+        return {
+          data: [],
+          error: new Error('La tabla water_log no existe o no es accesible. Por favor, crea la tabla en Supabase.')
+        };
+      }
+    } catch (tableError) {
+      console.error('Error al verificar la tabla water_log:', tableError);
+      return {
+        data: [],
+        error: new Error('Error al verificar la tabla water_log. Por favor, crea la tabla en Supabase.')
+      };
+    }
+
     const { data, error } = await supabase
       .from('water_log')
       .select('*')
@@ -460,7 +529,7 @@ export const getWaterLog = async (
   } catch (e) {
     console.error(`Error en getWaterLog:`, e);
     return {
-      data: null,
+      data: [],
       error: e instanceof PostgrestError ? e : new Error(`Error desconocido en getWaterLog`)
     };
   }

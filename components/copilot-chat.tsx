@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -95,7 +95,13 @@ export function CopilotChat({ className }: CopilotChatProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // Add cache control to prevent caching issues
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0"
         },
+        // Add credentials to ensure cookies are sent with the request
+        credentials: "include",
         body: JSON.stringify({
           message: input,
           context: {
@@ -105,7 +111,21 @@ export function CopilotChat({ className }: CopilotChatProps) {
       })
 
       if (!response.ok) {
-        throw new Error("Error al comunicarse con el asistente")
+        const errorText = await response.text();
+        console.error("Error en la respuesta:", response.status, errorText);
+
+        // Handle specific error cases
+        if (response.status === 401) {
+          throw new Error("No estás autenticado. Por favor, inicia sesión nuevamente.")
+        } else if (response.status === 403) {
+          throw new Error("No tienes permiso para acceder a este recurso.")
+        } else if (response.status === 404) {
+          throw new Error("El servicio del asistente no está disponible en este momento.")
+        } else if (response.status >= 500) {
+          throw new Error("Error en el servidor. Por favor, inténtalo más tarde.")
+        } else {
+          throw new Error("Error al comunicarse con el asistente: " + (errorText || response.statusText))
+        }
       }
 
       const data = await response.json()
@@ -127,9 +147,12 @@ export function CopilotChat({ className }: CopilotChatProps) {
       // Mensaje de error como respuesta del bot
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "Lo siento, estoy teniendo problemas para procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.",
+        content: error instanceof Error
+          ? error.message
+          : "Lo siento, estoy teniendo problemas para procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.",
         sender: "bot",
-        timestamp: new Date()
+        timestamp: new Date(),
+        suggestions: ["Intentar de nuevo", "Contactar soporte", "Ver ayuda"]
       }
 
       setMessages(prev => [...prev, errorMessage])

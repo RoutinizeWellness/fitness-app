@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation"
 import { RoutinizeLayout } from "@/components/routinize-layout"
 import { Card3D, Card3DContent, Card3DHeader, Card3DTitle } from "@/components/ui/card-3d"
 import { Button3D } from "@/components/ui/button-3d"
-import { 
-  ArrowLeft, 
-  Dumbbell, 
-  Calendar, 
-  Filter, 
+import {
+  ArrowLeft,
+  Dumbbell,
+  Calendar,
+  Filter,
   ChevronRight,
   Search,
   Clock,
@@ -18,7 +18,7 @@ import {
   Brain,
   RefreshCw
 } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
@@ -54,7 +54,7 @@ export default function TrainingTemplatesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [levelFilter, setLevelFilter] = useState<string>("all")
   const [goalFilter, setGoalFilter] = useState<string>("all")
-  
+
   // Cargar plantillas (simuladas para este ejemplo)
   useEffect(() => {
     // En una implementación real, estos datos vendrían de Supabase
@@ -156,41 +156,41 @@ export default function TrainingTemplatesPage() {
         ]
       }
     ]
-    
+
     setTemplates(mockTemplates)
     setFilteredTemplates(mockTemplates)
     setIsLoading(false)
   }, [])
-  
+
   // Filtrar plantillas cuando cambian los filtros
   useEffect(() => {
     let filtered = templates
-    
+
     // Filtrar por término de búsqueda
     if (searchTerm) {
-      filtered = filtered.filter(template => 
+      filtered = filtered.filter(template =>
         template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         template.description.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
-    
+
     // Filtrar por nivel
     if (levelFilter !== "all") {
-      filtered = filtered.filter(template => 
+      filtered = filtered.filter(template =>
         template.level === levelFilter || template.level === "all"
       )
     }
-    
+
     // Filtrar por objetivo
     if (goalFilter !== "all") {
-      filtered = filtered.filter(template => 
+      filtered = filtered.filter(template =>
         template.goal === goalFilter
       )
     }
-    
+
     setFilteredTemplates(filtered)
   }, [searchTerm, levelFilter, goalFilter, templates])
-  
+
   // Obtener el color de la insignia según el nivel
   const getLevelBadgeColor = (level: TrainingTemplate["level"]) => {
     switch (level) {
@@ -201,7 +201,7 @@ export default function TrainingTemplatesPage() {
       default: return "bg-gray-500"
     }
   }
-  
+
   // Obtener el color de la insignia según el objetivo
   const getGoalBadgeColor = (goal: TrainingTemplate["goal"]) => {
     switch (goal) {
@@ -214,7 +214,7 @@ export default function TrainingTemplatesPage() {
       default: return "bg-gray-500"
     }
   }
-  
+
   // Obtener el texto del nivel
   const getLevelText = (level: TrainingTemplate["level"]) => {
     switch (level) {
@@ -225,7 +225,7 @@ export default function TrainingTemplatesPage() {
       default: return level
     }
   }
-  
+
   // Obtener el texto del objetivo
   const getGoalText = (goal: TrainingTemplate["goal"]) => {
     switch (goal) {
@@ -238,14 +238,14 @@ export default function TrainingTemplatesPage() {
       default: return goal
     }
   }
-  
+
   return (
     <RoutinizeLayout activeTab="training" title="Plantillas de entrenamiento">
       <div className="container mx-auto p-4 pb-20">
         <div className="flex items-center mb-6">
-          <Button3D 
-            variant="ghost" 
-            size="icon" 
+          <Button3D
+            variant="ghost"
+            size="icon"
             className="mr-2"
             onClick={() => router.back()}
           >
@@ -253,7 +253,7 @@ export default function TrainingTemplatesPage() {
           </Button3D>
           <h1 className="text-2xl font-bold">Plantillas científicas</h1>
         </div>
-        
+
         {isLoading ? (
           <div className="flex items-center justify-center min-h-[60vh]">
             <PulseLoader message="Cargando plantillas..." />
@@ -267,11 +267,11 @@ export default function TrainingTemplatesPage() {
               <Card3DContent>
                 <div className="space-y-4">
                   <p className="text-gray-600">
-                    Nuestras plantillas están diseñadas por expertos en ciencias del ejercicio y 
-                    basadas en investigaciones científicas para maximizar tus resultados. 
+                    Nuestras plantillas están diseñadas por expertos en ciencias del ejercicio y
+                    basadas en investigaciones científicas para maximizar tus resultados.
                     Selecciona una plantilla y personalízala según tus necesidades.
                   </p>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
                       <div className="flex items-center mb-2">
@@ -282,7 +282,7 @@ export default function TrainingTemplatesPage() {
                         Diseñadas según principios científicos de entrenamiento y periodización.
                       </p>
                     </div>
-                    
+
                     <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg">
                       <div className="flex items-center mb-2">
                         <RefreshCw className="h-5 w-5 text-purple-500 mr-2" />
@@ -292,7 +292,7 @@ export default function TrainingTemplatesPage() {
                         Incluyen ciclos de entrenamiento con semanas de descarga programadas.
                       </p>
                     </div>
-                    
+
                     <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg">
                       <div className="flex items-center mb-2">
                         <Zap className="h-5 w-5 text-green-500 mr-2" />
@@ -306,7 +306,7 @@ export default function TrainingTemplatesPage() {
                 </div>
               </Card3DContent>
             </Card3D>
-            
+
             {/* Filtros */}
             <Card3D>
               <Card3DHeader>
@@ -323,7 +323,7 @@ export default function TrainingTemplatesPage() {
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Nivel</label>
@@ -339,7 +339,7 @@ export default function TrainingTemplatesPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Objetivo</label>
                       <Select value={goalFilter} onValueChange={setGoalFilter}>
@@ -361,7 +361,7 @@ export default function TrainingTemplatesPage() {
                 </div>
               </Card3DContent>
             </Card3D>
-            
+
             {/* Lista de plantillas */}
             <div className="space-y-4">
               {filteredTemplates.length === 0 ? (
@@ -394,7 +394,7 @@ export default function TrainingTemplatesPage() {
                             </Badge>
                           </div>
                           <p className="text-gray-600 mb-4">{template.description}</p>
-                          
+
                           <div className="flex flex-wrap gap-3 mb-4">
                             <div className="flex items-center">
                               <Calendar className="h-4 w-4 text-gray-500 mr-1" />
@@ -405,7 +405,7 @@ export default function TrainingTemplatesPage() {
                               <span className="text-sm text-gray-600">{template.frequency} días/semana</span>
                             </div>
                           </div>
-                          
+
                           <div className="space-y-2">
                             <h4 className="text-sm font-medium">Características</h4>
                             <ul className="space-y-1">
@@ -419,11 +419,11 @@ export default function TrainingTemplatesPage() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <Separator className="my-4" />
-                      
+
                       <div className="flex justify-between">
-                        <Button3D 
+                        <Button3D
                           variant="outline"
                           onClick={() => router.push(`/training/templates/${template.id}`)}
                         >

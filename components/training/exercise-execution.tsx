@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog"
+import { VisuallyHidden } from "@/components/ui/visually-hidden"
 import {
   Dumbbell,
   RotateCcw,
@@ -17,10 +18,14 @@ import {
   Plus,
   Play,
   Pause,
-  Timer
+  Timer,
+  Check,
+  Sparkles,
+  Brain,
+  Info
 } from "lucide-react"
 import { Exercise } from "@/lib/types/training"
-import { ExerciseAlternatives } from "@/components/training/exercise-alternatives-simple"
+import { ExerciseAlternativeSelectorFixed } from "@/components/training/exercise-alternative-selector-fixed"
 import { useToast } from "@/components/ui/use-toast"
 import {
   DropdownMenu,
@@ -30,6 +35,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu"
+import { ExerciseRecommendationService } from "@/lib/exercise-recommendation-service"
 
 interface ExerciseExecutionProps {
   exercise: Exercise
@@ -63,6 +69,8 @@ export function ExerciseExecution({
   const [timerActive, setTimerActive] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState(exercise.rest || 60)
   const [isCompleted, setIsCompleted] = useState(false)
+  const [aiRecommendations, setAiRecommendations] = useState<{exercise: Exercise, matchScore: number, matchReason: string}[]>([])
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false)
 
   // Reiniciar el temporizador cuando cambia el ejercicio o el set
   useEffect(() => {
@@ -71,7 +79,68 @@ export function ExerciseExecution({
     setReps(exercise.repsMin || 10)
     setRir(exercise.rir || 2)
     setIsCompleted(false)
+
+    // Cargar recomendaciones de IA para el ejercicio actual
+    loadAiRecommendations()
   }, [exercise, currentSet])
+
+  // Cargar recomendaciones de ejercicios alternativos usando IA
+  const loadAiRecommendations = async () => {
+    try {
+      setIsLoadingRecommendations(true)
+      setShowDropdown(true) // Asegurar que el menú desplegable esté abierto
+
+      // Obtener recomendaciones del servicio de IA
+      const recommendations = await ExerciseRecommendationService.getAlternativeExercises(
+        exercise,
+        {
+          preferSamePattern: true,
+          preferSameEquipment: true,
+          maxResults: 5,
+          excludeIds: [exercise.id],
+          userEquipment: exercise.equipment || []
+        }
+      )
+
+      // Si no hay recomendaciones, intentar obtener alternativas basadas en otros criterios
+      if (recommendations.length === 0) {
+        const alternatives = getAlternatives();
+
+        // Convertir alternativas a formato de recomendación
+        const fallbackRecommendations = alternatives.map(alt => ({
+          exercise: alt,
+          matchScore: 50, // Puntuación predeterminada
+          matchReason: "Alternativa basada en criterios similares"
+        }));
+
+        setAiRecommendations(fallbackRecommendations)
+        console.log("Usando alternativas como recomendaciones:", fallbackRecommendations.length)
+      } else {
+        setAiRecommendations(recommendations)
+        console.log("Recomendaciones de IA cargadas:", recommendations.length)
+      }
+    } catch (error) {
+      console.error("Error al cargar recomendaciones de IA:", error)
+
+      // Usar alternativas como fallback
+      const alternatives = getAlternatives();
+      const fallbackRecommendations = alternatives.map(alt => ({
+        exercise: alt,
+        matchScore: 50,
+        matchReason: "Alternativa basada en criterios similares"
+      }));
+
+      setAiRecommendations(fallbackRecommendations)
+
+      toast({
+        title: "Usando alternativas",
+        description: "Se están mostrando alternativas basadas en criterios similares",
+        variant: "default"
+      })
+    } finally {
+      setIsLoadingRecommendations(false)
+    }
+  }
 
   // Manejar el temporizador
   useEffect(() => {
@@ -112,14 +181,55 @@ export function ExerciseExecution({
     }
   }
 
-  // Filtrar ejercicios alternativos con el mismo patrón de movimiento
+  // Filtrar ejercicios alternativos con criterios más flexibles
   const getAlternatives = () => {
-    if (!exercise.pattern) return []
+    // Si no hay patrón de movimiento, intentamos encontrar alternativas por grupo muscular
+    if (!exercise.pattern && (!exercise.muscleGroup || exercise.muscleGroup.length === 0)) {
+      console.warn("El ejercicio no tiene patrón de movimiento ni grupo muscular definido");
+      return availableExercises.filter(ex => ex.id !== exercise.id).slice(0, 5);
+    }
 
-    return availableExercises.filter(ex =>
-      ex.id !== exercise.id &&
-      ex.pattern === exercise.pattern
-    ).slice(0, 5) // Limitar a 5 alternativas
+    // Primero intentamos encontrar alternativas con el mismo patrón de movimiento
+    let alternatives = [];
+
+    if (exercise.pattern) {
+      alternatives = availableExercises.filter(ex =>
+        ex.id !== exercise.id &&
+        ex.pattern === exercise.pattern
+      );
+    }
+
+    // Si no hay suficientes alternativas con el mismo patrón, buscamos por grupo muscular
+    if (alternatives.length < 3 && exercise.muscleGroup && exercise.muscleGroup.length > 0) {
+      const muscleGroupAlts = availableExercises.filter(ex =>
+        ex.id !== exercise.id &&
+        !alternatives.some(a => a.id === ex.id) && // Evitar duplicados
+        ex.muscleGroup && exercise.muscleGroup.some(m => ex.muscleGroup.includes(m))
+      );
+      alternatives = [...alternatives, ...muscleGroupAlts];
+    }
+
+    // Si aún no hay suficientes, incluimos ejercicios con equipamiento similar
+    if (alternatives.length < 3 && exercise.equipment && exercise.equipment.length > 0) {
+      const equipmentAlts = availableExercises.filter(ex =>
+        ex.id !== exercise.id &&
+        !alternatives.some(a => a.id === ex.id) && // Evitar duplicados
+        ex.equipment && exercise.equipment.some(e => ex.equipment.includes(e))
+      );
+      alternatives = [...alternatives, ...equipmentAlts];
+    }
+
+    // Si todavía no hay suficientes alternativas, incluir cualquier ejercicio
+    if (alternatives.length < 2) {
+      const otherAlts = availableExercises.filter(ex =>
+        ex.id !== exercise.id &&
+        !alternatives.some(a => a.id === ex.id)
+      );
+      alternatives = [...alternatives, ...otherAlts];
+    }
+
+    console.log(`Encontradas ${alternatives.length} alternativas para ${exercise.name}`);
+    return alternatives.slice(0, 8); // Limitar a 8 alternativas
   }
 
   // Incrementar/decrementar peso
@@ -176,67 +286,98 @@ export function ExerciseExecution({
               <Badge className="mr-2 bg-blue-500 text-white">
                 {currentSet}/{exercise.sets}
               </Badge>
-              <h3 className="font-medium text-base">{exercise.name}</h3>
+              <h3 className="font-medium text-base text-black dark:text-white">{exercise.name}</h3>
             </div>
-            <p className="text-sm text-muted-foreground">{exercise.muscleGroup?.[0]}</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{exercise.muscleGroup?.[0]}</p>
           </div>
 
-          <DropdownMenu open={showDropdown} onOpenChange={setShowDropdown}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Alternativas
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Ejercicios alternativos</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAlternatives(true)}
+              className="flex-1"
+            >
+              <Dumbbell className="h-4 w-4 mr-2" />
+              Alternativas
+            </Button>
 
-              {alternatives.length > 0 ? (
-                alternatives.map(alt => (
-                  <DropdownMenuItem
-                    key={alt.id}
-                    onClick={() => handleChangeExercise(alt.id)}
-                  >
-                    <Dumbbell className="h-4 w-4 mr-2 text-primary" />
-                    <span>{alt.name}</span>
-                  </DropdownMenuItem>
-                ))
-              ) : (
-                <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                  No hay alternativas disponibles
-                </div>
-              )}
+            <DropdownMenu open={showDropdown} onOpenChange={setShowDropdown}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="flex-1">
+                  <Sparkles className="h-4 w-4 mr-2 text-amber-500" />
+                  IA Recomienda
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-72 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                <DropdownMenuLabel className="flex items-center text-black dark:text-white">
+                  <Brain className="h-4 w-4 mr-2 text-primary" />
+                  Recomendaciones inteligentes
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
 
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setShowAlternatives(true)}>
-                Ver todas las alternativas
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {isLoadingRecommendations ? (
+                  <div className="px-2 py-4 flex justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                  </div>
+                ) : aiRecommendations.length > 0 ? (
+                  aiRecommendations.map(rec => (
+                    <DropdownMenuItem
+                      key={rec.exercise.id}
+                      onClick={() => handleChangeExercise(rec.exercise.id)}
+                      className="flex flex-col items-start py-2"
+                    >
+                      <div className="flex items-center w-full">
+                        <Dumbbell className="h-4 w-4 mr-2 text-primary flex-shrink-0" />
+                        <span className="font-medium text-black dark:text-white">{rec.exercise.spanishName || rec.exercise.name}</span>
+                        <Badge className="ml-auto text-xs font-medium" variant="secondary">
+                          {Math.round(rec.matchScore)}%
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-gray-700 dark:text-gray-300 mt-1 pl-6 font-medium">{rec.matchReason}</p>
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <div className="px-2 py-3 text-sm text-gray-700 dark:text-gray-300 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <Info className="h-5 w-5 text-blue-500" />
+                      <p className="font-medium">No hay recomendaciones disponibles</p>
+                      <p className="text-xs">Intenta actualizar las recomendaciones</p>
+                    </div>
+                  </div>
+                )}
+
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => loadAiRecommendations()}>
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Actualizar recomendaciones
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         <div className="space-y-6">
           {/* Información del ejercicio */}
           <div className="grid grid-cols-3 gap-2 text-sm">
             <div className="text-center">
-              <p className="text-muted-foreground">Serie</p>
-              <p className="font-medium">{currentSet} de {exercise.sets}</p>
+              <p className="text-gray-600 dark:text-gray-400 font-medium">Serie</p>
+              <p className="font-semibold text-black dark:text-white">{currentSet} de {exercise.sets}</p>
             </div>
             <div className="text-center">
-              <p className="text-muted-foreground">Repeticiones</p>
-              <p className="font-medium">{exercise.repsMin}-{exercise.repsMax}</p>
+              <p className="text-gray-600 dark:text-gray-400 font-medium">Repeticiones</p>
+              <p className="font-semibold text-black dark:text-white">{exercise.repsMin}-{exercise.repsMax}</p>
             </div>
             <div className="text-center">
-              <p className="text-muted-foreground">Descanso</p>
-              <p className="font-medium">{exercise.rest}s</p>
+              <p className="text-gray-600 dark:text-gray-400 font-medium">Descanso</p>
+              <p className="font-semibold text-black dark:text-white">{exercise.rest}s</p>
             </div>
           </div>
 
           {/* Peso (kg) */}
-          <div className="bg-gray-50 p-3 rounded-lg">
+          <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Peso (kg)</span>
+              <span className="text-sm font-medium text-black dark:text-white">Peso (kg)</span>
               <div className="flex items-center">
                 <Button
                   variant="outline"
@@ -246,7 +387,7 @@ export function ExerciseExecution({
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="mx-4 font-bold text-lg">{weight}</span>
+                <span className="mx-4 font-bold text-lg text-black dark:text-white">{weight}</span>
                 <Button
                   variant="outline"
                   size="icon"
@@ -257,11 +398,11 @@ export function ExerciseExecution({
                 </Button>
               </div>
             </div>
-            <div className="flex justify-between text-xs text-gray-500 mt-2">
+            <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mt-2">
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 text-xs"
+                className="h-6 text-xs font-medium"
                 onClick={() => setWeight(0)}
               >
                 0
@@ -269,7 +410,7 @@ export function ExerciseExecution({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 text-xs"
+                className="h-6 text-xs font-medium"
                 onClick={() => setWeight(5)}
               >
                 5
@@ -277,7 +418,7 @@ export function ExerciseExecution({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 text-xs"
+                className="h-6 text-xs font-medium"
                 onClick={() => setWeight(10)}
               >
                 10
@@ -285,7 +426,7 @@ export function ExerciseExecution({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 text-xs"
+                className="h-6 text-xs font-medium"
                 onClick={() => setWeight(20)}
               >
                 20
@@ -293,7 +434,7 @@ export function ExerciseExecution({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 text-xs"
+                className="h-6 text-xs font-medium"
                 onClick={() => setWeight(30)}
               >
                 30
@@ -302,9 +443,9 @@ export function ExerciseExecution({
           </div>
 
           {/* Repeticiones */}
-          <div className="bg-gray-50 p-3 rounded-lg">
+          <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Repeticiones</span>
+              <span className="text-sm font-medium text-black dark:text-white">Repeticiones</span>
               <div className="flex items-center">
                 <Button
                   variant="outline"
@@ -314,7 +455,7 @@ export function ExerciseExecution({
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="mx-4 font-bold text-lg">{reps}</span>
+                <span className="mx-4 font-bold text-lg text-black dark:text-white">{reps}</span>
                 <Button
                   variant="outline"
                   size="icon"
@@ -325,11 +466,11 @@ export function ExerciseExecution({
                 </Button>
               </div>
             </div>
-            <div className="flex justify-between text-xs text-gray-500 mt-2">
+            <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mt-2">
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 text-xs"
+                className="h-6 text-xs font-medium"
                 onClick={() => setReps(exercise.repsMin || 8)}
               >
                 {exercise.repsMin || 8}
@@ -337,7 +478,7 @@ export function ExerciseExecution({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 text-xs"
+                className="h-6 text-xs font-medium"
                 onClick={() => setReps(exercise.repsMax || 12)}
               >
                 {exercise.repsMax || 12}
@@ -345,7 +486,7 @@ export function ExerciseExecution({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 text-xs"
+                className="h-6 text-xs font-medium"
                 onClick={() => setReps(Math.round((exercise.repsMin || 8) + (exercise.repsMax || 12)) / 2)}
               >
                 Media
@@ -354,14 +495,14 @@ export function ExerciseExecution({
           </div>
 
           {/* RIR (Repeticiones en Reserva) */}
-          <div className="bg-gray-50 p-3 rounded-lg">
+          <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">RIR (Repeticiones en Reserva)</span>
+              <span className="text-sm font-medium text-black dark:text-white">RIR (Repeticiones en Reserva)</span>
               <Badge variant={
                 rir <= 1 ? "destructive" :
                 rir <= 2 ? "default" :
                 "secondary"
-              }>
+              } className="font-medium">
                 {rir <= 1 ? "Alta intensidad" :
                  rir <= 2 ? "Intensidad media" :
                  "Baja intensidad"}
@@ -375,7 +516,7 @@ export function ExerciseExecution({
               onValueChange={(value) => setRir(value[0])}
               className="mb-2"
             />
-            <div className="flex justify-between text-xs text-gray-500">
+            <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 font-medium">
               <span>0</span>
               <span>1</span>
               <span>2</span>
@@ -383,8 +524,8 @@ export function ExerciseExecution({
               <span>4</span>
               <span>5</span>
             </div>
-            <div className="mt-2 text-xs text-gray-500">
-              <p>RIR {rir}: {
+            <div className="mt-2 text-xs text-gray-700 dark:text-gray-300">
+              <p className="font-medium">RIR {rir}: {
                 rir === 0 ? "No podrías hacer ni una repetición más" :
                 rir === 1 ? "Podrías hacer 1 repetición más" :
                 rir === 2 ? "Podrías hacer 2 repeticiones más" :
@@ -397,9 +538,9 @@ export function ExerciseExecution({
 
           {/* Temporizador */}
           {!isCompleted && (
-            <div className="bg-gray-50 p-4 rounded-lg text-center">
-              <h3 className="text-sm font-medium mb-1">Tiempo de descanso</h3>
-              <div className={`text-3xl font-bold ${timeRemaining < 10 && timerActive ? 'text-red-500 animate-pulse' : ''}`}>
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg text-center">
+              <h3 className="text-sm font-medium mb-1 text-black dark:text-white">Tiempo de descanso</h3>
+              <div className={`text-3xl font-bold ${timeRemaining < 10 && timerActive ? 'text-red-500 animate-pulse' : 'text-black dark:text-white'}`}>
                 {formatTime(timeRemaining)}
               </div>
 
@@ -431,11 +572,11 @@ export function ExerciseExecution({
                 </Button>
               </div>
 
-              <div className="flex justify-between text-xs text-gray-500 mt-3">
+              <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mt-3">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 text-xs"
+                  className="h-6 text-xs font-medium"
                   onClick={() => {
                     setTimerActive(false);
                     setTimeRemaining(30);
@@ -446,7 +587,7 @@ export function ExerciseExecution({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 text-xs"
+                  className="h-6 text-xs font-medium"
                   onClick={() => {
                     setTimerActive(false);
                     setTimeRemaining(60);
@@ -457,7 +598,7 @@ export function ExerciseExecution({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 text-xs"
+                  className="h-6 text-xs font-medium"
                   onClick={() => {
                     setTimerActive(false);
                     setTimeRemaining(90);
@@ -468,7 +609,7 @@ export function ExerciseExecution({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 text-xs"
+                  className="h-6 text-xs font-medium"
                   onClick={() => {
                     setTimerActive(false);
                     setTimeRemaining(120);
@@ -506,11 +647,11 @@ export function ExerciseExecution({
 
       <Dialog open={showAlternatives} onOpenChange={setShowAlternatives}>
         <DialogContent className="max-w-md">
-          <ExerciseAlternatives
-            exercise={exercise}
-            availableExercises={availableExercises}
-            onSelectAlternative={handleChangeExercise}
+          <DialogTitle>Seleccionar ejercicio alternativo</DialogTitle>
+          <ExerciseAlternativeSelectorFixed
             currentExerciseId={exercise.id}
+            onSelectAlternative={(selectedExercise) => handleChangeExercise(selectedExercise.id)}
+            onCancel={() => setShowAlternatives(false)}
           />
         </DialogContent>
       </Dialog>

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { Inter, Roboto_Serif } from "next/font/google"
+import Script from "next/script"
 import "./globals.css"
 
 // Usar Roboto Serif como reemplazo para Klasik
@@ -8,11 +9,7 @@ const klasik = Roboto_Serif({
   variable: '--font-klasik',
   display: 'swap',
 })
-import { ThemeProvider } from "@/components/theme-provider"
-import { EnhancedThemeProvider } from "@/components/theme/theme-provider"
-import { OrganicThemeProvider } from "@/components/theme/organic-theme-provider"
-import { HabitBuilderThemeProvider } from "@/components/theme/habit-builder-theme-provider"
-import { ActionFeedbackProvider } from "@/components/feedback/action-feedback"
+import { ClientLayout } from "./client-layout"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -61,21 +58,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="application-name" content="Routinize Wellness" />
+        <Script src="/chunk-error-handler.js" strategy="beforeInteractive" />
       </head>
       <body className={`${inter.className} ${klasik.variable} h-full monumental-theme`}>
-        <ThemeProvider defaultTheme="system" storageKey="routinize-theme">
-          <EnhancedThemeProvider defaultTheme="light" storageKey="routinize-ui">
-            <OrganicThemeProvider defaultTheme="light" storageKey="routinize-organic">
-              <HabitBuilderThemeProvider defaultTheme="light" storageKey="routinize-habit">
-                <ActionFeedbackProvider>
-                  <Providers>
-                    {children}
-                  </Providers>
-                </ActionFeedbackProvider>
-              </HabitBuilderThemeProvider>
-            </OrganicThemeProvider>
-          </EnhancedThemeProvider>
-        </ThemeProvider>
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   )

@@ -5,7 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dumbbell, Calendar, History, Settings, Sparkles } from "lucide-react"
+import WorkoutCalendar from "@/components/training/workout-calendar"
 import GeneralFitnessPlan from "@/components/training/general-fitness-plan"
+import WorkoutProgressCard from "@/components/training/workout-progress-card"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
 
@@ -59,30 +61,80 @@ export default function GeneralFitnessPage() {
         </TabsList>
 
         <TabsContent value="plan" className="space-y-6">
-          <GeneralFitnessPlan />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2">
+              <GeneralFitnessPlan />
+            </div>
+            <div className="md:col-span-1">
+              <WorkoutProgressCard />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="calendar" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Calendario de Entrenamiento</CardTitle>
-              <CardDescription>
-                Visualiza y planifica tus entrenamientos semanales
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px] flex items-center justify-center">
-              <div className="text-center">
-                <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Calendario en desarrollo</h3>
-                <p className="text-muted-foreground mb-4">
-                  Esta funcionalidad estará disponible próximamente
-                </p>
-                <Button variant="outline" onClick={() => setActiveTab("plan")}>
-                  Volver al Plan
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2">
+              <WorkoutCalendar />
+            </div>
+            <div className="md:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Próximos Entrenamientos</CardTitle>
+                  <CardDescription>
+                    Tus próximas sesiones programadas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <div className="flex items-center">
+                        <div className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-xs mr-3">
+                          L
+                        </div>
+                        <div>
+                          <p className="font-medium">Día 1: Piernas</p>
+                          <p className="text-xs text-muted-foreground">Lunes, 9:00 AM</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => router.push('/training/start-workout/day-1')}>
+                        Ver
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <div className="flex items-center">
+                        <div className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-xs mr-3">
+                          X
+                        </div>
+                        <div>
+                          <p className="font-medium">Día 3: Hombros y Brazos</p>
+                          <p className="text-xs text-muted-foreground">Miércoles, 9:00 AM</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => router.push('/training/start-workout/day-3')}>
+                        Ver
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-xs mr-3">
+                          V
+                        </div>
+                        <div>
+                          <p className="font-medium">Día 5: Cuerpo Completo</p>
+                          <p className="text-xs text-muted-foreground">Viernes, 9:00 AM</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => router.push('/training/start-workout/day-5')}>
+                        Ver
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="ai" className="space-y-6">

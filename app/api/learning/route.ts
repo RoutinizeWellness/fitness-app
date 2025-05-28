@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { 
-  analyzeWorkoutPatterns, 
+import {
+  analyzeWorkoutPatterns,
   generateSmartRecommendations,
   getSmartRecommendations,
   saveRecommendationFeedback
@@ -11,7 +11,7 @@ import {
 // Endpoint para analizar patrones de entrenamiento
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createRouteHandlerClient({ cookies: async () => await cookies() });
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
@@ -28,42 +28,42 @@ export async function POST(request: NextRequest) {
     // Analizar patrones de entrenamiento
     if (action === 'analyzePatterns') {
       const { data, error } = await analyzeWorkoutPatterns(userId);
-      
+
       if (error) {
         return NextResponse.json(
           { error: error.message },
           { status: 500 }
         );
       }
-      
+
       return NextResponse.json({ data });
     }
-    
+
     // Generar recomendaciones inteligentes
     if (action === 'generateRecommendations') {
       const { data, error } = await generateSmartRecommendations(userId);
-      
+
       if (error) {
         return NextResponse.json(
           { error: error.message },
           { status: 500 }
         );
       }
-      
+
       return NextResponse.json({ data });
     }
-    
+
     // Guardar feedback sobre recomendaciones
     if (action === 'saveFeedback') {
       const { recommendationId, rating, feedbackText } = body;
-      
+
       if (!recommendationId || rating === undefined) {
         return NextResponse.json(
           { error: 'Faltan parámetros requeridos' },
           { status: 400 }
         );
       }
-      
+
       const { data, error } = await saveRecommendationFeedback({
         user_id: userId,
         recommendation_id: recommendationId,
@@ -71,17 +71,17 @@ export async function POST(request: NextRequest) {
         rating,
         feedback_text: feedbackText
       });
-      
+
       if (error) {
         return NextResponse.json(
           { error: error.message },
           { status: 500 }
         );
       }
-      
+
       return NextResponse.json({ data });
     }
-    
+
     return NextResponse.json(
       { error: 'Acción no válida' },
       { status: 400 }
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
 // Endpoint para obtener recomendaciones inteligentes
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createRouteHandlerClient({ cookies: async () => await cookies() });
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {

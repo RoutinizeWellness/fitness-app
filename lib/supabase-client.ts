@@ -1,16 +1,51 @@
-// Importar el cliente mejorado de Supabase
-import { supabase, enhancedSupabase } from "./enhanced-supabase-client"
+import { createBrowserClient } from '@supabase/ssr'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+/**
+ * Cliente de Supabase optimizado para el navegador con manejo correcto de cookies
+ */
+function createClient() {
+  return createBrowserClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce',
+    },
+    global: {
+      headers: {
+        'x-application-name': 'routinize-fitness-app',
+      },
+    },
+  })
+}
+
+/**
+ * Cliente singleton para uso en el navegador
+ */
+let supabaseClient: ReturnType<typeof createClient> | null = null
+
+function getSupabaseClient() {
+  if (!supabaseClient) {
+    supabaseClient = createClient()
+  }
+  return supabaseClient
+}
 
 // Exportar el cliente de Supabase para mantener compatibilidad con el código existente
-export { supabase, enhancedSupabase }
+export const supabase = getSupabaseClient()
 
-// Verificar la conexión a Supabase usando el cliente mejorado
+// Verificar la conexión a Supabase
 export const checkSupabaseConnection = async () => {
   try {
-    const isConnected = await enhancedSupabase.checkConnection()
+    // Hacer una consulta simple para verificar la conexión
+    const { error } = await supabase.from('profiles').select('count').limit(1)
 
-    if (!isConnected) {
-      return { success: false, error: new Error("No se pudo establecer conexión con Supabase") }
+    if (error) {
+      console.error("Error de conexión a Supabase:", error)
+      return { success: false, error }
     }
 
     return { success: true, data: { status: 'connected' } }
@@ -22,7 +57,7 @@ export const checkSupabaseConnection = async () => {
 
 // Ejecutar la verificación de conexión de forma asíncrona sin bloquear
 setTimeout(() => {
-  enhancedSupabase.checkConnection().catch(err => {
+  checkSupabaseConnection().catch(err => {
     console.error("Error en la verificación asíncrona de Supabase:", err)
   })
 }, 2000)
@@ -94,103 +129,10 @@ export type UserProfile = {
   updated_at?: string
 }
 
-// Funciones de autenticación
-export const signUp = async (email: string, password: string) => {
-  try {
-    // Configurar para no requerir confirmación de email
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: {
-          email_confirmed: true
-        }
-      }
-    })
+// Authentication functions have been moved to lib/auth/supabase-auth.ts
+// Use the unified authentication system instead
 
-    // Verificar si el email es admin@routinize.com para asignar rol de administrador
-    const isAdmin = email.toLowerCase() === 'admin@routinize.com'
-
-    // Si el registro fue exitoso y tenemos un usuario, crear su perfil
-    if (data?.user && !error) {
-      try {
-        await createUserProfile({
-          user_id: data.user.id,
-          full_name: email.split('@')[0], // Usar la parte del email antes del @ como nombre
-          is_admin: isAdmin,
-          level: "Principiante",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-      } catch (profileError) {
-        console.error("Error al crear perfil durante el registro:", profileError)
-      }
-    }
-
-    return { data, error }
-  } catch (e) {
-    console.error("Error en signUp:", e)
-    return { data: null, error: e instanceof Error ? e : new Error("Error desconocido en signUp") }
-  }
-}
-
-export const signIn = async (email: string, password: string) => {
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    // Si el inicio de sesión fue exitoso y el email es admin@routinize.com
-    if (data?.user && !error && email.toLowerCase() === 'admin@routinize.com') {
-      try {
-        // Verificar si el usuario ya tiene un perfil
-        const { data: profileData } = await getUserProfile(data.user.id)
-
-        // Si tiene perfil pero no es admin, actualizarlo
-        if (profileData && !profileData.is_admin) {
-          await updateUserProfile(data.user.id, { is_admin: true })
-        }
-        // Si no tiene perfil, crearlo con rol de admin
-        else if (!profileData) {
-          await createUserProfile({
-            user_id: data.user.id,
-            full_name: "Administrador",
-            is_admin: true,
-            level: "Avanzado",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-        }
-      } catch (profileError) {
-        console.error("Error al verificar/actualizar perfil de administrador:", profileError)
-      }
-    }
-
-    return { data, error }
-  } catch (e) {
-    console.error("Error en signIn:", e)
-    return { data: null, error: e instanceof Error ? e : new Error("Error desconocido en signIn") }
-  }
-}
-
-// Función para iniciar sesión con Google
-export const signInWithGoogle = async () => {
-  try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      }
-    })
-
-    return { data, error }
-  } catch (e) {
-    console.error("Error en signInWithGoogle:", e)
-    return { data: null, error: e instanceof Error ? e : new Error("Error desconocido en signInWithGoogle") }
-  }
-}
+// signIn and signInWithGoogle functions have been moved to lib/auth/supabase-auth.ts
 
 // Función para manejar la creación o actualización de perfil después de autenticación con proveedores externos
 export const handleExternalAuth = async (user: any) => {
@@ -235,25 +177,7 @@ export const handleExternalAuth = async (user: any) => {
   }
 }
 
-export const signOut = async () => {
-  try {
-    const { error } = await supabase.auth.signOut()
-    return { error }
-  } catch (e) {
-    console.error("Error en signOut:", e)
-    return { error: e instanceof Error ? e : new Error("Error desconocido en signOut") }
-  }
-}
-
-export const getCurrentUser = async () => {
-  try {
-    const { data, error } = await supabase.auth.getUser()
-    return { user: data.user, error }
-  } catch (e) {
-    console.error("Error en getCurrentUser:", e)
-    return { user: null, error: e instanceof Error ? e : new Error("Error desconocido en getCurrentUser") }
-  }
-}
+// signOut and getCurrentUser functions have been moved to lib/auth/supabase-auth.ts
 
 // Funciones para perfiles de usuario
 // Función para crear un perfil simulado cuando hay problemas con Supabase

@@ -3,12 +3,15 @@
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useAuth } from "@/lib/contexts/auth-context"
-import ModernNavigation from "@/components/modern-navigation"
-import { CircularNavBar } from "@/components/navigation/circular-nav-bar"
+import { TrainingProvider } from "@/lib/contexts/training-context"
+import { UnifiedLayout } from "@/components/layout/unified-layout"
 import { NotificationCenter, Notification } from "@/components/notifications/notification-center"
+import { NotificationProvider } from "@/lib/contexts/notification-context"
 import { useFeedback } from "@/components/feedback/action-feedback"
 import { PulseLoader } from "@/components/ui/enhanced-skeletons"
 import { CopilotChat } from "@/components/copilot-chat"
+import { GeminiChat } from "@/components/gemini-chat"
+import { GeminiProvider } from "@/lib/contexts/gemini-provider"
 import { PageTransition } from "@/components/ui/page-transition"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
@@ -74,7 +77,6 @@ export default function DashboardLayout({
   const { showFeedback } = useFeedback()
 
   const [activeTab, setActiveTab] = useState("dashboard")
-  const [notifications, setNotifications] = useState<Notification[]>(sampleNotifications)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
 
   // Determinar la pestaña activa basada en la ruta
@@ -151,30 +153,9 @@ export default function DashboardLayout({
     }
   }
 
-  // Manejar notificaciones
-  const handleMarkAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notification =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    )
-  }
-
-  const handleMarkAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(notification => ({ ...notification, read: true }))
-    )
-  }
-
-  const handleClearAll = () => {
-    setNotifications([])
-  }
-
-  const handleNotificationClick = (notification: Notification) => {
-    if (notification.actionUrl) {
-      router.push(notification.actionUrl)
-    }
-    setIsNotificationsOpen(false)
+  // Manejar apertura/cierre del panel de notificaciones
+  const handleNotificationsOpenChange = (open: boolean) => {
+    setIsNotificationsOpen(open)
   }
 
   // Mostrar loader mientras carga
@@ -191,60 +172,35 @@ export default function DashboardLayout({
     return null
   }
 
-  // Map our tabs to the circular nav bar tabs - using the same IDs now
-  const mapTabToNavTab = (tab: string) => {
-    return tab; // We're now using the same IDs in both components
-  }
-
-  // Map circular nav bar tabs to our app tabs - using the same IDs now
-  const mapNavTabToTab = (navTab: string) => {
-    return navTab; // We're now using the same IDs in both components
-  }
-
-  // Handle navigation from circular nav bar
-  const handleNavTabChange = (navTab: string) => {
-    const tab = mapNavTabToTab(navTab)
-    handleTabChange(tab)
-
-    // The navigation is now handled directly in the CircularNavBar component
-    // through the route property of each navigation item
-  }
+  // These mapping functions are no longer needed since we're only using UnifiedLayout
+  // and not the CircularNavBar component in this layout
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Keep the original navigation for now (can be removed later) */}
-      <div className="hidden">
-        <ModernNavigation
-          activeTab={activeTab}
-          setActiveTab={handleTabChange}
-          notifications={notifications.filter(n => !n.read).length}
-        />
-      </div>
-
-      <div className="content-area pb-20">
+    <NotificationProvider>
+      <UnifiedLayout
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        title="Routinize"
+      >
         <PageTransition>
-          {children}
+          <TrainingProvider>
+            {children}
+          </TrainingProvider>
         </PageTransition>
-      </div>
 
-      {/* New Circular Navigation Bar */}
-      <CircularNavBar
-        activeTab={mapTabToNavTab(activeTab)}
-        onTabChange={handleNavTabChange}
-      />
+        {/* Gemini Chat */}
+        <GeminiProvider context={{ currentModule: activeTab }}>
+          <GeminiChat context={{ currentModule: activeTab }} />
+        </GeminiProvider>
 
-      <NotificationCenter
-        notifications={notifications}
-        onMarkAsRead={handleMarkAsRead}
-        onMarkAllAsRead={handleMarkAllAsRead}
-        onClearAll={handleClearAll}
-        onNotificationClick={handleNotificationClick}
-        isOpen={isNotificationsOpen}
-        onOpenChange={setIsNotificationsOpen}
-      />
+        <NotificationCenter
+          isOpen={isNotificationsOpen}
+          onOpenChange={handleNotificationsOpenChange}
+        />
 
-      {/* Microsoft Copilot Studio Chat */}
-      <CopilotChat />
-    </div>
+        {/* Microsoft Copilot Studio Chat */}
+        <CopilotChat />
+      </UnifiedLayout>
+    </NotificationProvider>
   )
 }

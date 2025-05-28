@@ -41,7 +41,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { supabase } from "@/lib/supabase-client"
 
 // Tipo para cliente con detalles

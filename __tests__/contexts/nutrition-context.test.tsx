@@ -1,11 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { NutritionProvider, useNutrition } from '@/contexts/nutrition-context'
-import { AuthProvider } from '@/contexts/auth-context'
+import { AuthProvider } from '@/lib/contexts/auth-context'
 import { SupabaseProvider } from '@/contexts/supabase-context'
-import { useAuth } from '@/contexts/auth-context'
+import { useAuth } from '@/lib/contexts/auth-context'
 
 // Mock de los hooks y servicios
-jest.mock('@/contexts/auth-context', () => ({
+jest.mock('@/lib/contexts/auth-context', () => ({
   useAuth: jest.fn(),
   AuthProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
 }))
@@ -38,7 +38,7 @@ jest.mock('@/lib/nutrition-service', () => ({
 // Componente de prueba que usa el contexto
 const TestComponent = () => {
   const { nutritionEntries, isLoadingEntries } = useNutrition()
-  
+
   return (
     <div>
       <div data-testid="loading-state">{isLoadingEntries ? 'Loading' : 'Not Loading'}</div>
@@ -55,7 +55,7 @@ describe('NutritionContext', () => {
       isLoading: false
     })
   })
-  
+
   it('proporciona el estado inicial correcto', () => {
     render(
       <SupabaseProvider>
@@ -66,10 +66,10 @@ describe('NutritionContext', () => {
         </AuthProvider>
       </SupabaseProvider>
     )
-    
+
     expect(screen.getByTestId('loading-state')).toHaveTextContent('Not Loading')
     expect(screen.getByTestId('entries-count')).toHaveTextContent('0')
   })
-  
+
   // Aquí se agregarían más pruebas para las diferentes funcionalidades del contexto
 })

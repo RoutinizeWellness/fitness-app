@@ -1,4 +1,4 @@
-import { supabase } from './supabase-client';
+import { supabase } from './supabase-unified';
 import { v4 as uuidv4 } from 'uuid';
 import {
   AIRecommendation,
@@ -8,7 +8,7 @@ import {
   AIResponse
 } from './ai-types';
 import { getExercises, getWorkouts, getWorkoutStats } from './supabase-queries';
-import { getCurrentUser } from './supabase-auth';
+import { supabaseAuth } from './auth/supabase-auth';
 import { getUserPatterns } from './learning-algorithm';
 
 import {

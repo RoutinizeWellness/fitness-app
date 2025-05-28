@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dumbbell, Timer, ArrowLeft, CheckCircle, XCircle, Play, Pause, RotateCcw } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { Progress } from "@/components/ui/progress"
 
 export default function StartWorkoutPage() {
@@ -31,10 +31,10 @@ export default function StartWorkoutPage() {
       try {
         // En un entorno real, aquí cargaríamos los datos de Supabase
         // Para este ejemplo, usamos datos simulados
-        
+
         // Recuperar el día seleccionado de localStorage
         const dayId = params.id as string
-        
+
         // Datos simulados del plan de fitness general
         const generalFitnessPlan = {
           days: [
@@ -105,10 +105,10 @@ export default function StartWorkoutPage() {
             }
           ]
         }
-        
+
         // Encontrar el día seleccionado
         const selectedDay = generalFitnessPlan.days.find(day => day.id === dayId)
-        
+
         if (selectedDay) {
           setWorkoutData(selectedDay)
           // Inicializar el tiempo de descanso con el del primer ejercicio
@@ -134,7 +134,7 @@ export default function StartWorkoutPage() {
         setIsLoading(false)
       }
     }
-    
+
     loadWorkoutData()
   }, [params.id, router, toast])
 
@@ -169,7 +169,7 @@ export default function StartWorkoutPage() {
   // Manejar el temporizador
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
-    
+
     if (timerRunning) {
       interval = setInterval(() => {
         setElapsedTime(prev => {
@@ -187,7 +187,7 @@ export default function StartWorkoutPage() {
         })
       }, 1000)
     }
-    
+
     return () => {
       if (interval) clearInterval(interval)
     }
@@ -250,7 +250,7 @@ export default function StartWorkoutPage() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Volver al Plan
         </Button>
-        
+
         {!workoutStarted && (
           <Button onClick={handleStartWorkout}>
             <Play className="h-4 w-4 mr-2" />
@@ -258,12 +258,12 @@ export default function StartWorkoutPage() {
           </Button>
         )}
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>{workoutData.name}</CardTitle>
           <CardDescription>{workoutData.description}</CardDescription>
-          
+
           <div className="flex flex-wrap gap-2 mt-2">
             {workoutData.muscleGroups?.map((muscle: string) => (
               <Badge key={muscle} variant="secondary">
@@ -272,7 +272,7 @@ export default function StartWorkoutPage() {
             ))}
           </div>
         </CardHeader>
-        
+
         {workoutStarted ? (
           <CardContent className="space-y-6">
             <div className="bg-muted p-4 rounded-lg">
@@ -284,9 +284,9 @@ export default function StartWorkoutPage() {
                   {Math.round((currentExerciseIndex / workoutData.exercises.length) * 100)}% completado
                 </Badge>
               </div>
-              
+
               <Progress value={(currentExerciseIndex / workoutData.exercises.length) * 100} className="mb-4" />
-              
+
               <div className="bg-card p-4 rounded-lg shadow-sm">
                 <h4 className="text-xl font-bold mb-2">
                   {workoutData.exercises[currentExerciseIndex].name}
@@ -302,7 +302,7 @@ export default function StartWorkoutPage() {
                     {workoutData.exercises[currentExerciseIndex].restTime || 60}s descanso
                   </Badge>
                 </div>
-                
+
                 <div className="flex justify-center mt-6">
                   <Button size="lg" onClick={handleNextExercise}>
                     <CheckCircle className="h-5 w-5 mr-2" />
@@ -311,10 +311,10 @@ export default function StartWorkoutPage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-muted p-4 rounded-lg">
               <h3 className="text-lg font-medium mb-4">Temporizador de Descanso</h3>
-              
+
               <div className="text-center mb-4">
                 <div className="text-4xl font-bold">
                   {Math.floor((restTime - elapsedTime) / 60).toString().padStart(2, '0')}:
@@ -322,7 +322,7 @@ export default function StartWorkoutPage() {
                 </div>
                 <Progress value={(elapsedTime / restTime) * 100} className="mt-2" />
               </div>
-              
+
               <div className="flex justify-center gap-2">
                 <Button variant="outline" size="icon" onClick={toggleTimer}>
                   {timerRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
@@ -346,7 +346,7 @@ export default function StartWorkoutPage() {
                   Temporizador
                 </TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="exercises" className="space-y-4">
                 <div className="space-y-4">
                   {workoutData.exercises.map((exercise: any, index: number) => (
@@ -364,7 +364,7 @@ export default function StartWorkoutPage() {
                   ))}
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="timer" className="space-y-4">
                 <div className="text-center py-8">
                   <Timer className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -377,7 +377,7 @@ export default function StartWorkoutPage() {
             </Tabs>
           </CardContent>
         )}
-        
+
         <CardFooter>
           {!workoutStarted && (
             <Button className="w-full" onClick={handleStartWorkout}>

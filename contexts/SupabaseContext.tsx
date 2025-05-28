@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { enhancedSupabase } from '@/lib/enhanced-supabase-client'
+import { supabase } from '@/lib/supabase-unified'
 import { checkHealth } from '@/lib/supabase-operations'
 import { toast } from 'sonner'
 
@@ -28,10 +28,10 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
   // Función para verificar la conexión
   const checkConnection = async (): Promise<boolean> => {
     setIsLoading(true)
-    
+
     try {
       const response = await checkHealth()
-      
+
       if (response.status === 'success') {
         setIsConnected(true)
         setError(null)
@@ -59,13 +59,13 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const verifyConnection = async () => {
       const connected = await checkConnection()
-      
+
       if (!connected && retryCount < 3) {
         // Programar un reintento
         const timeout = setTimeout(() => {
           setRetryCount(prev => prev + 1)
         }, 5000 * (retryCount + 1)) // Aumentar el tiempo entre reintentos
-        
+
         setRetryTimeout(timeout)
       } else if (!connected) {
         // Mostrar un toast de error después de varios intentos fallidos
@@ -81,9 +81,9 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
         })
       }
     }
-    
+
     verifyConnection()
-    
+
     // Limpiar el timeout al desmontar
     return () => {
       if (retryTimeout) {
@@ -111,10 +111,10 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
 // Hook para usar el contexto
 export function useSupabaseContext() {
   const context = useContext(SupabaseContext)
-  
+
   if (context === undefined) {
     throw new Error('useSupabaseContext debe ser usado dentro de un SupabaseProvider')
   }
-  
+
   return context
 }

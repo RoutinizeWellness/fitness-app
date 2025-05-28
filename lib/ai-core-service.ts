@@ -5,7 +5,7 @@
  * interface for personalized recommendations, adaptive learning, and predictive analytics.
  */
 
-import { supabase } from './supabase-client';
+import { supabase } from './supabase-unified';
 import { v4 as uuidv4 } from 'uuid';
 import {
   getUserPatterns,
@@ -314,7 +314,7 @@ export class AICoreService {
    * Generate hyperpersonalized recommendations based on all available data
    */
   public async generateHyperpersonalizedRecommendations(
-    domain: 'workout' | 'nutrition' | 'sleep' | 'wellness' | 'all' = 'all',
+    domain: 'workout' | 'nutrition' | 'sleep' | 'wellness' | 'productivity' | 'all' = 'all',
     limit: number = 5
   ): Promise<any[]> {
     try {

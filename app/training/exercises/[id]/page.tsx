@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { OrganicLayout } from "@/components/organic-layout"
+
 import { OrganicElement } from "@/components/transitions/organic-transitions"
 import { ExerciseTutorial } from "@/components/training/exercise-tutorial"
 import { Button } from "@/components/ui/button"
@@ -68,7 +68,7 @@ export default function ExercisePage({ params }: { params: { id: string } }) {
   const [exercise, setExercise] = useState(sampleExercise)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
-  
+
   // Obtener datos del ejercicio
   useEffect(() => {
     const fetchExercise = async () => {
@@ -82,15 +82,11 @@ export default function ExercisePage({ params }: { params: { id: string } }) {
         setIsLoading(false)
       }
     }
-    
+
     fetchExercise()
   }, [params.id])
-  
+
   return (
-    <OrganicLayout
-      activeTab="training"
-      title={isLoading ? "Cargando ejercicio..." : exercise.name}
-    >
       <OrganicElement type="fade">
         <div className="mb-6 flex items-center">
           <Button
@@ -103,7 +99,7 @@ export default function ExercisePage({ params }: { params: { id: string } }) {
           </Button>
           <h1 className="text-2xl font-bold">Detalles del ejercicio</h1>
         </div>
-        
+
         {isLoading ? (
           <div className="flex items-center justify-center h-[60vh]">
             <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
@@ -112,6 +108,5 @@ export default function ExercisePage({ params }: { params: { id: string } }) {
           <ExerciseTutorial exercise={exercise} />
         )}
       </OrganicElement>
-    </OrganicLayout>
   )
 }

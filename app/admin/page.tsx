@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { AdminLayout } from "@/components/admin/admin-layout"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -205,6 +205,106 @@ export default function AdminDashboardPage() {
                 </Card3DContent>
               </Card3D>
 
+              {/* Módulo de IA */}
+              <Card3D className="hover:shadow-lg transition-shadow">
+                <Card3DHeader>
+                  <div className="flex items-center">
+                    <div className="bg-purple-100 p-3 rounded-full mr-3">
+                      <Brain className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <Card3DTitle>Motor de IA</Card3DTitle>
+                  </div>
+                </Card3DHeader>
+                <Card3DContent>
+                  <p className="text-muted-foreground mb-4">
+                    Sistema de IA progresivo y segmentación inteligente.
+                  </p>
+                  <Button3D onClick={() => router.push("/admin/ai")} className="w-full">
+                    Gestionar IA
+                  </Button3D>
+                </Card3DContent>
+              </Card3D>
+
+              {/* Módulo de Analíticas */}
+              <Card3D className="hover:shadow-lg transition-shadow">
+                <Card3DHeader>
+                  <div className="flex items-center">
+                    <div className="bg-blue-100 p-3 rounded-full mr-3">
+                      <BarChart className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <Card3DTitle>Analíticas Avanzadas</Card3DTitle>
+                  </div>
+                </Card3DHeader>
+                <Card3DContent>
+                  <p className="text-muted-foreground mb-4">
+                    Dashboards en tiempo real y analíticas predictivas.
+                  </p>
+                  <Button3D onClick={() => router.push("/admin/analytics")} className="w-full">
+                    Ver Analíticas
+                  </Button3D>
+                </Card3DContent>
+              </Card3D>
+
+              {/* Módulo de Comunicaciones */}
+              <Card3D className="hover:shadow-lg transition-shadow">
+                <Card3DHeader>
+                  <div className="flex items-center">
+                    <div className="bg-green-100 p-3 rounded-full mr-3">
+                      <Bell className="h-6 w-6 text-green-600" />
+                    </div>
+                    <Card3DTitle>Comunicaciones</Card3DTitle>
+                  </div>
+                </Card3DHeader>
+                <Card3DContent>
+                  <p className="text-muted-foreground mb-4">
+                    Sistema de mensajería automatizada y notificaciones.
+                  </p>
+                  <Button3D onClick={() => router.push("/admin/communications")} className="w-full">
+                    Gestionar Comunicaciones
+                  </Button3D>
+                </Card3DContent>
+              </Card3D>
+
+              {/* Módulo de Reportes */}
+              <Card3D className="hover:shadow-lg transition-shadow">
+                <Card3DHeader>
+                  <div className="flex items-center">
+                    <div className="bg-indigo-100 p-3 rounded-full mr-3">
+                      <FileText className="h-6 w-6 text-indigo-600" />
+                    </div>
+                    <Card3DTitle>Inteligencia de Negocio</Card3DTitle>
+                  </div>
+                </Card3DHeader>
+                <Card3DContent>
+                  <p className="text-muted-foreground mb-4">
+                    Reportes avanzados y KPIs de negocio.
+                  </p>
+                  <Button3D onClick={() => router.push("/admin/reports")} className="w-full">
+                    Ver Reportes
+                  </Button3D>
+                </Card3DContent>
+              </Card3D>
+
+              {/* Módulo de Analíticas de Entrenamiento */}
+              <Card3D className="hover:shadow-lg transition-shadow">
+                <Card3DHeader>
+                  <div className="flex items-center">
+                    <div className="bg-red-100 p-3 rounded-full mr-3">
+                      <Activity className="h-6 w-6 text-red-600" />
+                    </div>
+                    <Card3DTitle>Analíticas de Entrenamiento</Card3DTitle>
+                  </div>
+                </Card3DHeader>
+                <Card3DContent>
+                  <p className="text-muted-foreground mb-4">
+                    Monitoreo en tiempo real del progreso de entrenamiento.
+                  </p>
+                  <Button3D onClick={() => router.push("/admin/training-analytics")} className="w-full">
+                    Ver Analíticas
+                  </Button3D>
+                </Card3DContent>
+              </Card3D>
+
               {/* Módulo de Nutrición */}
               <Card3D className="hover:shadow-lg transition-shadow">
                 <Card3DHeader>
@@ -377,8 +477,12 @@ export default function AdminDashboardPage() {
                     <p className="text-muted-foreground mb-4">
                       Gestiona la configuración de la base de datos y las copias de seguridad.
                     </p>
-                    <Button3D onClick={() => router.push("/admin/settings/database")} className="w-full">
+                    <Button3D onClick={() => router.push("/admin/settings/database")} className="w-full mb-2">
                       Configuración de Base de Datos
+                    </Button3D>
+                    <Button3D onClick={() => router.push("/admin/database")} className="w-full" variant="outline">
+                      <Database className="h-4 w-4 mr-2" />
+                      Gestión de Datos
                     </Button3D>
                   </div>
 

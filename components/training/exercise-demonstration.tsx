@@ -5,13 +5,13 @@ import { Card3D, Card3DContent, Card3DHeader, Card3DTitle } from "@/components/u
 import { Button3D } from "@/components/ui/button-3d"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  Play, 
-  Pause, 
-  SkipForward, 
-  SkipBack, 
-  Maximize2, 
-  Volume2, 
+import {
+  Play,
+  Pause,
+  SkipForward,
+  SkipBack,
+  Maximize2,
+  Volume2,
   VolumeX,
   Info,
   ChevronRight,
@@ -45,37 +45,18 @@ export function ExerciseDemonstration({
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentFrame, setCurrentFrame] = useState(0)
   const [totalFrames, setTotalFrames] = useState(10)
-  
-  // Sample exercise data
-  const exercises = [
-    { id: "bench-press", name: "Press de Banca", category: "compound", muscleGroup: "chest", difficulty: "intermediate" },
-    { id: "squat", name: "Sentadilla", category: "compound", muscleGroup: "legs", difficulty: "intermediate" },
-    { id: "deadlift", name: "Peso Muerto", category: "compound", muscleGroup: "back", difficulty: "advanced" },
-    { id: "pull-up", name: "Dominadas", category: "compound", muscleGroup: "back", difficulty: "intermediate" },
-    { id: "lateral-raise", name: "Elevaciones Laterales", category: "isolation", muscleGroup: "shoulders", difficulty: "beginner" },
-    { id: "bicep-curl", name: "Curl de Bíceps", category: "isolation", muscleGroup: "arms", difficulty: "beginner" }
-  ]
-  
-  // Sample technique data
-  const techniques = [
-    { id: "drop-set", name: "Drop Set", difficulty: "intermediate", category: "intensity" },
-    { id: "rest-pause", name: "Rest-Pause", difficulty: "intermediate", category: "intensity" },
-    { id: "super-set", name: "Super Set", difficulty: "beginner", category: "efficiency" },
-    { id: "mechanical-drop-set", name: "Series Mecánicas", difficulty: "advanced", category: "intensity" },
-    { id: "partial-reps", name: "Repeticiones Parciales", difficulty: "intermediate", category: "intensity" },
-    { id: "3-7-method", name: "Método 3/7", difficulty: "advanced", category: "intensity" }
-  ]
-  
+  // Exercise and technique data will be loaded from the database
+
   // Get current exercise
   const currentExercise = exercises.find(ex => ex.id === selectedExercise)
-  
+
   // Get current technique
   const currentTechnique = techniques.find(tech => tech.id === selectedTechnique)
-  
+
   // Simulate animation playback
   useEffect(() => {
     let interval: NodeJS.Timeout
-    
+
     if (isPlaying) {
       interval = setInterval(() => {
         setCurrentFrame(prev => {
@@ -86,29 +67,29 @@ export function ExerciseDemonstration({
         })
       }, 200)
     }
-    
+
     return () => {
       if (interval) clearInterval(interval)
     }
   }, [isPlaying, totalFrames])
-  
+
   // Handle play/pause
   const togglePlayback = () => {
     setIsPlaying(prev => !prev)
   }
-  
+
   // Handle next frame
   const nextFrame = () => {
     setIsPlaying(false)
     setCurrentFrame(prev => (prev >= totalFrames - 1 ? 0 : prev + 1))
   }
-  
+
   // Handle previous frame
   const prevFrame = () => {
     setIsPlaying(false)
     setCurrentFrame(prev => (prev <= 0 ? totalFrames - 1 : prev - 1))
   }
-  
+
   // Get difficulty color
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -122,7 +103,7 @@ export function ExerciseDemonstration({
         return "bg-blue-500"
     }
   }
-  
+
   return (
     <Card3D>
       <Card3DHeader>
@@ -134,7 +115,7 @@ export function ExerciseDemonstration({
             <TabsTrigger value="exercises">Ejercicios</TabsTrigger>
             <TabsTrigger value="techniques">Técnicas Avanzadas</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="exercises" className="space-y-4">
             <div className="flex flex-col space-y-4">
               <Select value={selectedExercise} onValueChange={setSelectedExercise}>
@@ -149,7 +130,7 @@ export function ExerciseDemonstration({
                   ))}
                 </SelectContent>
               </Select>
-              
+
               {currentExercise && (
                 <div className="space-y-4">
                   <div className="relative aspect-video bg-muted rounded-md overflow-hidden">
@@ -172,7 +153,7 @@ export function ExerciseDemonstration({
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
                       <Button3D size="icon" variant="secondary" onClick={prevFrame}>
                         <SkipBack className="h-4 w-4" />
@@ -185,7 +166,7 @@ export function ExerciseDemonstration({
                       </Button3D>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="font-semibold text-lg">{currentExercise.name}</h3>
@@ -194,7 +175,7 @@ export function ExerciseDemonstration({
                          currentExercise.difficulty === "intermediate" ? "Intermedio" : "Avanzado"}
                       </Badge>
                     </div>
-                    
+
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="outline">
                         {currentExercise.category === "compound" ? "Compuesto" : "Aislamiento"}
@@ -206,9 +187,9 @@ export function ExerciseDemonstration({
                          currentExercise.muscleGroup === "shoulders" ? "Hombros" : "Brazos"}
                       </Badge>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div className="space-y-2">
                       <h4 className="font-medium">Ejecución Correcta</h4>
                       <ul className="space-y-1 text-sm">
@@ -226,7 +207,7 @@ export function ExerciseDemonstration({
                         </li>
                       </ul>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <h4 className="font-medium">Errores Comunes</h4>
                       <ul className="space-y-1 text-sm">
@@ -249,7 +230,7 @@ export function ExerciseDemonstration({
               )}
             </div>
           </TabsContent>
-          
+
           <TabsContent value="techniques" className="space-y-4">
             <div className="flex flex-col space-y-4">
               <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
@@ -264,7 +245,7 @@ export function ExerciseDemonstration({
                   ))}
                 </SelectContent>
               </Select>
-              
+
               {currentTechnique && (
                 <div className="space-y-4">
                   <div className="relative aspect-video bg-muted rounded-md overflow-hidden">
@@ -287,7 +268,7 @@ export function ExerciseDemonstration({
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
                       <Button3D size="icon" variant="secondary" onClick={prevFrame}>
                         <SkipBack className="h-4 w-4" />
@@ -300,7 +281,7 @@ export function ExerciseDemonstration({
                       </Button3D>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="font-semibold text-lg">{currentTechnique.name}</h3>
@@ -309,33 +290,33 @@ export function ExerciseDemonstration({
                          currentTechnique.difficulty === "intermediate" ? "Intermedio" : "Avanzado"}
                       </Badge>
                     </div>
-                    
+
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="outline">
                         {currentTechnique.category === "intensity" ? "Intensidad" : "Eficiencia"}
                       </Badge>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div className="space-y-2">
                       <h4 className="font-medium">Implementación</h4>
                       <p className="text-sm">
-                        {selectedTechnique === "drop-set" && 
+                        {selectedTechnique === "drop-set" &&
                           "Realiza una serie hasta el fallo muscular, reduce el peso en un 20-30% y continúa inmediatamente hasta el fallo nuevamente. Puedes realizar 2-3 reducciones de peso."}
-                        {selectedTechnique === "rest-pause" && 
+                        {selectedTechnique === "rest-pause" &&
                           "Realiza una serie hasta el fallo muscular, descansa 10-15 segundos y continúa con el mismo peso hasta el fallo nuevamente. Repite 2-3 veces."}
-                        {selectedTechnique === "super-set" && 
+                        {selectedTechnique === "super-set" &&
                           "Realiza dos ejercicios consecutivos sin descanso entre ellos. Puedes combinar ejercicios para el mismo grupo muscular o para grupos musculares antagonistas."}
-                        {selectedTechnique === "mechanical-drop-set" && 
+                        {selectedTechnique === "mechanical-drop-set" &&
                           "Realiza un ejercicio hasta el fallo y cambia inmediatamente a una variante mecánicamente más ventajosa del mismo ejercicio."}
-                        {selectedTechnique === "partial-reps" && 
+                        {selectedTechnique === "partial-reps" &&
                           "Después de alcanzar el fallo muscular con repeticiones completas, continúa con repeticiones parciales en el rango de movimiento donde eres más fuerte."}
-                        {selectedTechnique === "3-7-method" && 
+                        {selectedTechnique === "3-7-method" &&
                           "Realiza 5 mini-series de 3 repeticiones con 15 segundos de descanso entre ellas, seguidas de una serie de 7 repeticiones hasta el fallo."}
                       </p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <h4 className="font-medium">Beneficios</h4>
                       <ul className="space-y-1 text-sm">
@@ -353,7 +334,7 @@ export function ExerciseDemonstration({
                         </li>
                       </ul>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <h4 className="font-medium">Precauciones</h4>
                       <ul className="space-y-1 text-sm">

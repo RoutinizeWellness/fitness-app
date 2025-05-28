@@ -1,0 +1,3 @@
+This is a placeholder file to ensure the directory structure exists.
+The actual 3D model file (trainer.glb) should be placed in this directory.
+If the model file is not available, the application will use a fallback avatar.

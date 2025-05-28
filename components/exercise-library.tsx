@@ -8,13 +8,13 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
-import { 
-  Search, 
-  Filter, 
-  Dumbbell, 
-  Play, 
-  Bookmark, 
-  Share2, 
+import {
+  Search,
+  Filter,
+  Dumbbell,
+  Play,
+  Bookmark,
+  Share2,
   Info,
   ChevronDown,
   ChevronUp,
@@ -44,7 +44,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { supabase } from "@/lib/supabase-client"
 
 interface Exercise {
@@ -87,7 +87,7 @@ export default function ExerciseLibrary() {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null)
   const [showFilters, setShowFilters] = useState(false)
   const [favorites, setFavorites] = useState<string[]>([])
-  
+
   // Filter options
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     muscleGroups: [],
@@ -95,41 +95,41 @@ export default function ExerciseLibrary() {
     difficulty: [],
     category: []
   })
-  
+
   // Available filter values
   const muscleGroups = [
-    "Chest", "Back", "Shoulders", "Biceps", "Triceps", 
-    "Quadriceps", "Hamstrings", "Glutes", "Calves", "Abs", 
+    "Chest", "Back", "Shoulders", "Biceps", "Triceps",
+    "Quadriceps", "Hamstrings", "Glutes", "Calves", "Abs",
     "Forearms", "Neck", "Full Body"
   ]
-  
+
   const equipmentOptions = [
-    "Bodyweight", "Dumbbells", "Barbell", "Kettlebell", 
-    "Resistance Bands", "Cable Machine", "Smith Machine", 
-    "TRX/Suspension", "Medicine Ball", "Stability Ball", 
-    "Bench", "Pull-up Bar", "Treadmill", "Stationary Bike", 
+    "Bodyweight", "Dumbbells", "Barbell", "Kettlebell",
+    "Resistance Bands", "Cable Machine", "Smith Machine",
+    "TRX/Suspension", "Medicine Ball", "Stability Ball",
+    "Bench", "Pull-up Bar", "Treadmill", "Stationary Bike",
     "Rowing Machine", "Elliptical", "No Equipment"
   ]
-  
+
   const difficultyOptions = ["beginner", "intermediate", "advanced", "expert"]
-  
+
   const categoryOptions = ["strength", "cardio", "flexibility", "balance", "plyometric"]
-  
+
   // Load exercises
   useEffect(() => {
     const loadExercises = async () => {
       setIsLoading(true)
-      
+
       try {
         // Load exercises from Supabase
         const { data, error } = await supabase
           .from('exercises')
           .select('*')
-        
+
         if (error) {
           throw error
         }
-        
+
         if (data) {
           setExercises(data as Exercise[])
           setFilteredExercises(data as Exercise[])
@@ -137,7 +137,7 @@ export default function ExerciseLibrary() {
           // If no data, use sample exercises
           generateSampleExercises()
         }
-        
+
         // Load user favorites if logged in
         if (user) {
           const { data: favData, error: favError } = await supabase
@@ -145,7 +145,7 @@ export default function ExerciseLibrary() {
             .select('exercise_ids')
             .eq('user_id', user.id)
             .single()
-          
+
           if (!favError && favData) {
             setFavorites(favData.exercise_ids || [])
           }
@@ -158,10 +158,10 @@ export default function ExerciseLibrary() {
         setIsLoading(false)
       }
     }
-    
+
     loadExercises()
   }, [user])
-  
+
   // Generate sample exercises for development/testing
   const generateSampleExercises = () => {
     const sampleExercises: Exercise[] = [
@@ -272,26 +272,26 @@ export default function ExerciseLibrary() {
         tags: ["compound", "lower body", "functional"]
       }
     ]
-    
+
     setExercises(sampleExercises)
     setFilteredExercises(sampleExercises)
   }
-  
+
   // Filter exercises based on search query and filters
   useEffect(() => {
     let filtered = [...exercises]
-    
+
     // Apply search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(exercise => 
+      filtered = filtered.filter(exercise =>
         exercise.name.toLowerCase().includes(query) ||
         exercise.description.toLowerCase().includes(query) ||
         exercise.muscle_group.toLowerCase().includes(query) ||
         exercise.tags.some(tag => tag.toLowerCase().includes(query))
       )
     }
-    
+
     // Apply tab filter
     if (activeTab !== "all") {
       if (activeTab === "favorites") {
@@ -300,41 +300,41 @@ export default function ExerciseLibrary() {
         filtered = filtered.filter(exercise => exercise.muscle_group.toLowerCase() === activeTab)
       }
     }
-    
+
     // Apply additional filters
     if (filterOptions.muscleGroups.length > 0) {
-      filtered = filtered.filter(exercise => 
+      filtered = filtered.filter(exercise =>
         filterOptions.muscleGroups.includes(exercise.muscle_group) ||
         exercise.secondary_muscles.some(muscle => filterOptions.muscleGroups.includes(muscle))
       )
     }
-    
+
     if (filterOptions.equipment.length > 0) {
-      filtered = filtered.filter(exercise => 
+      filtered = filtered.filter(exercise =>
         exercise.equipment.some(eq => filterOptions.equipment.includes(eq))
       )
     }
-    
+
     if (filterOptions.difficulty.length > 0) {
-      filtered = filtered.filter(exercise => 
+      filtered = filtered.filter(exercise =>
         filterOptions.difficulty.includes(exercise.difficulty)
       )
     }
-    
+
     if (filterOptions.category.length > 0) {
-      filtered = filtered.filter(exercise => 
+      filtered = filtered.filter(exercise =>
         filterOptions.category.includes(exercise.category)
       )
     }
-    
+
     setFilteredExercises(filtered)
   }, [searchQuery, activeTab, filterOptions, exercises, favorites])
-  
+
   // Toggle filter selection
   const toggleFilter = (type: keyof FilterOptions, value: string) => {
     setFilterOptions(prev => {
       const current = [...prev[type]]
-      
+
       if (current.includes(value)) {
         return {
           ...prev,
@@ -348,7 +348,7 @@ export default function ExerciseLibrary() {
       }
     })
   }
-  
+
   // Clear all filters
   const clearFilters = () => {
     setFilterOptions({
@@ -359,7 +359,7 @@ export default function ExerciseLibrary() {
     })
     setSearchQuery("")
   }
-  
+
   // Toggle favorite
   const toggleFavorite = async (exerciseId: string) => {
     if (!user) {
@@ -370,10 +370,10 @@ export default function ExerciseLibrary() {
       })
       return
     }
-    
+
     try {
       let newFavorites = [...favorites]
-      
+
       if (favorites.includes(exerciseId)) {
         // Remove from favorites
         newFavorites = favorites.filter(id => id !== exerciseId)
@@ -381,10 +381,10 @@ export default function ExerciseLibrary() {
         // Add to favorites
         newFavorites = [...favorites, exerciseId]
       }
-      
+
       // Update state
       setFavorites(newFavorites)
-      
+
       // Update in database
       const { error } = await supabase
         .from('user_favorites')
@@ -393,9 +393,9 @@ export default function ExerciseLibrary() {
           exercise_ids: newFavorites,
           updated_at: new Date().toISOString()
         })
-      
+
       if (error) throw error
-      
+
     } catch (error) {
       console.error("Error updating favorites:", error)
       toast({
@@ -405,7 +405,7 @@ export default function ExerciseLibrary() {
       })
     }
   }
-  
+
   // Render loading state
   if (isLoading) {
     return (
@@ -414,9 +414,9 @@ export default function ExerciseLibrary() {
           <h2 className="text-2xl font-bold tracking-tight">Biblioteca de Ejercicios</h2>
           <Skeleton className="h-10 w-10 rounded-full" />
         </div>
-        
+
         <Skeleton className="h-12 w-full" />
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Skeleton className="h-64" />
           <Skeleton className="h-64" />
@@ -428,7 +428,7 @@ export default function ExerciseLibrary() {
       </div>
     )
   }
-  
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -439,7 +439,7 @@ export default function ExerciseLibrary() {
           {showFilters ? <ChevronUp className="h-4 w-4 ml-2" /> : <ChevronDown className="h-4 w-4 ml-2" />}
         </Button>
       </div>
-      
+
       <div className="flex w-full max-w-sm items-center space-x-2">
         <Input
           type="search"
@@ -452,7 +452,7 @@ export default function ExerciseLibrary() {
           <Search className="h-4 w-4" />
         </Button>
       </div>
-      
+
       {showFilters && (
         <Card className="w-full">
           <CardHeader className="pb-2">
@@ -473,7 +473,7 @@ export default function ExerciseLibrary() {
                       <Checkbox
                         id={`muscle-${muscle}`}
                         checked={filterOptions.muscleGroups.includes(muscle)}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           toggleFilter('muscleGroups', muscle)
                         }
                       />
@@ -482,7 +482,7 @@ export default function ExerciseLibrary() {
                   ))}
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="font-medium">Equipamiento</h4>
                 <div className="h-40 overflow-y-auto space-y-1 pr-2">
@@ -491,7 +491,7 @@ export default function ExerciseLibrary() {
                       <Checkbox
                         id={`equipment-${equipment}`}
                         checked={filterOptions.equipment.includes(equipment)}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           toggleFilter('equipment', equipment)
                         }
                       />
@@ -500,7 +500,7 @@ export default function ExerciseLibrary() {
                   ))}
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="font-medium">Dificultad</h4>
                 <div className="space-y-1">
@@ -509,7 +509,7 @@ export default function ExerciseLibrary() {
                       <Checkbox
                         id={`difficulty-${difficulty}`}
                         checked={filterOptions.difficulty.includes(difficulty)}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           toggleFilter('difficulty', difficulty)
                         }
                       />
@@ -520,7 +520,7 @@ export default function ExerciseLibrary() {
                   ))}
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="font-medium">Categoría</h4>
                 <div className="space-y-1">
@@ -529,7 +529,7 @@ export default function ExerciseLibrary() {
                       <Checkbox
                         id={`category-${category}`}
                         checked={filterOptions.category.includes(category)}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           toggleFilter('category', category)
                         }
                       />
@@ -544,7 +544,7 @@ export default function ExerciseLibrary() {
           </CardContent>
         </Card>
       )}
-      
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="flex overflow-x-auto pb-2 mb-2">
           <TabsTrigger value="all">Todos</TabsTrigger>
@@ -557,7 +557,7 @@ export default function ExerciseLibrary() {
           <TabsTrigger value="core">Core</TabsTrigger>
           <TabsTrigger value="cardio">Cardio</TabsTrigger>
         </TabsList>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredExercises.length > 0 ? (
             filteredExercises.map((exercise) => (

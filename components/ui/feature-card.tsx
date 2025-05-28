@@ -29,8 +29,8 @@ export function FeatureCard({
   return (
     <Card
       className={cn(
-        "overflow-hidden transition-all duration-300 hover:shadow-lg card-hover",
-        onClick && "cursor-pointer",
+        "overflow-hidden transition-all duration-300 hover:shadow-lg card-hover border-2",
+        onClick && "cursor-pointer hover:border-primary/30 active:border-primary/50",
         className
       )}
       onClick={onClick}
@@ -38,7 +38,7 @@ export function FeatureCard({
     >
       <CardContent className="p-6">
         <div className="flex flex-col items-center text-center">
-          <div className={cn("rounded-full p-3 mb-4", iconBgColor)}>
+          <div className={cn("rounded-full p-3 mb-4 shadow-sm", iconBgColor)}>
             <Icon className={cn("h-6 w-6", iconColor)} />
           </div>
           <h3 className="font-medium text-lg mb-2">{title}</h3>

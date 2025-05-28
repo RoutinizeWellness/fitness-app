@@ -3,18 +3,19 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { RoutinizeLayout } from "@/components/routinize-layout";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/lib/contexts/auth-context";
 import { Card } from "@/components/ui/card";
+import { SafeClientButton } from "@/components/ui/safe-client-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -24,7 +25,7 @@ import { CalendarIcon, ArrowLeft, Save, Search, Plus, Trash2 } from "lucide-reac
 import { cn } from "@/lib/utils";
 import { PulseLoader } from "@/components/ui/enhanced-skeletons";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 
 // Tipos
@@ -56,6 +57,18 @@ interface Meal {
   updatedAt: string;
 }
 
+// Función para obtener alimentos de ejemplo
+const getSampleFoods = (): FoodItem[] => [
+  { id: "1", name: "Pollo a la plancha", calories: 165, protein: 31, carbs: 0, fat: 3.6, quantity: 1, unit: "100g" },
+  { id: "2", name: "Arroz blanco", calories: 130, protein: 2.7, carbs: 28, fat: 0.3, quantity: 1, unit: "100g" },
+  { id: "3", name: "Brócoli", calories: 34, protein: 2.8, carbs: 7, fat: 0.4, quantity: 1, unit: "100g" },
+  { id: "4", name: "Salmón", calories: 208, protein: 20, carbs: 0, fat: 13, quantity: 1, unit: "100g" },
+  { id: "5", name: "Aguacate", calories: 160, protein: 2, carbs: 9, fat: 15, quantity: 1, unit: "100g" },
+  { id: "6", name: "Huevo", calories: 155, protein: 13, carbs: 1.1, fat: 11, quantity: 1, unit: "unidad" },
+  { id: "7", name: "Plátano", calories: 89, protein: 1.1, carbs: 23, fat: 0.3, quantity: 1, unit: "unidad" },
+  { id: "8", name: "Avena", calories: 389, protein: 17, carbs: 66, fat: 7, quantity: 1, unit: "100g" }
+];
+
 export default function AddMealPage() {
   const [date, setDate] = useState<Date>(new Date());
   const [time, setTime] = useState<string>("12:00");
@@ -71,6 +84,9 @@ export default function AddMealPage() {
   const { toast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
 
+  // Initialize Supabase client
+  const supabase = createClient();
+
   // Redirigir si no hay usuario autenticado
   useEffect(() => {
     if (!authLoading && !user) {
@@ -81,9 +97,9 @@ export default function AddMealPage() {
   // Buscar alimentos
   const searchFoods = async () => {
     if (!searchTerm.trim()) return;
-    
+
     setIsSearching(true);
-    
+
     try {
       // Buscar en Supabase
       const { data, error } = await supabase
@@ -91,11 +107,11 @@ export default function AddMealPage() {
         .select('*')
         .ilike('name', `%${searchTerm}%`)
         .limit(10);
-      
+
       if (error) {
         console.error("Error al buscar alimentos:", error);
         // Usar datos de ejemplo si hay error
-        setSearchResults(getSampleFoods().filter(food => 
+        setSearchResults(getSampleFoods().filter(food =>
           food.name.toLowerCase().includes(searchTerm.toLowerCase())
         ));
       } else {
@@ -104,7 +120,7 @@ export default function AddMealPage() {
     } catch (error) {
       console.error("Error al buscar alimentos:", error);
       // Usar datos de ejemplo en caso de error
-      setSearchResults(getSampleFoods().filter(food => 
+      setSearchResults(getSampleFoods().filter(food =>
         food.name.toLowerCase().includes(searchTerm.toLowerCase())
       ));
     } finally {
@@ -116,7 +132,7 @@ export default function AddMealPage() {
   const addFood = (food: FoodItem) => {
     // Comprobar si el alimento ya está en la lista
     const existingIndex = foods.findIndex(f => f.id === food.id);
-    
+
     if (existingIndex >= 0) {
       // Actualizar cantidad si ya existe
       const updatedFoods = [...foods];
@@ -129,7 +145,7 @@ export default function AddMealPage() {
       // Añadir nuevo alimento
       setFoods([...foods, { ...food, quantity: 1 }]);
     }
-    
+
     // Limpiar búsqueda
     setSearchTerm("");
     setSearchResults([]);
@@ -146,8 +162,8 @@ export default function AddMealPage() {
       removeFood(foodId);
       return;
     }
-    
-    setFoods(foods.map(food => 
+
+    setFoods(foods.map(food =>
       food.id === foodId ? { ...food, quantity } : food
     ));
   };
@@ -167,7 +183,7 @@ export default function AddMealPage() {
   // Guardar comida
   const handleSave = async () => {
     if (!user) return;
-    
+
     if (!mealName.trim()) {
       toast({
         title: "Error",
@@ -176,7 +192,7 @@ export default function AddMealPage() {
       });
       return;
     }
-    
+
     if (foods.length === 0) {
       toast({
         title: "Error",
@@ -185,11 +201,11 @@ export default function AddMealPage() {
       });
       return;
     }
-    
+
     setIsSaving(true);
-    
+
     const totals = calculateTotals();
-    
+
     const newMeal: Meal = {
       id: uuidv4(),
       userId: user.id,
@@ -206,7 +222,7 @@ export default function AddMealPage() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
+
     try {
       // Guardar en Supabase
       const { error } = await supabase
@@ -227,17 +243,17 @@ export default function AddMealPage() {
           created_at: newMeal.createdAt,
           updated_at: newMeal.updatedAt
         });
-      
+
       if (error) {
         console.error("Error al guardar comida:", error);
         throw error;
       }
-      
+
       toast({
         title: "Comida guardada",
         description: "Tu comida se ha guardado correctamente",
       });
-      
+
       // Redirigir a la página de nutrición
       setTimeout(() => {
         router.push("/nutrition");
@@ -268,15 +284,15 @@ export default function AddMealPage() {
     <RoutinizeLayout activeTab="nutrition" title="Añadir comida">
       <div className="container mx-auto p-4 pb-20">
         <div className="flex items-center mb-6">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <SafeClientButton
+            variant="ghost"
+            size="icon"
             className="mr-2"
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">Añadir comida</h1>
+          </SafeClientButton>
+          <h1 className="text-2xl font-bold text-[#1B237E] font-manrope">Añadir comida</h1>
         </div>
 
         <Card className="p-6 bg-white dark:bg-gray-800 shadow-md rounded-xl mb-6">
@@ -290,7 +306,7 @@ export default function AddMealPage() {
                 placeholder="Ej: Ensalada de pollo"
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Fecha</Label>
@@ -314,7 +330,7 @@ export default function AddMealPage() {
                   </PopoverContent>
                 </Popover>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="time">Hora</Label>
                 <Input
@@ -325,7 +341,7 @@ export default function AddMealPage() {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="mealType">Tipo de comida</Label>
               <Select value={mealType} onValueChange={setMealType}>
@@ -340,7 +356,7 @@ export default function AddMealPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Alimentos</Label>
               <div className="flex space-x-2">
@@ -350,8 +366,8 @@ export default function AddMealPage() {
                   placeholder="Buscar alimentos..."
                   onKeyDown={(e) => e.key === 'Enter' && searchFoods()}
                 />
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={searchFoods}
                   disabled={isSearching || !searchTerm.trim()}
                 >
@@ -362,12 +378,12 @@ export default function AddMealPage() {
                   )}
                 </Button>
               </div>
-              
+
               {searchResults.length > 0 && (
                 <Card className="p-2 mt-2 max-h-60 overflow-y-auto">
                   {searchResults.map(food => (
-                    <div 
-                      key={food.id} 
+                    <div
+                      key={food.id}
                       className="flex justify-between items-center p-2 hover:bg-gray-100 rounded-md cursor-pointer"
                       onClick={() => addFood(food)}
                     >
@@ -382,7 +398,7 @@ export default function AddMealPage() {
                   ))}
                 </Card>
               )}
-              
+
               {foods.length > 0 ? (
                 <div className="space-y-2 mt-4">
                   {foods.map(food => (
@@ -390,30 +406,30 @@ export default function AddMealPage() {
                       <div className="flex-1">
                         <p className="font-medium">{food.name}</p>
                         <p className="text-xs text-gray-500">
-                          {Math.round(food.calories * food.quantity)} kcal | 
-                          P: {Math.round(food.protein * food.quantity)}g | 
-                          C: {Math.round(food.carbs * food.quantity)}g | 
+                          {Math.round(food.calories * food.quantity)} kcal |
+                          P: {Math.round(food.protein * food.quantity)}g |
+                          C: {Math.round(food.carbs * food.quantity)}g |
                           G: {Math.round(food.fat * food.quantity)}g
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => updateFoodQuantity(food.id, food.quantity - 1)}
                         >
                           -
                         </Button>
                         <span className="w-8 text-center">{food.quantity}</span>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => updateFoodQuantity(food.id, food.quantity + 1)}
                         >
                           +
                         </Button>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => removeFood(food.id)}
                         >
@@ -422,7 +438,7 @@ export default function AddMealPage() {
                       </div>
                     </div>
                   ))}
-                  
+
                   <div className="p-3 bg-blue-50 rounded-md">
                     <p className="font-medium">Totales:</p>
                     <div className="grid grid-cols-4 gap-2 mt-1">
@@ -451,7 +467,7 @@ export default function AddMealPage() {
                 </div>
               )}
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="notes">Notas (opcional)</Label>
               <Textarea
@@ -466,14 +482,14 @@ export default function AddMealPage() {
         </Card>
 
         <div className="flex space-x-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="flex-1"
             onClick={() => router.push("/nutrition")}
           >
             Cancelar
           </Button>
-          <Button 
+          <Button
             className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
             onClick={handleSave}
             disabled={isSaving || !mealName.trim() || foods.length === 0}
@@ -496,58 +512,4 @@ export default function AddMealPage() {
   );
 }
 
-// Datos de ejemplo
-function getSampleFoods(): FoodItem[] {
-  return [
-    {
-      id: "1",
-      name: "Pollo a la plancha",
-      calories: 165,
-      protein: 31,
-      carbs: 0,
-      fat: 3.6,
-      quantity: 1,
-      unit: "100g"
-    },
-    {
-      id: "2",
-      name: "Arroz blanco cocido",
-      calories: 130,
-      protein: 2.7,
-      carbs: 28,
-      fat: 0.3,
-      quantity: 1,
-      unit: "100g"
-    },
-    {
-      id: "3",
-      name: "Brócoli cocido",
-      calories: 55,
-      protein: 3.7,
-      carbs: 11.2,
-      fat: 0.6,
-      quantity: 1,
-      unit: "100g"
-    },
-    {
-      id: "4",
-      name: "Huevo entero",
-      calories: 78,
-      protein: 6.3,
-      carbs: 0.6,
-      fat: 5.3,
-      quantity: 1,
-      unit: "unidad"
-    },
-    {
-      id: "5",
-      name: "Atún en conserva",
-      calories: 116,
-      protein: 25.5,
-      carbs: 0,
-      fat: 1,
-      quantity: 1,
-      unit: "100g"
-    }
-  ];
-}
+

@@ -1,10 +1,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Importar fuente Manrope */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
+
+/* Variables de color para la aplicación */
+:root {
+  --primary: #1B237E;
+  --primary-light: #B1AFE9;
+  --primary-lighter: #DDDCFE;
+  --accent: #FEA800;
+  --danger: #FF6767;
+  --dark: #573353;
+  --background: #FFF3E9;
+}
 @import url('../styles/3d-effects.css');
 @import url('../styles/enhanced-ux.css');
 @import url('../styles/welcome.css');
 @import url('../styles/organic-theme.css');
+
+/* Estilos para la barra de navegación unificada */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Estilos de fuentes */
+.font-klasik {
+  font-family: var(--font-klasik), serif;
+}
+
+.font-manrope {
+  font-family: 'Manrope', sans-serif;
+}
+
+/* Estilos de botones consistentes */
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-light);
+}
+
+.btn-accent {
+  background-color: var(--accent);
+  color: white;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-accent:hover {
+  background-color: var(--accent);
+  opacity: 0.9;
+}
 @import url('../styles/enhanced-organic-theme.css');
 @import url('../styles/habit-builder-theme.css');
 @import url('../styles/monumental-habits-theme.css');
@@ -35,73 +95,75 @@ body {
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    /* Routinize Color Palette */
+    --background: 43 100% 96%; /* #FFF3E9 */
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96.1%;
+    --primary: 235 65% 31%; /* #1B237E */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 245 71% 85%; /* #B1AFE9 */
+    --secondary-foreground: 235 65% 31%;
+    --muted: 245 71% 85%;
     --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
-    --chart-1: 221 83% 53%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 217 91% 60%;
-    --chart-4: 43 96% 56%;
-    --chart-5: 339 90% 51%;
+    --accent: 43 100% 50%; /* #FEA800 */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 100% 70%; /* #FF6767 */
+    --destructive-foreground: 0 0% 100%;
+    --border: 245 71% 90%; /* #DDDCFE */
+    --input: 245 71% 90%;
+    --ring: 235 65% 31%;
+    --chart-1: 235 65% 31%; /* #1B237E */
+    --chart-2: 43 100% 50%; /* #FEA800 */
+    --chart-3: 0 100% 70%; /* #FF6767 */
+    --chart-4: 300 24% 33%; /* #573353 */
+    --chart-5: 245 71% 85%; /* #B1AFE9 */
     --radius: 1.5rem;
-    --sidebar-background: 210 40% 98%;
+    --sidebar-background: 43 100% 96%;
     --sidebar-foreground: 215 16% 47%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary: 235 65% 31%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96.1%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-accent: 245 71% 85%;
+    --sidebar-accent-foreground: 235 65% 31%;
+    --sidebar-border: 245 71% 90%;
+    --sidebar-ring: 235 65% 31%;
   }
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 223 47% 14%;
-    --card-foreground: 210 40% 98%;
-    --popover: 223 47% 14%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 32% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 32% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 32% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 32% 17%;
-    --input: 217 32% 17%;
-    --ring: 224.3 76.3% 48%;
-    --chart-1: 217 91% 60%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 221 83% 53%;
-    --chart-4: 43 96% 56%;
-    --chart-5: 339 90% 51%;
-    --sidebar-background: 223 47% 14%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 217 32% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 32% 17%;
-    --sidebar-ring: 224.3 76.3% 48%;
+    /* Dark mode with Routinize colors */
+    --background: 300 24% 15%; /* Dark version of #573353 */
+    --foreground: 43 100% 96%;
+    --card: 300 24% 20%;
+    --card-foreground: 43 100% 96%;
+    --popover: 300 24% 20%;
+    --popover-foreground: 43 100% 96%;
+    --primary: 245 71% 85%; /* #B1AFE9 for dark mode */
+    --primary-foreground: 300 24% 15%;
+    --secondary: 235 65% 31%; /* #1B237E */
+    --secondary-foreground: 43 100% 96%;
+    --muted: 300 24% 25%;
+    --muted-foreground: 245 71% 70%;
+    --accent: 43 100% 60%; /* Brighter #FEA800 for dark mode */
+    --accent-foreground: 300 24% 15%;
+    --destructive: 0 100% 75%; /* Brighter #FF6767 for dark mode */
+    --destructive-foreground: 300 24% 15%;
+    --border: 300 24% 25%;
+    --input: 300 24% 25%;
+    --ring: 245 71% 85%;
+    --chart-1: 245 71% 85%; /* #B1AFE9 */
+    --chart-2: 43 100% 60%; /* #FEA800 */
+    --chart-3: 0 100% 75%; /* #FF6767 */
+    --chart-4: 235 65% 31%; /* #1B237E */
+    --chart-5: 245 71% 90%; /* #DDDCFE */
+    --sidebar-background: 300 24% 15%;
+    --sidebar-foreground: 43 100% 96%;
+    --sidebar-primary: 245 71% 85%;
+    --sidebar-primary-foreground: 300 24% 15%;
+    --sidebar-accent: 300 24% 25%;
+    --sidebar-accent-foreground: 43 100% 96%;
+    --sidebar-border: 300 24% 25%;
+    --sidebar-ring: 245 71% 85%;
   }
 }
 

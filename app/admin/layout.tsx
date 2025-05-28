@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { 
-  Users, 
-  Dumbbell, 
-  Utensils, 
-  BarChart2, 
-  MessageSquare, 
-  FileText, 
-  Settings, 
+import {
+  Users,
+  Dumbbell,
+  Utensils,
+  BarChart2,
+  MessageSquare,
+  FileText,
+  Settings,
   LogOut,
   Menu,
   X,
@@ -31,19 +31,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  
+
   // Verificar si el usuario es admin
   useEffect(() => {
     const checkAdmin = async () => {
       setIsLoading(true)
-      
+
       try {
         const { data: { user }, error } = await supabase.auth.getUser()
-        
+
         if (error || !user) {
           throw new Error("Usuario no autenticado")
         }
-        
+
         if (user.email !== "admin@routinize.com") {
           toast({
             title: "Acceso denegado",
@@ -53,7 +53,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           router.push("/")
           return
         }
-        
+
         setUser(user)
       } catch (error) {
         console.error("Error al verificar usuario:", error)
@@ -62,19 +62,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         setIsLoading(false)
       }
     }
-    
+
     checkAdmin()
   }, [router, toast])
-  
+
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut()
+      // Use the unified authentication system
+      const { supabaseAuth } = await import('@/lib/auth/supabase-auth')
+      await supabaseAuth.signOut()
       router.push("/auth/login")
     } catch (error) {
       console.error("Error al cerrar sesión:", error)
     }
   }
-  
+
   const navItems = [
     { label: "Dashboard", icon: Home, href: "/admin" },
     { label: "Clientes", icon: Users, href: "/admin/clients" },
@@ -85,7 +87,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { label: "Contenido", icon: FileText, href: "/admin/content" },
     { label: "Configuración", icon: Settings, href: "/admin/settings" },
   ]
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -96,7 +98,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </div>
     )
   }
-  
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar - Desktop */}
@@ -104,7 +106,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="p-6">
           <h1 className="text-2xl font-bold text-primary">Routinize Admin</h1>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto py-4">
           <nav className="px-4 space-y-1">
             {navItems.map((item) => {
@@ -123,7 +125,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             })}
           </nav>
         </div>
-        
+
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center mb-4">
             <Avatar className="h-10 w-10 mr-3">
@@ -141,21 +143,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </Button>
         </div>
       </aside>
-      
+
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-10">
         <div className="flex items-center justify-between p-4">
           <h1 className="text-xl font-bold text-primary">Routinize Admin</h1>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </Button>
         </div>
       </div>
-      
+
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 bg-white z-50 pt-16">
@@ -195,7 +197,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </nav>
         </div>
       )}
-      
+
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto bg-gray-50 pt-16 md:pt-0">
         <div className="container mx-auto p-6">

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo decorativo -->
+  <circle cx="150" cy="150" r="120" fill="#DDDCFE" opacity="0.2"/>
+  
+  <!-- Personaje realizando sentadilla -->
+  <!-- Cabeza -->
+  <circle cx="150" cy="80" r="25" fill="#FEA800"/>
+  
+  <!-- Cara -->
+  <circle cx="140" cy="75" r="3" fill="#573353"/>
+  <circle cx="160" cy="75" r="3" fill="#573353"/>
+  <path d="M140 90C145 95 155 95 160 90" stroke="#573353" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Torso -->
+  <path d="M150 105 L150 170" stroke="#1B237E" stroke-width="30" stroke-linecap="round"/>
+  
+  <!-- Brazos -->
+  <path d="M150 120 L120 150" stroke="#FEA800" stroke-width="12" stroke-linecap="round"/>
+  <path d="M150 120 L180 150" stroke="#FEA800" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- Piernas en posición de sentadilla -->
+  <path d="M150 170 L120 220" stroke="#573353" stroke-width="15" stroke-linecap="round"/>
+  <path d="M150 170 L180 220" stroke="#573353" stroke-width="15" stroke-linecap="round"/>
+  
+  <!-- Pies -->
+  <ellipse cx="115" cy="230" rx="15" ry="5" fill="#573353"/>
+  <ellipse cx="185" cy="230" rx="15" ry="5" fill="#573353"/>
+  
+  <!-- Indicadores de postura correcta -->
+  <!-- Indicador de espalda recta -->
+  <circle cx="150" cy="140" r="15" fill="#4CAF50" opacity="0.3" stroke="#4CAF50" stroke-width="2"/>
+  <path d="M145 140 L155 140" stroke="#4CAF50" stroke-width="2"/>
+  <path d="M150 135 L150 145" stroke="#4CAF50" stroke-width="2"/>
+  
+  <!-- Indicador de rodillas alineadas con pies -->
+  <circle cx="120" cy="220" r="12" fill="#4CAF50" opacity="0.3" stroke="#4CAF50" stroke-width="2"/>
+  <path d="M115 220 L125 220" stroke="#4CAF50" stroke-width="2"/>
+  <path d="M120 215 L120 225" stroke="#4CAF50" stroke-width="2"/>
+  
+  <circle cx="180" cy="220" r="12" fill="#4CAF50" opacity="0.3" stroke="#4CAF50" stroke-width="2"/>
+  <path d="M175 220 L185 220" stroke="#4CAF50" stroke-width="2"/>
+  <path d="M180 215 L180 225" stroke="#4CAF50" stroke-width="2"/>
+  
+  <!-- Líneas guía para la postura -->
+  <line x1="150" y1="80" x2="150" y2="230" stroke="#4CAF50" stroke-width="1" stroke-dasharray="5 5"/>
+  <line x1="115" y1="230" x2="120" y2="170" stroke="#4CAF50" stroke-width="1" stroke-dasharray="5 5"/>
+  <line x1="185" y1="230" x2="180" y2="170" stroke="#4CAF50" stroke-width="1" stroke-dasharray="5 5"/>
+  
+  <!-- Texto instructivo -->
+  <text x="150" y="270" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#573353">Sentadilla básica</text>
+  <text x="150" y="290" text-anchor="middle" font-family="Arial" font-size="12" fill="#573353">Mantén la espalda recta</text>
+</svg>

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
+import { supabase } from "@/lib/supabase-client"
 import {
   Home,
   Dumbbell,
@@ -30,9 +31,11 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
+import { useNotifications } from "@/lib/contexts/notification-context"
 import { motion, AnimatePresence } from "framer-motion"
 import { ThemeSwitcher } from "@/components/theme-switcher"
+import { NotificationIcon } from "@/components/ui/notification-icon"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +59,7 @@ export function UnifiedNavigation() {
   const router = useRouter()
   const pathname = usePathname()
   const { user, profile, signOut } = useAuth()
+  const { unreadCount } = useNotifications()
   const [mounted, setMounted] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -74,6 +78,9 @@ export function UnifiedNavigation() {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Ya no necesitamos cargar el conteo de notificaciones no leídas
+  // porque estamos usando el contexto de notificaciones
 
   if (!mounted) return null
 
@@ -254,9 +261,9 @@ export function UnifiedNavigation() {
             {/* Perfil y notificaciones */}
             <div className="flex items-center space-x-2">
               {/* Notificaciones */}
-              <Button variant="ghost" size="icon" className="hidden md:flex">
-                <Bell className="h-5 w-5" />
-              </Button>
+              <div className="hidden md:block">
+                <NotificationIcon />
+              </div>
 
               {/* Selector de tema */}
               <div className="hidden md:block">

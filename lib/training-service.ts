@@ -8,6 +8,7 @@
 
 import {
   getUserRoutineById,
+  getWorkoutRoutineById,
   getUserRoutines,
   saveWorkoutRoutine,
   deleteWorkoutRoutine,
@@ -28,6 +29,7 @@ import {
 // Re-exportar todas las funciones para mantener la compatibilidad con el código existente
 export {
   getUserRoutineById,
+  getWorkoutRoutineById,
   getUserRoutines,
   saveWorkoutRoutine,
   deleteWorkoutRoutine,
@@ -79,101 +81,11 @@ export async function getUserInitialAssessment(userId: string) {
   }
 }
 
-/**
- * Guarda un registro de entrenamiento
- */
-export async function saveWorkoutLog(workoutLog: any) {
-  try {
-    // Verificar si el registro ya existe
-    const { data: existingLog, error: checkError } = await supabase
-      .from("workout_logs")
-      .select("id")
-      .eq("id", workoutLog.id)
-      .maybeSingle()
+// La función saveWorkoutLog ya está exportada desde training-service-bridge
+// Se eliminó la implementación duplicada para evitar el error "Duplicate export 'saveWorkoutLog'"
 
-    if (checkError) {
-      throw checkError
-    }
-
-    let result
-
-    if (existingLog) {
-      // Actualizar registro existente
-      const { data, error } = await supabase
-        .from("workout_logs")
-        .update({
-          user_id: workoutLog.userId,
-          routine_id: workoutLog.routineId,
-          day_id: workoutLog.dayId,
-          date: workoutLog.date,
-          duration: workoutLog.duration,
-          completed_sets: workoutLog.completedSets,
-          notes: workoutLog.notes,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", workoutLog.id)
-        .select()
-        .single()
-
-      if (error) {
-        throw error
-      }
-
-      result = { data, error: null }
-    } else {
-      // Insertar nuevo registro
-      const { data, error } = await supabase
-        .from("workout_logs")
-        .insert({
-          id: workoutLog.id,
-          user_id: workoutLog.userId,
-          routine_id: workoutLog.routineId,
-          day_id: workoutLog.dayId,
-          date: workoutLog.date,
-          duration: workoutLog.duration,
-          completed_sets: workoutLog.completedSets,
-          notes: workoutLog.notes,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single()
-
-      if (error) {
-        throw error
-      }
-
-      result = { data, error: null }
-    }
-
-    return result
-  } catch (error) {
-    console.error("Error al guardar el registro de entrenamiento:", error)
-    return { data: null, error }
-  }
-}
-
-/**
- * Obtiene los registros de entrenamiento de un usuario
- */
-export async function getWorkoutLogs(userId: string) {
-  try {
-    const { data, error } = await supabase
-      .from("workout_logs")
-      .select("*")
-      .eq("user_id", userId)
-      .order("date", { ascending: false })
-
-    if (error) {
-      throw error
-    }
-
-    return { data, error: null }
-  } catch (error) {
-    console.error("Error al obtener los registros de entrenamiento:", error)
-    return { data: null, error }
-  }
-}
+// La función getWorkoutLogs ya está exportada desde training-service-bridge
+// Se eliminó la implementación duplicada para evitar posibles errores de duplicación
 
 /**
  * Obtiene un registro de entrenamiento por su ID
@@ -197,24 +109,5 @@ export async function getWorkoutLogById(logId: string) {
   }
 }
 
-/**
- * Obtiene una rutina de usuario por su ID
- */
-export async function getUserRoutineById(routineId: string) {
-  try {
-    const { data, error } = await supabase
-      .from("workout_routines")
-      .select("*")
-      .eq("id", routineId)
-      .single()
-
-    if (error) {
-      throw error
-    }
-
-    return { data, error: null }
-  } catch (error) {
-    console.error("Error al obtener la rutina de usuario:", error)
-    return { data: null, error }
-  }
-}
+// La función getUserRoutineById ya está exportada desde training-service-bridge
+// Se eliminó la implementación duplicada para evitar posibles errores de duplicación

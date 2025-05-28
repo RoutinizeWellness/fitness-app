@@ -56,7 +56,7 @@ import {
   Activity
 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { supabase } from "@/lib/supabase-client"
 import { Avatar3D, Avatar3DFallback, Avatar3DImage } from "@/components/ui/avatar-3d"
 
@@ -564,3 +564,4 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
       </RoutinizeLayout>
     )
   }
+}

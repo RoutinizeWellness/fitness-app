@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import EnhancedNavigation from "@/components/enhanced-navigation"
 import AIFitnessHub from "@/components/ai-fitness-hub"
 

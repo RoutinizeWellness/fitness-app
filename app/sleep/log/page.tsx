@@ -3,19 +3,19 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { RoutinizeLayout } from "@/components/routinize-layout";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/lib/contexts/auth-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -57,13 +57,13 @@ export default function LogSleepPage() {
   const calculateDuration = (): number => {
     const bedTimeMs = bedTime.getTime();
     const wakeTimeMs = wakeTime.getTime();
-    
+
     // Si la hora de despertar es anterior a la hora de acostarse, asumimos que es del día siguiente
     let durationMs = wakeTimeMs - bedTimeMs;
     if (durationMs < 0) {
       durationMs += 24 * 60 * 60 * 1000; // Añadir 24 horas
     }
-    
+
     return Math.round((durationMs / (60 * 60 * 1000)) * 10) / 10; // Redondear a 1 decimal
   };
 
@@ -77,9 +77,9 @@ export default function LogSleepPage() {
   // Guardar registro de sueño
   const handleSave = async () => {
     if (!user) return;
-    
+
     setIsSaving(true);
-    
+
     const newSleepLog: SleepLog = {
       id: uuidv4(),
       userId: user.id,
@@ -92,7 +92,7 @@ export default function LogSleepPage() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
+
     try {
       // Guardar en Supabase
       const { error } = await supabase
@@ -109,17 +109,17 @@ export default function LogSleepPage() {
           created_at: newSleepLog.createdAt,
           updated_at: newSleepLog.updatedAt
         });
-      
+
       if (error) {
         console.error("Error al guardar registro de sueño:", error);
         throw error;
       }
-      
+
       toast({
         title: "Registro guardado",
         description: "Tu registro de sueño se ha guardado correctamente",
       });
-      
+
       // Redirigir a la página de sueño
       setTimeout(() => {
         router.push("/sleep");
@@ -150,9 +150,9 @@ export default function LogSleepPage() {
     <RoutinizeLayout activeTab="sleep" title="Registrar sueño">
       <div className="container mx-auto p-4 pb-20">
         <div className="flex items-center mb-6">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="mr-2"
             onClick={() => router.back()}
           >
@@ -185,14 +185,14 @@ export default function LogSleepPage() {
                 </PopoverContent>
               </Popover>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Hora de acostarse</Label>
                 <div className="flex items-center">
                   <Moon className="h-5 w-5 mr-2 text-blue-500" />
-                  <Select 
-                    value={bedTime.getHours().toString().padStart(2, '0')} 
+                  <Select
+                    value={bedTime.getHours().toString().padStart(2, '0')}
                     onValueChange={(value) => {
                       const newBedTime = new Date(bedTime);
                       newBedTime.setHours(parseInt(value));
@@ -211,8 +211,8 @@ export default function LogSleepPage() {
                     </SelectContent>
                   </Select>
                   <span className="mx-1">:</span>
-                  <Select 
-                    value={bedTime.getMinutes().toString().padStart(2, '0')} 
+                  <Select
+                    value={bedTime.getMinutes().toString().padStart(2, '0')}
                     onValueChange={(value) => {
                       const newBedTime = new Date(bedTime);
                       newBedTime.setMinutes(parseInt(value));
@@ -232,13 +232,13 @@ export default function LogSleepPage() {
                   </Select>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label>Hora de despertar</Label>
                 <div className="flex items-center">
                   <Sun className="h-5 w-5 mr-2 text-yellow-500" />
-                  <Select 
-                    value={wakeTime.getHours().toString().padStart(2, '0')} 
+                  <Select
+                    value={wakeTime.getHours().toString().padStart(2, '0')}
                     onValueChange={(value) => {
                       const newWakeTime = new Date(wakeTime);
                       newWakeTime.setHours(parseInt(value));
@@ -257,8 +257,8 @@ export default function LogSleepPage() {
                     </SelectContent>
                   </Select>
                   <span className="mx-1">:</span>
-                  <Select 
-                    value={wakeTime.getMinutes().toString().padStart(2, '0')} 
+                  <Select
+                    value={wakeTime.getMinutes().toString().padStart(2, '0')}
                     onValueChange={(value) => {
                       const newWakeTime = new Date(wakeTime);
                       newWakeTime.setMinutes(parseInt(value));
@@ -279,7 +279,7 @@ export default function LogSleepPage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Label>Duración del sueño</Label>
@@ -290,7 +290,7 @@ export default function LogSleepPage() {
                 <span>Te acostaste a las {format(bedTime, "HH:mm")} y te despertaste a las {format(wakeTime, "HH:mm")}</span>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Label>Calidad del sueño</Label>
@@ -308,7 +308,7 @@ export default function LogSleepPage() {
                 <span>Excelente</span>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="notes">Notas (opcional)</Label>
               <Textarea
@@ -323,14 +323,14 @@ export default function LogSleepPage() {
         </Card>
 
         <div className="flex space-x-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="flex-1"
             onClick={() => router.push("/sleep")}
           >
             Cancelar
           </Button>
-          <Button 
+          <Button
             className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
             onClick={handleSave}
             disabled={isSaving}

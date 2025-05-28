@@ -3,51 +3,51 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { 
-  Card3D, 
-  Card3DContent, 
-  Card3DHeader, 
-  Card3DTitle 
+import {
+  Card3D,
+  Card3DContent,
+  Card3DHeader,
+  Card3DTitle
 } from "@/components/ui/card-3d"
 import { Button3D } from "@/components/ui/button-3d"
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
 } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { 
-  Dumbbell, 
-  Calendar, 
-  Clock, 
-  Zap, 
-  Target, 
-  BarChart, 
-  Users, 
-  ChevronRight, 
-  Plus, 
-  Search, 
-  Filter, 
-  ArrowRight, 
-  Layers, 
-  FileText, 
-  Bookmark, 
-  Star, 
+import {
+  Dumbbell,
+  Calendar,
+  Clock,
+  Zap,
+  Target,
+  BarChart,
+  Users,
+  ChevronRight,
+  Plus,
+  Search,
+  Filter,
+  ArrowRight,
+  Layers,
+  FileText,
+  Bookmark,
+  Star,
   PlusCircle,
   ListFilter
 } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { useFeedback } from "@/components/feedback/action-feedback"
-import { 
-  FadeInElement, 
-  StaggeredList, 
-  CardEntrance 
+import {
+  FadeInElement,
+  StaggeredList,
+  CardEntrance
 } from "@/components/transitions/page-transition"
-import { 
-  ModuleCardSkeleton, 
-  ListSkeleton 
+import {
+  ModuleCardSkeleton,
+  ListSkeleton
 } from "@/components/ui/enhanced-skeletons"
 import { ProgramConfigurator } from "@/components/training/program-configurator"
 import { TrainingProgram } from "@/lib/types/training-program"
@@ -57,13 +57,13 @@ export default function TrainingPage() {
   const router = useRouter()
   const { user, profile, isLoading } = useAuth()
   const { showFeedback } = useFeedback()
-  
+
   const [activeTab, setActiveTab] = useState("programs")
   const [isAdmin, setIsAdmin] = useState(false)
   const [programs, setPrograms] = useState<TrainingProgram[]>([])
   const [isProgramsLoading, setIsProgramsLoading] = useState(true)
   const [showProgramCreator, setShowProgramCreator] = useState(false)
-  
+
   // Verificar si el usuario es admin
   useEffect(() => {
     if (user?.email === "admin@routinize.com") {
@@ -72,18 +72,18 @@ export default function TrainingPage() {
       setIsAdmin(false)
     }
   }, [user])
-  
+
   // Cargar programas de entrenamiento
   useEffect(() => {
     const loadPrograms = async () => {
       if (!user?.id) return
-      
+
       try {
         setIsProgramsLoading(true)
         const { data, error } = await getTrainingPrograms(user.id)
-        
+
         if (error) throw error
-        
+
         if (data) {
           setPrograms(data)
         }
@@ -98,24 +98,24 @@ export default function TrainingPage() {
         setIsProgramsLoading(false)
       }
     }
-    
+
     if (user?.id) {
       loadPrograms()
     }
   }, [user, showFeedback])
-  
+
   // Manejar creación de programa
   const handleProgramCreated = (program: TrainingProgram) => {
     setPrograms(prev => [...prev, program])
     setShowProgramCreator(false)
-    
+
     showFeedback({
       message: "Programa creado correctamente",
       type: "success",
       position: "bottom"
     })
   }
-  
+
   // Renderizar programas de entrenamiento
   const renderPrograms = () => {
     if (isProgramsLoading) {
@@ -126,7 +126,7 @@ export default function TrainingPage() {
         </div>
       )
     }
-    
+
     if (programs.length === 0) {
       return (
         <div className="text-center py-8">
@@ -135,7 +135,7 @@ export default function TrainingPage() {
           </div>
           <h3 className="text-lg font-medium mb-2">No hay programas de entrenamiento</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            {isAdmin 
+            {isAdmin
               ? "Crea tu primer programa de entrenamiento para tus clientes"
               : "No tienes programas de entrenamiento asignados"}
           </p>
@@ -148,7 +148,7 @@ export default function TrainingPage() {
         </div>
       )
     }
-    
+
     return (
       <StaggeredList staggerDelay={0.1} className="space-y-4">
         {programs.map((program) => (
@@ -173,7 +173,7 @@ export default function TrainingPage() {
                    program.level === 'advanced' ? 'Avanzado' : program.level}
                 </Badge>
               </div>
-              
+
               <div className="grid grid-cols-3 gap-4 mt-4">
                 <div className="bg-accent/10 p-3 rounded-lg">
                   <div className="flex items-center text-xs font-medium mb-1 text-muted-foreground">
@@ -182,7 +182,7 @@ export default function TrainingPage() {
                   </div>
                   <div className="text-sm font-semibold">{program.duration} semanas</div>
                 </div>
-                
+
                 <div className="bg-accent/10 p-3 rounded-lg">
                   <div className="flex items-center text-xs font-medium mb-1 text-muted-foreground">
                     <Clock className="h-3 w-3 mr-1" />
@@ -190,7 +190,7 @@ export default function TrainingPage() {
                   </div>
                   <div className="text-sm font-semibold">{program.frequency} días/sem</div>
                 </div>
-                
+
                 <div className="bg-accent/10 p-3 rounded-lg">
                   <div className="flex items-center text-xs font-medium mb-1 text-muted-foreground">
                     <Target className="h-3 w-3 mr-1" />
@@ -205,7 +205,7 @@ export default function TrainingPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-between items-center mt-4">
                 <div className="flex items-center">
                   <Badge variant="outline" className="mr-2">
@@ -215,14 +215,14 @@ export default function TrainingPage() {
                      program.type === 'body_part_split' ? 'Split por grupos' :
                      program.type === 'custom' ? 'Personalizado' : program.type}
                   </Badge>
-                  
+
                   {program.isActive && (
                     <Badge variant="default" className="bg-green-500">
                       Activo
                     </Badge>
                   )}
                 </div>
-                
+
                 <Button3D variant="ghost" size="icon" className="rounded-full">
                   <ChevronRight className="h-5 w-5" />
                 </Button3D>
@@ -233,13 +233,13 @@ export default function TrainingPage() {
       </StaggeredList>
     )
   }
-  
+
   // Renderizar entrenamientos recientes
   const renderRecentWorkouts = () => {
     if (isProgramsLoading) {
       return <ListSkeleton count={3} />
     }
-    
+
     return (
       <div className="text-center py-8">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -256,13 +256,13 @@ export default function TrainingPage() {
       </div>
     )
   }
-  
+
   // Renderizar estadísticas
   const renderStats = () => {
     if (isProgramsLoading) {
       return <ModuleCardSkeleton />
     }
-    
+
     return (
       <div className="text-center py-8">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -275,22 +275,22 @@ export default function TrainingPage() {
       </div>
     )
   }
-  
+
   return (
     <div className="container max-w-md mx-auto px-4 pt-20 pb-24">
       <FadeInElement>
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold gradient-text">Entrenamiento</h1>
-          
+
           <div className="flex space-x-2">
             <Button3D variant="outline" size="icon" onClick={() => router.push('/dashboard/training/search')}>
               <Search className="h-4 w-4" />
             </Button3D>
-            
+
             <Button3D variant="outline" size="icon" onClick={() => router.push('/dashboard/training/filter')}>
               <ListFilter className="h-4 w-4" />
             </Button3D>
-            
+
             {isAdmin && (
               <Button3D onClick={() => setShowProgramCreator(true)}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -300,7 +300,7 @@ export default function TrainingPage() {
           </div>
         </div>
       </FadeInElement>
-      
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-3 mb-6">
           <TabsTrigger value="programs" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
@@ -316,20 +316,20 @@ export default function TrainingPage() {
             Estadísticas
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="programs" className="space-y-4">
           {renderPrograms()}
         </TabsContent>
-        
+
         <TabsContent value="workouts" className="space-y-4">
           {renderRecentWorkouts()}
         </TabsContent>
-        
+
         <TabsContent value="stats" className="space-y-4">
           {renderStats()}
         </TabsContent>
       </Tabs>
-      
+
       {showProgramCreator && (
         <div className="fixed inset-0 bg-background z-50 overflow-auto">
           <div className="container max-w-md mx-auto px-4 py-6">

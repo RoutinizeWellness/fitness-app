@@ -1,11 +1,17 @@
 "use client"
 
 import * as React from "react"
-import { motion } from "framer-motion"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import dynamic from "next/dynamic"
+
+// Dynamically import motion to avoid SSR issues
+const MotionButton = dynamic(
+  () => import("framer-motion").then((mod) => mod.motion.button),
+  { ssr: false }
+)
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -90,18 +96,18 @@ export interface ImprovedButtonProps
 }
 
 const ImprovedButton = React.forwardRef<HTMLButtonElement, ImprovedButtonProps>(
-  ({ 
-    className, 
-    variant, 
-    size, 
+  ({
+    className,
+    variant,
+    size,
     shape,
     animation,
     shadow,
     width,
-    asChild = false, 
-    isLoading, 
-    loadingText, 
-    withEffect = "scale", 
+    asChild = false,
+    isLoading,
+    loadingText,
+    withEffect = "scale",
     leftIcon,
     rightIcon,
     iconSpacing = 2,
@@ -111,10 +117,17 @@ const ImprovedButton = React.forwardRef<HTMLButtonElement, ImprovedButtonProps>(
     feedback = "none",
     children,
     onClick,
-    ...props 
+    ...props
   }, ref) => {
-    const Comp = asChild ? Slot : motion.button
-    
+    const [isClient, setIsClient] = React.useState(false)
+
+    React.useEffect(() => {
+      setIsClient(true)
+    }, [])
+
+    // Use regular button on server, motion.button on client
+    const Comp = asChild ? Slot : (isClient ? MotionButton : "button")
+
     // Configuración de efectos
     const effectVariants = {
       scale: {
@@ -138,9 +151,9 @@ const ImprovedButton = React.forwardRef<HTMLButtonElement, ImprovedButtonProps>(
         whileTap: {},
       },
     }
-    
+
     const currentEffect = effectVariants[withEffect]
-    
+
     // Manejar feedback táctil
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (feedback === "haptic" && navigator.vibrate) {
@@ -151,49 +164,54 @@ const ImprovedButton = React.forwardRef<HTMLButtonElement, ImprovedButtonProps>(
         audio.volume = 0.2;
         audio.play().catch(e => console.log("Audio playback failed:", e));
       }
-      
+
       if (onClick) {
         onClick(e);
       }
     };
-    
+
     // Renderizar el loader según la posición
     const renderLoader = () => (
-      <span 
+      <span
         className={cn(
           "inline-block animate-spin",
           loaderPosition === "center" && !loadingText ? "absolute" : ""
         )}
         style={{ width: loaderSize, height: loaderSize }}
       >
-        <Loader2 
-          style={{ 
-            width: loaderSize, 
+        <Loader2
+          style={{
+            width: loaderSize,
             height: loaderSize,
             color: loaderColor || "currentColor"
-          }} 
+          }}
         />
       </span>
     );
-    
+
+    // Motion props only for client-side motion components
+    const motionProps = isClient && Comp === MotionButton ? {
+      ...currentEffect,
+      transition: { type: "spring", stiffness: 400, damping: 17 }
+    } : {}
+
     return (
       <Comp
         className={cn(
-          buttonVariants({ 
-            variant, 
-            size, 
+          buttonVariants({
+            variant,
+            size,
             shape,
             animation,
             shadow,
             width,
-            className 
+            className
           }),
           isLoading && "relative",
           isLoading && loaderPosition === "center" && !loadingText && "text-transparent"
         )}
         ref={ref}
-        {...currentEffect}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        {...motionProps}
         onClick={handleClick}
         disabled={isLoading || props.disabled}
         {...props}
@@ -202,11 +220,11 @@ const ImprovedButton = React.forwardRef<HTMLButtonElement, ImprovedButtonProps>(
         {!isLoading && leftIcon && (
           <span className={cn(`mr-${iconSpacing}`)}>{leftIcon}</span>
         )}
-        
+
         {isLoading && loaderPosition === "center" && renderLoader()}
-        
+
         {isLoading && loadingText ? loadingText : children}
-        
+
         {!isLoading && rightIcon && (
           <span className={cn(`ml-${iconSpacing}`)}>{rightIcon}</span>
         )}

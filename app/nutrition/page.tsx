@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
+import { useNutrition } from "@/contexts/nutrition-context"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,8 +11,10 @@ import { useToast } from "@/components/ui/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CalendarIcon, PlusCircle, Search, Utensils, BarChart, Calendar, BookOpen, Apple, Sparkles, ChevronRight } from "lucide-react"
 import { OrganicLayout, OrganicSection } from "@/components/organic-layout"
+import NutritionErrorBoundaryWithRouter from "@/components/nutrition/nutrition-error-boundary"
+import SupabaseConnectionChecker from "@/components/nutrition/supabase-connection-checker"
 import { OrganicElement, OrganicStaggeredList } from "@/components/transitions/organic-transitions"
-import NutritionDashboard from "@/components/nutrition/nutrition-dashboard"
+import { NutritionDashboard } from "@/components/nutrition/nutrition-dashboard"
 import FoodDiary from "@/components/nutrition/food-diary"
 import MealPlanner from "@/components/nutrition/meal-planner"
 import NutritionAnalytics from "@/components/nutrition/nutrition-analytics"
@@ -33,6 +36,16 @@ export default function NutritionPage() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
 
+  // Usar el contexto de nutrición para inicializar datos
+  const {
+    loadNutritionGoals,
+    loadDailyStats,
+    nutritionGoals,
+    dailyStats,
+    isLoadingGoals,
+    isLoadingDailyStats
+  } = useNutrition()
+
   // Redirigir a login si no hay usuario autenticado
   useEffect(() => {
     if (!authLoading && !user) {
@@ -42,19 +55,42 @@ export default function NutritionPage() {
     }
   }, [user, authLoading, router])
 
+  // Cargar datos iniciales cuando el usuario está autenticado
+  useEffect(() => {
+    if (user) {
+      try {
+        // Cargar objetivos nutricionales
+        if (!nutritionGoals && !isLoadingGoals) {
+          loadNutritionGoals()
+        }
+
+        // Cargar estadísticas diarias
+        if (!dailyStats && !isLoadingDailyStats) {
+          const today = new Date().toISOString().split('T')[0]
+          loadDailyStats(today)
+        }
+      } catch (error) {
+        console.error('Error al cargar datos iniciales de nutrición:', error)
+        toast({
+          title: 'Error',
+          description: 'No se pudieron cargar algunos datos de nutrición',
+          variant: 'destructive'
+        })
+      }
+    }
+  }, [user, nutritionGoals, dailyStats, isLoadingGoals, isLoadingDailyStats, loadNutritionGoals, loadDailyStats, toast])
+
   if (isLoading || authLoading) {
     return (
-      <OrganicLayout activeTab="nutrition" title="Nutrición">
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-1/3 rounded-full" />
-          <Skeleton className="h-[200px] w-full rounded-3xl" />
-          <div className="grid grid-cols-2 gap-4">
-            <Skeleton className="h-[100px] rounded-3xl" />
-            <Skeleton className="h-[100px] rounded-3xl" />
-          </div>
-          <Skeleton className="h-[300px] w-full rounded-3xl" />
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-1/3 rounded-full" />
+        <Skeleton className="h-[200px] w-full rounded-3xl" />
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-[100px] rounded-3xl" />
+          <Skeleton className="h-[100px] rounded-3xl" />
         </div>
-      </OrganicLayout>
+        <Skeleton className="h-[300px] w-full rounded-3xl" />
+      </div>
     )
   }
 
@@ -126,7 +162,7 @@ export default function NutritionPage() {
               <CalendarIcon className="h-5 w-5 text-[#573353] rotate-180" />
             </button>
             <h1 className="text-xl font-bold text-[#573353]">
-              Nutrition
+              Nutrición
             </h1>
           </div>
 
@@ -148,253 +184,75 @@ export default function NutritionPage() {
         <div className="container max-w-md mx-auto px-4 mt-2">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-7 mb-4 bg-white">
-              <TabsTrigger value="dashboard" className="rounded-full">Dashboard</TabsTrigger>
+              <TabsTrigger value="dashboard" className="rounded-full">Inicio</TabsTrigger>
               <TabsTrigger value="diary" className="rounded-full">Diario</TabsTrigger>
               <TabsTrigger value="recipes" className="rounded-full">Recetas</TabsTrigger>
               <TabsTrigger value="plan" className="rounded-full">Plan</TabsTrigger>
               <TabsTrigger value="water" className="rounded-full">Agua</TabsTrigger>
-              <TabsTrigger value="stats" className="rounded-full">Stats</TabsTrigger>
+              <TabsTrigger value="stats" className="rounded-full">Estadísticas</TabsTrigger>
               <TabsTrigger value="restrictions" className="rounded-full">Restricciones</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
       </header>
 
-      <main className="container max-w-md mx-auto px-4 pt-28 pb-32">
+      <main className="container max-w-md mx-auto px-4 pt-6 pb-24">
+        {/* Verificador de conexión a Supabase */}
+        <NutritionErrorBoundaryWithRouter>
+          <SupabaseConnectionChecker className="mb-4" />
+        </NutritionErrorBoundaryWithRouter>
+
+        {/* Botones de navegación eliminados - ahora integrados en el dashboard */}
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsContent value="dashboard" className="mt-0">
-          {/* Today's Meals */}
-          <div className="mb-8">
-            <h2 className="text-lg font-medium text-[#573353] mb-4">Today's Meals</h2>
-            <div className="bg-white rounded-3xl p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 rounded-full bg-[#8C80F8] flex items-center justify-center mr-3">
-                    <Utensils className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-[#573353] font-semibold text-base">Weight Loss Plan</h3>
-                    <p className="text-[#573353]/70 text-sm mt-0.5">1800 calories • 5 meals</p>
-                  </div>
-                </div>
-                <button className="bg-[#8C80F8] text-white font-medium rounded-full px-4 py-2 text-sm shadow-sm">
-                  View
-                </button>
-              </div>
-
-              <div className="h-2.5 bg-[#F5F5F5] rounded-full mb-3">
-                <div className="h-full rounded-full bg-[#8C80F8]" style={{ width: '60%' }} />
-              </div>
-
-              <div className="flex justify-between text-xs">
-                <span className="text-[#573353]/70">3 of 5 meals completed</span>
-                <span className="text-[#8C80F8] font-medium">60%</span>
-              </div>
-            </div>
-          </div>
-
-        {/* Meal Plans */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-[#573353]">Meal Plans</h2>
-            <div className="flex space-x-2">
-              <button
-                className="text-sm bg-[#FDA758] text-white font-medium flex items-center px-3 py-1 rounded-full"
-                onClick={() => router.push('/nutrition/generate-plan')}
-              >
-                <Sparkles className="h-3 w-3 mr-1" />
-                Generar con IA
-              </button>
-              <button className="text-sm text-[#FDA758] font-medium flex items-center">
-                View All
-                <svg className="ml-1 w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M9 6L15 12L9 18" stroke="#FDA758" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {mealPlans.map(plan => (
-              <div
-                key={plan.id}
-                className="bg-white rounded-3xl p-5 shadow-sm cursor-pointer"
-                onClick={() => router.push(`/nutrition/plan/${plan.id}`)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center mr-3"
-                      style={{ backgroundColor: plan.color }}
-                    >
-                      <Utensils className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-[#573353] font-semibold text-base">{plan.title}</h3>
-                      <p className="text-[#573353]/70 text-sm mt-0.5">{plan.description}</p>
-                    </div>
-                  </div>
-                  <CalendarIcon className="h-5 w-5 text-[#573353]/40" />
-                </div>
-
-                <div className="flex mt-4 space-x-4">
-                  <div className="flex items-center">
-                    <svg className="h-4 w-4 text-[#573353]/70 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M19.5 12.5C19.5 11.12 20.62 10 22 10V9C22 5 21 4 17 4H7C3 4 2 5 2 9V9.5C3.38 9.5 4.5 10.62 4.5 12C4.5 13.38 3.38 14.5 2 14.5V15C2 19 3 20 7 20H17C21 20 22 19 22 15C20.62 15 19.5 13.88 19.5 12.5Z" stroke="#573353" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M10 4L10 20" stroke="#573353" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 5"/>
-                    </svg>
-                    <span className="text-xs text-[#573353]/70">{plan.calories} cal</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Utensils className="h-4 w-4 text-[#573353]/70 mr-1" />
-                    <span className="text-xs text-[#573353]/70">{plan.meals} meals</span>
-                  </div>
-                  <div className="bg-[#F5F5F5] px-2 py-1 rounded-full">
-                    <span className="text-xs text-[#573353]/70">{plan.duration}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Food Categories */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-[#573353]">Food Categories</h2>
-            <button className="text-sm text-[#FDA758] font-medium flex items-center">
-              View All
-              <svg className="ml-1 w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 6L15 12L9 18" stroke="#FDA758" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white rounded-3xl p-5 shadow-sm cursor-pointer">
-              <div className="w-12 h-12 rounded-full bg-[#FDA758] flex items-center justify-center mb-3">
-                <Apple className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-[#573353] font-semibold text-base">Fruits</h3>
-              <p className="text-[#573353]/70 text-sm mt-1">25 items</p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-5 shadow-sm cursor-pointer">
-              <div className="w-12 h-12 rounded-full bg-[#5DE292] flex items-center justify-center mb-3">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M12 8V16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M8 12H16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <h3 className="text-[#573353] font-semibold text-base">Vegetables</h3>
-              <p className="text-[#573353]/70 text-sm mt-1">30 items</p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-5 shadow-sm cursor-pointer">
-              <div className="w-12 h-12 rounded-full bg-[#FF7285] flex items-center justify-center mb-3">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M12 8V16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M8 12H16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <h3 className="text-[#573353] font-semibold text-base">Proteins</h3>
-              <p className="text-[#573353]/70 text-sm mt-1">20 items</p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-5 shadow-sm cursor-pointer">
-              <div className="w-12 h-12 rounded-full bg-[#8C80F8] flex items-center justify-center mb-3">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M12 8V16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M8 12H16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <h3 className="text-[#573353] font-semibold text-base">Beverages</h3>
-              <p className="text-[#573353]/70 text-sm mt-1">15 items</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Healthy Recipes */}
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-[#573353]">Healthy Recipes</h2>
-            <button className="text-sm text-[#FDA758] font-medium flex items-center">
-              View All
-              <svg className="ml-1 w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 6L15 12L9 18" stroke="#FDA758" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {recipes.map(recipe => (
-              <div key={recipe.id} className="bg-white rounded-3xl p-5 shadow-sm cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 rounded-full bg-[#F5F5F5] flex items-center justify-center mr-3 overflow-hidden">
-                      <Utensils className="h-6 w-6 text-[#573353]/40" />
-                    </div>
-                    <div>
-                      <h3 className="text-[#573353] font-semibold text-base">{recipe.title}</h3>
-                      <p className="text-[#573353]/70 text-sm mt-0.5">{recipe.category}</p>
-                    </div>
-                  </div>
-                  <CalendarIcon className="h-5 w-5 text-[#573353]/40" />
-                </div>
-
-                <div className="flex mt-4 space-x-4">
-                  <div className="flex items-center">
-                    <CalendarIcon className="h-4 w-4 text-[#573353]/70 mr-1" />
-                    <span className="text-xs text-[#573353]/70">{recipe.prepTime} min</span>
-                  </div>
-                  <div className="flex items-center">
-                    <svg className="h-4 w-4 text-[#573353]/70 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M19.5 12.5C19.5 11.12 20.62 10 22 10V9C22 5 21 4 17 4H7C3 4 2 5 2 9V9.5C3.38 9.5 4.5 10.62 4.5 12C4.5 13.38 3.38 14.5 2 14.5V15C2 19 3 20 7 20H17C21 20 22 19 22 15C20.62 15 19.5 13.88 19.5 12.5Z" stroke="#573353" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M10 4L10 20" stroke="#573353" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 5"/>
-                    </svg>
-                    <span className="text-xs text-[#573353]/70">{recipe.calories} cal</span>
-                  </div>
-                  <div className="bg-[#F5F5F5] px-2 py-1 rounded-full">
-                    <span className="text-xs text-[#573353]/70">{recipe.protein}g protein</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+          <NutritionErrorBoundaryWithRouter>
+            <NutritionDashboard />
+          </NutritionErrorBoundaryWithRouter>
         </TabsContent>
 
         {/* Pestaña de Diario de Alimentos */}
         <TabsContent value="diary" className="mt-0">
-          <EnhancedFoodTracker />
+          <NutritionErrorBoundaryWithRouter>
+            <EnhancedFoodTracker />
+          </NutritionErrorBoundaryWithRouter>
         </TabsContent>
 
         {/* Pestaña de Recetas */}
         <TabsContent value="recipes" className="mt-0">
-          <HealthyRecipes />
+          <NutritionErrorBoundaryWithRouter>
+            <HealthyRecipes />
+          </NutritionErrorBoundaryWithRouter>
         </TabsContent>
 
         {/* Pestaña de Plan de Comidas */}
         <TabsContent value="plan" className="mt-0">
-          <MealPlanGenerator />
+          <NutritionErrorBoundaryWithRouter>
+            <MealPlanGenerator />
+          </NutritionErrorBoundaryWithRouter>
         </TabsContent>
 
         {/* Pestaña de Seguimiento de Agua */}
         <TabsContent value="water" className="mt-0">
-          <WaterTracker />
+          <NutritionErrorBoundaryWithRouter>
+            <WaterTracker />
+          </NutritionErrorBoundaryWithRouter>
         </TabsContent>
 
         {/* Pestaña de Estadísticas Nutricionales */}
         <TabsContent value="stats" className="mt-0">
-          <NutritionStats />
+          <NutritionErrorBoundaryWithRouter>
+            <NutritionStats />
+          </NutritionErrorBoundaryWithRouter>
         </TabsContent>
 
         {/* Pestaña de Restricciones Alimentarias */}
         <TabsContent value="restrictions" className="mt-0">
-          <DietaryRestrictions />
+          <NutritionErrorBoundaryWithRouter>
+            <DietaryRestrictions />
+          </NutritionErrorBoundaryWithRouter>
         </TabsContent>
+        </Tabs>
       </main>
 
       {/* Bottom Navigation */}

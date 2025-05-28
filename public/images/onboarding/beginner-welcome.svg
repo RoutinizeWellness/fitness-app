@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo decorativo -->
+  <circle cx="150" cy="150" r="120" fill="#DDDCFE" opacity="0.3"/>
+  <circle cx="200" cy="100" r="40" fill="#FDA758" opacity="0.2"/>
+  <circle cx="80" cy="180" r="30" fill="#B1AFE9" opacity="0.3"/>
+  
+  <!-- Personaje inclusivo -->
+  <!-- Cuerpo -->
+  <ellipse cx="150" cy="160" rx="50" ry="70" fill="#FEA800" opacity="0.8"/>
+  
+  <!-- Ropa deportiva -->
+  <rect x="120" y="140" width="60" height="90" rx="10" fill="#573353"/>
+  <rect x="120" y="140" width="60" height="30" rx="10" fill="#1B237E"/>
+  <rect x="130" y="230" width="15" height="40" rx="5" fill="#573353"/>
+  <rect x="155" y="230" width="15" height="40" rx="5" fill="#573353"/>
+  
+  <!-- Brazos -->
+  <path d="M120 160C110 170 100 180 95 200" stroke="#FEA800" stroke-width="12" stroke-linecap="round"/>
+  <path d="M180 160C190 170 200 180 205 200" stroke="#FEA800" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- Cabeza -->
+  <circle cx="150" cy="110" r="30" fill="#FEA800"/>
+  
+  <!-- Cara -->
+  <circle cx="140" cy="105" r="3" fill="#573353"/>
+  <circle cx="160" cy="105" r="3" fill="#573353"/>
+  <path d="M140 120C145 125 155 125 160 120" stroke="#573353" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Accesorios deportivos -->
+  <rect x="130" y="85" width="40" height="10" rx="5" fill="#FF6767"/>
+  <circle cx="95" cy="200" r="8" fill="#DDDCFE"/>
+  <circle cx="205" cy="200" r="8" fill="#DDDCFE"/>
+  
+  <!-- Texto motivacional -->
+  <text x="150" y="290" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#573353">¡Comienza tu viaje fitness!</text>
+</svg>

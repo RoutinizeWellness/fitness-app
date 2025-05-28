@@ -59,7 +59,7 @@ import {
   Clock
 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { getAllUsers, getUserStats, toggleUserVerification, changeUserRole, deleteUser } from "@/lib/admin-users-service"
 import { Avatar3D, Avatar3DFallback, Avatar3DImage } from "@/components/ui/avatar-3d"
 import {

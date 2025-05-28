@@ -1,4 +1,4 @@
-import { supabase, handleSupabaseError, TABLES, COLUMNS } from "../supabase-client-enhanced"
+import { supabase } from "../supabase-unified"
 import { WorkoutRoutine, WorkoutDay } from "@/lib/types/training"
 import { v4 as uuidv4 } from "uuid"
 
@@ -13,14 +13,40 @@ export const getUserRoutines = async (userId: string) => {
       return { data: [], error: new Error("userId es requerido") }
     }
 
+    // Verificar si la tabla existe
+    try {
+      const { count, error: tableCheckError } = await supabase
+        .from("workout_routines")
+        .select('*', { count: 'exact', head: true })
+        .limit(1)
+
+      if (tableCheckError || count === null) {
+        console.warn(`La tabla workout_routines podría no existir:`, tableCheckError)
+        // Devolver datos de ejemplo si la tabla no existe
+        return {
+          data: getSampleWorkoutRoutines(userId),
+          error: new Error(`La tabla workout_routines no existe o no es accesible`)
+        }
+      }
+    } catch (tableError) {
+      console.error("Error al verificar la tabla:", tableError)
+      return { data: getSampleWorkoutRoutines(userId), error: tableError }
+    }
+
     const { data, error } = await supabase
-      .from(TABLES.WORKOUT_ROUTINES)
+      .from("workout_routines")
       .select("*")
-      .eq(COLUMNS.USER_ID, userId)
-      .order(COLUMNS.CREATED_AT, { ascending: false })
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
 
     if (error) {
-      return { data: [], error: handleSupabaseError(error, "Error al obtener rutinas de entrenamiento") }
+      console.error("Error al obtener rutinas de entrenamiento:", error)
+      return { data: getSampleWorkoutRoutines(userId), error: new Error(error.message || "Error al obtener rutinas de entrenamiento") }
+    }
+
+    if (!data || data.length === 0) {
+      console.log("No se encontraron rutinas para el usuario, devolviendo datos de ejemplo")
+      return { data: getSampleWorkoutRoutines(userId), error: null }
     }
 
     // Transformar datos al formato esperado por la aplicación
@@ -42,8 +68,53 @@ export const getUserRoutines = async (userId: string) => {
     return { data: transformedData, error: null }
   } catch (e) {
     console.error("Error en getUserRoutines:", e)
-    return { data: [], error: e instanceof Error ? e : new Error("Error desconocido en getUserRoutines") }
+    return { data: getSampleWorkoutRoutines(userId), error: e instanceof Error ? e : new Error("Error desconocido en getUserRoutines") }
   }
+}
+
+/**
+ * Genera rutinas de entrenamiento de ejemplo para casos de error
+ * @param userId - ID del usuario
+ * @returns - Lista de rutinas de ejemplo
+ */
+const getSampleWorkoutRoutines = (userId: string): WorkoutRoutine[] => {
+  return [
+    {
+      id: "sample-routine-1",
+      userId: userId,
+      name: "Rutina de fuerza",
+      description: "Rutina de ejemplo para desarrollo de fuerza",
+      level: "intermedio",
+      goal: "fuerza",
+      frequency: "4 días por semana",
+      days: [
+        {
+          id: "sample-day-1",
+          name: "Día 1: Pecho y Tríceps",
+          description: "Enfoque en pecho y tríceps",
+          exercises: [
+            { id: "ex1", name: "Press de banca", sets: 4, reps: "8-10" },
+            { id: "ex2", name: "Fondos en paralelas", sets: 3, reps: "10-12" },
+            { id: "ex3", name: "Aperturas con mancuernas", sets: 3, reps: "12-15" }
+          ]
+        },
+        {
+          id: "sample-day-2",
+          name: "Día 2: Espalda y Bíceps",
+          description: "Enfoque en espalda y bíceps",
+          exercises: [
+            { id: "ex4", name: "Dominadas", sets: 4, reps: "8-10" },
+            { id: "ex5", name: "Remo con barra", sets: 3, reps: "10-12" },
+            { id: "ex6", name: "Curl de bíceps", sets: 3, reps: "12-15" }
+          ]
+        }
+      ],
+      isActive: true,
+      isTemplate: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ]
 }
 
 /**
@@ -58,13 +129,13 @@ export const getRoutineById = async (routineId: string) => {
     }
 
     const { data, error } = await supabase
-      .from(TABLES.WORKOUT_ROUTINES)
+      .from("workout_routines")
       .select("*")
       .eq("id", routineId)
       .single()
 
     if (error) {
-      return { data: null, error: handleSupabaseError(error, "Error al obtener rutina de entrenamiento") }
+      return { data: null, error: new Error(error.message || "Error al obtener rutina de entrenamiento") }
     }
 
     // Transformar datos al formato esperado por la aplicación
@@ -128,13 +199,13 @@ export const saveWorkoutRoutine = async (routine: WorkoutRoutine) => {
 
     // Verificar si la rutina existe
     const { data: existingData, error: checkError } = await supabase
-      .from(TABLES.WORKOUT_ROUTINES)
+      .from("workout_routines")
       .select("id")
       .eq("id", routine.id)
       .maybeSingle()
 
     if (checkError) {
-      return { data: null, error: handleSupabaseError(checkError, "Error al verificar si la rutina existe") }
+      return { data: null, error: new Error(checkError.message || "Error al verificar si la rutina existe") }
     }
 
     let result
@@ -142,13 +213,13 @@ export const saveWorkoutRoutine = async (routine: WorkoutRoutine) => {
     if (!existingData) {
       // Si no existe, insertarla
       result = await supabase
-        .from(TABLES.WORKOUT_ROUTINES)
+        .from("workout_routines")
         .insert(routineData)
         .select()
     } else {
       // Si existe, actualizarla
       result = await supabase
-        .from(TABLES.WORKOUT_ROUTINES)
+        .from("workout_routines")
         .update(routineData)
         .eq("id", routine.id)
         .select()
@@ -157,7 +228,7 @@ export const saveWorkoutRoutine = async (routine: WorkoutRoutine) => {
     const { data, error } = result
 
     if (error) {
-      return { data: null, error: handleSupabaseError(error, "Error al guardar rutina de entrenamiento") }
+      return { data: null, error: new Error(error.message || "Error al guardar rutina de entrenamiento") }
     }
 
     // Transformar datos al formato esperado por la aplicación
@@ -201,13 +272,13 @@ export const deleteWorkoutRoutine = async (routineId: string, userId: string) =>
 
     // Eliminar la rutina
     const { error } = await supabase
-      .from(TABLES.WORKOUT_ROUTINES)
+      .from("workout_routines")
       .delete()
       .eq("id", routineId)
-      .eq(COLUMNS.USER_ID, userId)
+      .eq("user_id", userId)
 
     if (error) {
-      return { success: false, error: handleSupabaseError(error, "Error al eliminar rutina de entrenamiento") }
+      return { success: false, error: new Error(error.message || "Error al eliminar rutina de entrenamiento") }
     }
 
     return { success: true, error: null }
@@ -250,8 +321,8 @@ export const addDayToRoutine = async (routineId: string, day: WorkoutDay) => {
 
     // Actualizar la rutina
     const { data, error } = await supabase
-      .from(TABLES.WORKOUT_ROUTINES)
-      .update({ 
+      .from("workout_routines")
+      .update({
         days: updatedDays,
         updated_at: new Date().toISOString()
       })
@@ -259,7 +330,7 @@ export const addDayToRoutine = async (routineId: string, day: WorkoutDay) => {
       .select()
 
     if (error) {
-      return { data: null, error: handleSupabaseError(error, "Error al añadir día a la rutina") }
+      return { data: null, error: new Error(error.message || "Error al añadir día a la rutina") }
     }
 
     // Transformar datos al formato esperado por la aplicación
@@ -329,8 +400,8 @@ export const updateDayInRoutine = async (routineId: string, dayId: string, updat
 
     // Actualizar la rutina
     const { data, error } = await supabase
-      .from(TABLES.WORKOUT_ROUTINES)
-      .update({ 
+      .from("workout_routines")
+      .update({
         days: updatedDays,
         updated_at: new Date().toISOString()
       })
@@ -338,7 +409,7 @@ export const updateDayInRoutine = async (routineId: string, dayId: string, updat
       .select()
 
     if (error) {
-      return { data: null, error: handleSupabaseError(error, "Error al actualizar día en la rutina") }
+      return { data: null, error: new Error(error.message || "Error al actualizar día en la rutina") }
     }
 
     // Transformar datos al formato esperado por la aplicación
@@ -396,8 +467,8 @@ export const deleteDayFromRoutine = async (routineId: string, dayId: string) => 
 
     // Actualizar la rutina
     const { data, error } = await supabase
-      .from(TABLES.WORKOUT_ROUTINES)
-      .update({ 
+      .from("workout_routines")
+      .update({
         days: updatedDays,
         updated_at: new Date().toISOString()
       })
@@ -405,7 +476,7 @@ export const deleteDayFromRoutine = async (routineId: string, dayId: string) => 
       .select()
 
     if (error) {
-      return { data: null, error: handleSupabaseError(error, "Error al eliminar día de la rutina") }
+      return { data: null, error: new Error(error.message || "Error al eliminar día de la rutina") }
     }
 
     // Transformar datos al formato esperado por la aplicación

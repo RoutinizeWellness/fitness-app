@@ -1,12 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import {
   Moon, Clock, Calendar, Filter,
   ChevronRight, Play, Bookmark, Share2,
   BarChart3, Sun, BedDouble, Music,
-  Waves, CloudRain, Wind, Plus
+  Waves, CloudRain, Wind, Plus,
+  Heart, Zap, Settings, Smartphone,
+  ChevronDown, ChevronUp, Alarm, Coffee,
+  Wine, Tv, Activity, Thermometer,
+  RefreshCw, Info, Target, BarChart2,
+  Lightbulb, Brain
 } from "lucide-react"
 import { Card3D, Card3DContent, Card3DHeader, Card3DTitle } from "@/components/ui/card-3d"
 import { Button3D } from "@/components/ui/button-3d"
@@ -14,6 +19,52 @@ import { Progress3D } from "@/components/ui/progress-3d"
 import { Avatar3D, Avatar3DImage, Avatar3DFallback } from "@/components/ui/avatar-3d"
 import { User } from "@supabase/supabase-js"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
+import { Separator } from "@/components/ui/separator"
+import { Progress } from "@/components/ui/progress"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { toast } from "@/components/ui/use-toast"
+import { useAuth } from "@/lib/contexts/auth-context"
+import { SleepEntry, SleepGoal, SleepStats, DeviceSource } from "@/lib/types/wellness"
+import { SleepService } from "@/lib/services/sleep-service"
+import { WearableService } from "@/lib/services/wearable-service"
+import { SleepTracker } from "./sleep/sleep-tracker"
+import { SleepAnalytics } from "./sleep/sleep-analytics"
+import { SleepDeviceIntegration } from "./sleep/sleep-device-integration"
+import { NapOptimizer } from "./sleep/nap-optimizer"
+import { SleepRecommendations } from "./sleep/sleep-recommendations"
+import { AddSleepEntryForm } from "./sleep/AddSleepEntryForm"
+import { SleepGoalForm } from "./sleep/SleepGoalForm"
 
 interface SleepModuleProps {
   profile: User | null
@@ -25,9 +76,18 @@ interface SleepModuleProps {
 export function SleepModule({
   profile,
   isAdmin,
-  isLoading = false,
+  isLoading: initialLoading = false,
   onNavigate
 }: SleepModuleProps) {
+  const { user } = useAuth()
+  const [activeTab, setActiveTab] = useState<string>('tracker')
+  const [sleepEntries, setSleepEntries] = useState<SleepEntry[]>([])
+  const [sleepGoal, setSleepGoal] = useState<SleepGoal | null>(null)
+  const [sleepStats, setSleepStats] = useState<SleepStats | null>(null)
+  const [isLoading, setIsLoading] = useState(initialLoading)
+  const [showAddSleepDialog, setShowAddSleepDialog] = useState(false)
+  const [showGoalDialog, setShowGoalDialog] = useState(false)
+  const [showDeviceDialog, setShowDeviceDialog] = useState(false)
   const [activeCategory, setActiveCategory] = useState("all")
 
   // Categorías de sueño
@@ -107,6 +167,196 @@ export function SleepModule({
     }
   ]
 
+  // Cargar datos de sueño
+  useEffect(() => {
+    const loadSleepData = async () => {
+      if (!user) return
+
+      setIsLoading(true)
+
+      try {
+        // Cargar registros de sueño
+        const { data: entries, error: entriesError } = await SleepService.getSleepEntries(user.id, {
+          limit: 30
+        })
+
+        if (entriesError) {
+          throw entriesError
+        }
+
+        setSleepEntries(entries || [])
+
+        // Cargar objetivo de sueño
+        const { data: goal, error: goalError } = await SleepService.getSleepGoal(user.id)
+
+        if (goalError) {
+          throw goalError
+        }
+
+        setSleepGoal(goal)
+
+        // Cargar estadísticas de sueño
+        const { data: stats, error: statsError } = await SleepService.getSleepStats(user.id)
+
+        if (statsError) {
+          throw statsError
+        }
+
+        setSleepStats(stats)
+      } catch (error) {
+        console.error('Error al cargar datos de sueño:', error)
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los datos de sueño",
+          variant: "destructive"
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadSleepData()
+  }, [user])
+
+  // Manejar guardado de registro de sueño
+  const handleSaveSleepEntry = async (entry: SleepEntry) => {
+    if (!user) return
+
+    try {
+      const { data, error } = await SleepService.saveSleepEntry(entry)
+
+      if (error) {
+        throw error
+      }
+
+      // Actualizar lista de registros
+      setSleepEntries(prev => [data!, ...prev.filter(e => e.id !== data!.id)])
+
+      // Actualizar estadísticas
+      const { data: stats } = await SleepService.getSleepStats(user.id)
+      setSleepStats(stats || null)
+
+      toast({
+        title: "Registro guardado",
+        description: "El registro de sueño ha sido guardado correctamente"
+      })
+
+      setShowAddSleepDialog(false)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido al guardar registro de sueño'
+      console.error('Error al guardar registro de sueño:', {
+        error: errorMessage,
+        userId: user?.id,
+        entryDate: entry.date,
+        details: error
+      })
+      toast({
+        title: "Error",
+        description: errorMessage || "No se pudo guardar el registro de sueño",
+        variant: "destructive"
+      })
+    }
+  }
+
+  // Manejar guardado de objetivo de sueño
+  const handleSaveSleepGoal = async (goal: SleepGoal) => {
+    if (!user) return
+
+    try {
+      const { data, error } = await SleepService.saveSleepGoal(goal)
+
+      if (error) {
+        throw error
+      }
+
+      setSleepGoal(data)
+
+      toast({
+        title: "Objetivo guardado",
+        description: "El objetivo de sueño ha sido guardado correctamente"
+      })
+
+      setShowGoalDialog(false)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido al guardar objetivo de sueño'
+      console.error('Error al guardar objetivo de sueño:', {
+        error: errorMessage,
+        userId: user?.id,
+        targetDuration: goal.targetDuration,
+        details: error
+      })
+      toast({
+        title: "Error",
+        description: errorMessage || "No se pudo guardar el objetivo de sueño",
+        variant: "destructive"
+      })
+    }
+  }
+
+  // Manejar conexión con dispositivo
+  const handleConnectDevice = async (deviceType: DeviceSource) => {
+    if (!user) return
+
+    try {
+      // Simular conexión con dispositivo
+      const authData = {
+        authToken: 'sample-token',
+        refreshToken: 'sample-refresh-token',
+        expiresIn: 3600
+      }
+
+      const { data, error } = await WearableService.connectWearable(user.id, deviceType, authData)
+
+      if (error) {
+        throw error
+      }
+
+      toast({
+        title: "Dispositivo conectado",
+        description: `Se ha conectado correctamente con ${getDeviceName(deviceType)}`
+      })
+
+      // Sincronizar datos
+      await WearableService.syncWearableData(user.id, deviceType)
+
+      // Recargar datos
+      const { data: entries } = await SleepService.getSleepEntries(user.id, {
+        limit: 30
+      })
+
+      setSleepEntries(entries || [])
+
+      setShowDeviceDialog(false)
+    } catch (error) {
+      console.error('Error al conectar dispositivo:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo conectar con el dispositivo",
+        variant: "destructive"
+      })
+    }
+  }
+
+  // Obtener nombre de dispositivo
+  const getDeviceName = (deviceType: DeviceSource): string => {
+    switch (deviceType) {
+      case 'oura':
+        return 'Oura Ring'
+      case 'whoop':
+        return 'Whoop'
+      case 'garmin':
+        return 'Garmin'
+      case 'apple_watch':
+        return 'Apple Watch'
+      case 'fitbit':
+        return 'Fitbit'
+      case 'polar':
+        return 'Polar'
+      default:
+        return 'Manual'
+    }
+  }
+
   // Función para manejar la navegación
   const handleNavigate = (path: string) => {
     if (onNavigate) {
@@ -133,348 +383,187 @@ export function SleepModule({
   // Calcular el promedio de calidad de sueño
   const averageSleepQuality = sleepData.reduce((acc, day) => acc + day.quality, 0) / sleepData.length
 
+  // Renderizar resumen de sueño
+  const renderSleepSummary = () => {
+    if (!sleepStats) return null
+
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card3D className="p-4">
+          <div className="flex flex-col items-center justify-center h-full">
+            <Clock className="h-8 w-8 text-primary mb-2" />
+            <h3 className="text-2xl font-bold">{Math.floor(sleepStats.averageDuration / 60)}h {sleepStats.averageDuration % 60}m</h3>
+            <p className="text-sm text-muted-foreground">Duración media</p>
+          </div>
+        </Card3D>
+
+        <Card3D className="p-4">
+          <div className="flex flex-col items-center justify-center h-full">
+            <Moon className="h-8 w-8 text-primary mb-2" />
+            <h3 className="text-2xl font-bold">{sleepStats.averageQuality.toFixed(1)}/10</h3>
+            <p className="text-sm text-muted-foreground">Calidad media</p>
+          </div>
+        </Card3D>
+
+        <Card3D className="p-4">
+          <div className="flex flex-col items-center justify-center h-full">
+            <Heart className="h-8 w-8 text-primary mb-2" />
+            <h3 className="text-2xl font-bold">{sleepStats.averageHrv?.toFixed(0) || '--'}</h3>
+            <p className="text-sm text-muted-foreground">HRV medio (ms)</p>
+          </div>
+        </Card3D>
+
+        <Card3D className="p-4">
+          <div className="flex flex-col items-center justify-center h-full">
+            <Activity className="h-8 w-8 text-primary mb-2" />
+            <h3 className="text-2xl font-bold">{sleepStats.averageRestingHeartRate?.toFixed(0) || '--'}</h3>
+            <p className="text-sm text-muted-foreground">FC en reposo</p>
+          </div>
+        </Card3D>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 pb-6">
       {/* Encabezado */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold gradient-text mb-2">Sueño</h1>
-        <div className="flex items-center">
-          <div className="h-1 w-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mr-3"></div>
-          <p className="text-gray-500">
-            Mejora tu descanso y calidad de sueño
-          </p>
-        </div>
-      </div>
-
-      {/* Resumen de sueño */}
-      <Card3D className="overflow-hidden border-0 shadow-lg">
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-500 opacity-95"></div>
-          <div className="absolute inset-0 bg-[url('/patterns/dots.svg')] opacity-10"></div>
-          <div className="relative p-6 text-white">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-xl font-bold">Tu sueño esta semana</h2>
-                <p className="text-white/70 text-sm mt-1">Análisis de tus patrones de descanso</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/20">
-                <span className="text-lg font-bold">{averageSleepHours.toFixed(1)}</span>
-                <span className="text-sm font-medium ml-1">h promedio</span>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-end mb-4 px-2">
-              {sleepData.map((day, index) => (
-                <div key={index} className="flex flex-col items-center group relative">
-                  <div className="absolute -top-10 transform -translate-x-1/2 left-1/2 bg-black/80 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                    {day.hours}h - Calidad: {day.quality}%
-                  </div>
-                  <div
-                    className="w-8 bg-white/10 backdrop-blur-sm rounded-t-lg mb-1 transition-all group-hover:bg-white/20"
-                    style={{ height: `${day.hours * 7}px` }}
-                  >
-                    <div
-                      className="w-full bg-gradient-to-t from-white/60 to-white/90 rounded-t-lg transition-all"
-                      style={{
-                        height: `${(day.quality / 100) * 100}%`,
-                        marginTop: `${(1 - day.quality / 100) * 100}%`
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs font-medium">{day.day}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-between items-center mt-6 bg-white/10 backdrop-blur-sm p-3 rounded-xl">
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-white/90 rounded-full mr-2"></div>
-                <span className="text-sm text-white/90">Calidad <span className="font-bold">{averageSleepQuality.toFixed(0)}%</span></span>
-              </div>
-              <div className="flex items-center mx-2">
-                <div className="w-3 h-3 bg-white/20 rounded-full mr-2"></div>
-                <span className="text-sm text-white/90">Duración</span>
-              </div>
-              <Button3D
-                variant="glass"
-                size="sm"
-                className="text-white border-white/30 backdrop-blur-md"
-                onClick={() => handleNavigate("/sleep/stats")}
-              >
-                Ver detalles
-              </Button3D>
-            </div>
-          </div>
-        </div>
-      </Card3D>
-
-      {/* Filtros de categoría */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex space-x-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-          {categories.map((category) => (
-            <Button3D
-              key={category.id}
-              variant={activeCategory === category.id ? "gradient" : "outline"}
-              size="sm"
-              className={`rounded-full px-4 transition-all ${
-                activeCategory === category.id
-                  ? "text-white shadow-md"
-                  : "hover:bg-gray-100"
-              }`}
-              onClick={() => setActiveCategory(category.id)}
-            >
-              {category.name}
-            </Button3D>
-          ))}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Sueño</h2>
+          <p className="text-muted-foreground">Seguimiento y análisis de tu sueño</p>
         </div>
 
-        <Button3D
-          variant="outline"
-          size="icon"
-          className="rounded-full h-9 w-9 border border-gray-200 shadow-sm"
-        >
-          <Filter className="h-4 w-4" />
-        </Button3D>
-      </div>
+        <div className="flex space-x-2">
+          <Button3D variant="outline" onClick={() => setShowDeviceDialog(true)}>
+            <Smartphone className="h-4 w-4 mr-2" />
+            Conectar Dispositivo
+          </Button3D>
 
-      {/* Sonidos para dormir */}
-      <div>
-        <div className="flex justify-between items-center mb-5">
-          <div>
-            <h2 className="text-xl font-bold">Sonidos para dormir</h2>
-            <div className="h-1 w-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-1"></div>
-          </div>
-          <Button3D
-            variant="ghost"
-            size="sm"
-            className="flex items-center gap-1 text-indigo-600 font-medium"
-            onClick={() => handleNavigate("/sleep/sounds")}
-          >
-            Ver todos
-            <ChevronRight className="h-4 w-4" />
+          <Button3D variant="outline" onClick={() => setShowGoalDialog(true)}>
+            <Target className="h-4 w-4 mr-2" />
+            Objetivos
+          </Button3D>
+
+          <Button3D onClick={() => setShowAddSleepDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Añadir Registro
           </Button3D>
         </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          {sleepSounds.map((sound) => (
-            <Card3D
-              key={sound.id}
-              className="p-5 text-center border border-gray-100 hover:border-indigo-100 transition-all hover:shadow-md overflow-hidden group relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="relative">
-                <div className={`rounded-full ${sound.color} p-3 w-14 h-14 mx-auto mb-3 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
-                  <sound.icon className="h-7 w-7" />
-                </div>
-                <h3 className="font-semibold text-sm">{sound.title}</h3>
-                <p className="text-xs text-gray-500 mt-1">{sound.duration}</p>
-                <Button3D
-                  variant="outline"
-                  size="sm"
-                  className="w-full mt-4 text-xs rounded-full border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-colors"
-                  onClick={() => handleNavigate(`/sleep/sounds/${sound.id}`)}
-                >
-                  <Play className="h-3 w-3 mr-1" />
-                  Reproducir
-                </Button3D>
-              </div>
-            </Card3D>
-          ))}
-        </div>
       </div>
 
-      {/* Rutinas para dormir */}
-      <div>
-        <div className="flex justify-between items-center mb-5">
-          <div>
-            <h2 className="text-xl font-bold">Rutinas para dormir</h2>
-            <div className="h-1 w-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mt-1"></div>
-          </div>
-          <Button3D
-            variant="ghost"
-            size="sm"
-            className="flex items-center gap-1 text-purple-600 font-medium"
-            onClick={() => handleNavigate("/sleep/routines")}
-          >
-            Ver todas
-            <ChevronRight className="h-4 w-4" />
-          </Button3D>
-        </div>
+      {renderSleepSummary()}
 
-        <div className="space-y-5">
-          {sleepRoutines.map((routine) => (
-            <Card3D
-              key={routine.id}
-              className="overflow-hidden border-0 shadow-lg group hover:shadow-xl transition-all"
-            >
-              <div className="relative h-36">
-                <div className={`absolute inset-0 bg-gradient-to-br ${routine.color} opacity-95`}></div>
-                <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10"></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                <div className="relative p-5 text-white h-full flex flex-col justify-between">
-                  <div className="flex justify-between">
-                    <div>
-                      <span className="text-xs font-medium bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full inline-flex items-center">
-                        <Moon className="h-3 w-3 mr-1" />
-                        Rutina
-                      </span>
-                      <h3 className="text-xl font-bold mt-2 group-hover:translate-x-1 transition-transform">{routine.title}</h3>
-                    </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="tracker">
+            <Moon className="h-4 w-4 mr-2" />
+            Registro
+          </TabsTrigger>
+          <TabsTrigger value="analytics">
+            <BarChart2 className="h-4 w-4 mr-2" />
+            Análisis
+          </TabsTrigger>
+          <TabsTrigger value="naps">
+            <Zap className="h-4 w-4 mr-2" />
+            Siestas
+          </TabsTrigger>
+          <TabsTrigger value="recommendations">
+            <Lightbulb className="h-4 w-4 mr-2" />
+            Recomendaciones
+          </TabsTrigger>
+        </TabsList>
 
-                    <Button3D
-                      variant="glass"
-                      size="icon"
-                      className="h-10 w-10 text-white border-white/30 backdrop-blur-sm group-hover:scale-110 transition-transform"
-                      onClick={() => handleNavigate(`/sleep/routines/${routine.id}`)}
-                    >
-                      <Play className="h-5 w-5" />
-                    </Button3D>
-                  </div>
+        <TabsContent value="tracker" className="mt-0">
+          <SleepTracker
+            entries={sleepEntries}
+            goal={sleepGoal}
+            onAddEntry={() => setShowAddSleepDialog(true)}
+            isLoading={isLoading}
+          />
+        </TabsContent>
 
-                  <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-sm p-2 rounded-lg">
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span className="text-sm font-medium">{routine.duration}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <BedDouble className="h-4 w-4 mr-1" />
-                      <span className="text-sm font-medium">{routine.steps} pasos</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card3D>
-          ))}
-        </div>
-      </div>
+        <TabsContent value="analytics" className="mt-0">
+          <SleepAnalytics
+            stats={sleepStats}
+            entries={sleepEntries}
+            isLoading={isLoading}
+          />
+        </TabsContent>
 
-      {/* Consejos para dormir mejor */}
-      <Card3D className="border border-gray-100 shadow-md overflow-hidden">
-        <Card3DHeader className="border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-blue-50">
-          <div className="flex items-center">
-            <div className="mr-3 bg-gradient-to-br from-indigo-500 to-blue-600 text-white p-2 rounded-lg">
-              <Moon className="h-5 w-5" />
-            </div>
-            <Card3DTitle gradient={true} className="text-xl">Consejos para dormir mejor</Card3DTitle>
-          </div>
-        </Card3DHeader>
-        <Card3DContent className="p-5">
-          <div className="space-y-4">
-            <div className="flex items-start space-x-4 bg-indigo-50 p-3 rounded-xl hover:bg-indigo-100 transition-colors">
-              <div className="rounded-full bg-indigo-100 text-indigo-600 p-2 mt-0.5 shadow-sm">
-                <Moon className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-indigo-900">Mantén un horario regular</p>
-                <p className="text-xs text-indigo-700 mt-1">Acuéstate y levántate a la misma hora todos los días, incluso los fines de semana.</p>
-              </div>
-            </div>
+        <TabsContent value="naps" className="mt-0">
+          <NapOptimizer userId={user?.id || profile?.id || ''} />
+        </TabsContent>
 
-            <div className="flex items-start space-x-4 bg-blue-50 p-3 rounded-xl hover:bg-blue-100 transition-colors">
-              <div className="rounded-full bg-blue-100 text-blue-600 p-2 mt-0.5 shadow-sm">
-                <Sun className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-blue-900">Exposición a la luz natural</p>
-                <p className="text-xs text-blue-700 mt-1">Busca exponerte a la luz solar durante el día para regular tu ritmo circadiano.</p>
-              </div>
-            </div>
+        <TabsContent value="recommendations" className="mt-0">
+          <SleepRecommendations
+            stats={sleepStats}
+            goal={sleepGoal}
+            entries={sleepEntries}
+          />
+        </TabsContent>
+      </Tabs>
 
-            <div className="flex items-start space-x-4 bg-purple-50 p-3 rounded-xl hover:bg-purple-100 transition-colors">
-              <div className="rounded-full bg-purple-100 text-purple-600 p-2 mt-0.5 shadow-sm">
-                <BedDouble className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-purple-900">Ambiente de sueño óptimo</p>
-                <p className="text-xs text-purple-700 mt-1">Mantén tu habitación oscura, silenciosa y a una temperatura agradable.</p>
-              </div>
-            </div>
-          </div>
+      {/* Diálogo para añadir registro de sueño */}
+      <Dialog open={showAddSleepDialog} onOpenChange={setShowAddSleepDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Añadir Registro de Sueño</DialogTitle>
+            <DialogDescription>
+              Registra los detalles de tu sueño para hacer un seguimiento de tu descanso
+            </DialogDescription>
+          </DialogHeader>
 
-          <Button3D
-            variant="gradient"
-            className="w-full mt-5 rounded-lg shadow-sm"
-            onClick={() => handleNavigate("/sleep/tips")}
-          >
-            <span className="font-medium">Ver más consejos</span>
-          </Button3D>
-        </Card3DContent>
-      </Card3D>
+          <AddSleepEntryForm
+            userId={user?.id || profile?.id || ''}
+            onSave={handleSaveSleepEntry}
+            onCancel={() => setShowAddSleepDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
-      {/* Análisis de sueño avanzado - Solo para admin */}
-      {isAdmin && (
-        <Card3D>
-          <Card3DHeader>
-            <div className="flex items-center">
-              <Card3DTitle gradient={true}>Análisis de sueño avanzado</Card3DTitle>
-              <Badge variant="outline" className="ml-2">Admin</Badge>
-            </div>
-          </Card3DHeader>
-          <Card3DContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center mb-1">
-                  <Moon className="h-4 w-4 text-indigo-500 mr-1" />
-                  <span className="text-sm font-medium">Sueño profundo</span>
-                </div>
-                <div className="text-xl font-bold gradient-text">
-                  22%
-                </div>
-                <p className="text-xs text-gray-500">Del tiempo total</p>
-              </div>
+      {/* Diálogo para configurar objetivos de sueño */}
+      <Dialog open={showGoalDialog} onOpenChange={setShowGoalDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Objetivos de Sueño</DialogTitle>
+            <DialogDescription>
+              Establece tus objetivos de sueño para mejorar tu descanso
+            </DialogDescription>
+          </DialogHeader>
 
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center mb-1">
-                  <Waves className="h-4 w-4 text-blue-500 mr-1" />
-                  <span className="text-sm font-medium">REM</span>
-                </div>
-                <div className="text-xl font-bold gradient-text">
-                  18%
-                </div>
-                <p className="text-xs text-gray-500">Del tiempo total</p>
-              </div>
+          <SleepGoalForm
+            userId={user?.id || profile?.id || ''}
+            currentGoal={sleepGoal}
+            onSave={handleSaveSleepGoal}
+            onCancel={() => setShowGoalDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center mb-1">
-                  <Clock className="h-4 w-4 text-green-500 mr-1" />
-                  <span className="text-sm font-medium">Latencia</span>
-                </div>
-                <div className="text-xl font-bold gradient-text">
-                  12
-                </div>
-                <p className="text-xs text-gray-500">Minutos</p>
-              </div>
+      {/* Diálogo para conectar dispositivos */}
+      <Dialog open={showDeviceDialog} onOpenChange={setShowDeviceDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Conectar Dispositivo</DialogTitle>
+            <DialogDescription>
+              Conecta tu dispositivo wearable para sincronizar automáticamente tus datos de sueño
+            </DialogDescription>
+          </DialogHeader>
 
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center mb-1">
-                  <Sun className="h-4 w-4 text-amber-500 mr-1" />
-                  <span className="text-sm font-medium">Despertares</span>
-                </div>
-                <div className="text-xl font-bold gradient-text">
-                  2.3
-                </div>
-                <p className="text-xs text-gray-500">Promedio</p>
-              </div>
-            </div>
-
-            <Button3D
-              variant="outline"
-              className="w-full mt-4"
-              onClick={() => handleNavigate("/admin/sleep-stats")}
-            >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Ver análisis detallado
-            </Button3D>
-          </Card3DContent>
-        </Card3D>
-      )}
+          <SleepDeviceIntegration
+            userId={user?.id || profile?.id || ''}
+            onConnect={handleConnectDevice}
+            onCancel={() => setShowDeviceDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Botón flotante para registrar sueño */}
       <div className="fixed bottom-20 right-4">
         <Button3D
           size="icon"
           className="h-14 w-14 rounded-full shadow-xl bg-gradient-to-br from-indigo-600 to-purple-600 border-none hover:shadow-indigo-200 hover:scale-105 transition-all"
-          onClick={() => handleNavigate("/sleep/log")}
+          onClick={() => setShowAddSleepDialog(true)}
         >
           <Plus className="h-7 w-7 text-white" />
         </Button3D>

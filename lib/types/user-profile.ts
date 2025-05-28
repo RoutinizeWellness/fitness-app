@@ -9,9 +9,16 @@ export interface UserPreferences {
     avoidedExercises: string[] // IDs de ejercicios a evitar
     favoriteExercises: string[] // IDs de ejercicios favoritos
     equipmentAvailable: string[] // ["dumbbells", "barbell", "machine", etc.]
-    trainingExperience: "beginner" | "intermediate" | "advanced"
+    trainingExperience: "amateur_zero" | "beginner" | "intermediate" | "advanced" | "expert"
+    experienceDetails: {
+      yearsOfTraining: number
+      consistencyLevel: "low" | "moderate" | "high"
+      technicalProficiency: "novice" | "developing" | "proficient" | "expert"
+      knowledgeLevel: "basic" | "intermediate" | "advanced" | "scientific"
+    }
     trainingGoals: string[] // ["muscle_gain", "fat_loss", "strength", "endurance", etc.]
     injuryHistory: string[] // ["shoulder", "knee", "back", etc.]
+    preferredInterfaceMode: "beginner" | "advanced" // Modo de interfaz preferido
   }
 
   // Preferencias de nutrición

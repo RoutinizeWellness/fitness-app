@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
 import { Camera, Video, Play, Pause, RotateCcw, Upload, Save, AlertTriangle, CheckCircle } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { analyzeWorkoutVideo } from "@/lib/edge-functions-service"
 

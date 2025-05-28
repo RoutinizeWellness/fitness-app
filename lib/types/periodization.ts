@@ -7,6 +7,10 @@
  * - Grande y Fuerte PBO Team Trinidad
  * - Progresa Con ENFAF
  * - Mesociclo Hazlo tú mismo BASQUELIFTS
+ * - Pure Bodybuilding Phase 2 Hypertrophy Handbook
+ * - Jeff Nippard's Push/Pull/Legs System
+ * - Chris Bumstead's Training Methodology
+ * - Université Mohammed V de Rabat Hypertrophy Research
  */
 
 // Periodization types
@@ -25,7 +29,10 @@ export type PeriodizationType =
   | 'high_intensity'
   | 'high_volume'
   | 'specialization'
-  | 'pbo_method'; // PBO Team Trinidad method
+  | 'pbo_method' // PBO Team Trinidad method
+  | 'scientific_ppl' // Scientific Push/Pull/Legs method
+  | 'nippard_system' // Jeff Nippard's training system
+  | 'cbum_method'; // Chris Bumstead's training method
 
 export type TrainingPhase =
   | 'anatomical_adaptation'
@@ -43,7 +50,16 @@ export type TrainingPhase =
   | 'intensity_phase'
   | 'technique_phase'
   | 'metabolic_phase'
-  | 'specialization_phase';
+  | 'specialization_phase'
+  | 'hypertrophy_volume' // High volume hypertrophy phase
+  | 'hypertrophy_intensity' // High intensity hypertrophy phase
+  | 'strength_peaking' // Strength peaking phase
+  | 'active_recovery' // Active recovery phase
+  | 'progressive_overload' // Progressive overload phase
+  | 'foundation' // Foundation building phase
+  | 'deload_volume' // Volume-based deload
+  | 'deload_intensity' // Intensity-based deload
+  | 'deload_frequency'; // Frequency-based deload
 
 export type TrainingLevel =
   | 'beginner'

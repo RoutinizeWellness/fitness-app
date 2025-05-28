@@ -7,7 +7,7 @@ import {
   ChevronRight, BarChart3, Settings,
   Clock, Zap, Award, Flame,
   ArrowRight, Check, X, Info,
-  Loader2
+  Loader2, Brain
 } from "lucide-react"
 import { Card3D, Card3DContent, Card3DHeader, Card3DTitle } from "@/components/ui/card-3d"
 import { Button3D } from "@/components/ui/button-3d"
@@ -25,6 +25,17 @@ import { RoutineBuilder } from "@/components/training/routine-builder"
 import { RoutineTemplateCreator } from "@/components/training/routine-template-creator"
 import { UserTrainerFeedback } from "@/components/training/user-trainer-feedback"
 import { AdaptiveRecommendations } from "@/components/training/adaptive-recommendations"
+import { ExperienceConditional, ExperienceContent } from "@/components/ui/experience-conditional"
+import { ExperienceModeToggle } from "@/components/ui/experience-mode-toggle"
+import { useUserExperience } from "@/contexts/user-experience-context"
+import { SimplifiedWorkoutBuilder } from "@/components/training/beginner/simplified-workout-builder"
+import { PeriodizationPlanner } from "@/components/training/advanced/periodization-planner"
+import { PerformanceAnalytics } from "@/components/training/advanced/performance-analytics"
+import { EnhancedRoutineSelector } from "@/components/training/enhanced-routine-selector"
+import { SmartRoutineRecommendations } from "@/components/training/smart-routine-recommendations"
+import { RealTimeRoutineModifier } from "@/components/training/real-time-routine-modifier"
+import { getUserAdaptiveProfile, adaptRoutineForUser } from "@/lib/adaptive-routine-engine"
+import { calculateProgressiveOverload } from "@/lib/progressive-overload-calculator"
 import {
   getWorkoutRoutines,
   getWorkoutLogs,
@@ -62,6 +73,10 @@ export function TrainingModule({
   const [isLoadingRoutines, setIsLoadingRoutines] = useState(false)
   const [isLoadingLogs, setIsLoadingLogs] = useState(false)
   const [isLoadingExercises, setIsLoadingExercises] = useState(false)
+  const [adaptiveProfile, setAdaptiveProfile] = useState<any>(null)
+  const [showAdaptiveSelector, setShowAdaptiveSelector] = useState(false)
+  const [selectedAdaptiveRoutine, setSelectedAdaptiveRoutine] = useState<WorkoutRoutine | null>(null)
+  const [isAdaptingRoutine, setIsAdaptingRoutine] = useState(false)
 
   // Cargar rutinas y logs del usuario
   useEffect(() => {
@@ -140,6 +155,14 @@ export function TrainingModule({
         console.error('Error al cargar ejercicios:', error)
       } finally {
         setIsLoadingExercises(false)
+      }
+
+      // Cargar perfil adaptativo
+      try {
+        const adaptiveProfileData = await getUserAdaptiveProfile(profile.id)
+        setAdaptiveProfile(adaptiveProfileData)
+      } catch (error) {
+        console.error('Error al cargar perfil adaptativo:', error)
       }
     }
 
@@ -328,6 +351,76 @@ export function TrainingModule({
     }
   }
 
+  // Funciones para rutinas adaptativas
+  const handleSelectAdaptiveRoutine = async (routine: WorkoutRoutine) => {
+    try {
+      setIsAdaptingRoutine(true)
+
+      if (adaptiveProfile) {
+        const adapted = await adaptRoutineForUser(routine, {
+          userId: profile.id,
+          goal: routine.goal as any,
+          duration: routine.duration || 8,
+          autoAdjust: true,
+          considerFatigue: true,
+          considerPerformance: true,
+          allowEquipmentSubstitutions: true,
+          difficultyScaling: 'auto'
+        })
+
+        setSelectedAdaptiveRoutine(adapted.adaptedRoutine)
+        setActiveRoutine(adapted.adaptedRoutine)
+
+        toast({
+          title: "Rutina Adaptada",
+          description: `Rutina personalizada según tu perfil. ${adapted.adaptations.length} adaptaciones aplicadas.`,
+        })
+      } else {
+        setSelectedAdaptiveRoutine(routine)
+        setActiveRoutine(routine)
+      }
+
+      setShowAdaptiveSelector(false)
+    } catch (error) {
+      console.error('Error al adaptar rutina:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo adaptar la rutina",
+        variant: "destructive"
+      })
+    } finally {
+      setIsAdaptingRoutine(false)
+    }
+  }
+
+  const handlePreviewAdaptiveRoutine = async (routine: WorkoutRoutine) => {
+    // Implementar vista previa de rutina adaptativa
+    console.log('Vista previa de rutina:', routine)
+  }
+
+  const handleStartAdaptiveWorkout = async (routine: WorkoutRoutine) => {
+    await handleSelectAdaptiveRoutine(routine)
+    setActiveTab("workout")
+  }
+
+  const handleAdaptiveRoutineModified = (modifiedRoutine: WorkoutRoutine) => {
+    setSelectedAdaptiveRoutine(modifiedRoutine)
+    setActiveRoutine(modifiedRoutine)
+  }
+
+  const handleAdaptiveDayModified = (modifiedDay: WorkoutDay) => {
+    if (selectedAdaptiveRoutine) {
+      const updatedRoutine = {
+        ...selectedAdaptiveRoutine,
+        days: selectedAdaptiveRoutine.days.map(day =>
+          day.id === modifiedDay.id ? modifiedDay : day
+        )
+      }
+      setSelectedAdaptiveRoutine(updatedRoutine)
+      setActiveRoutine(updatedRoutine)
+    }
+  }
+
   // Mostrar estado de carga
   const isDataLoading = isLoading || isLoadingRoutines || isLoadingLogs || isLoadingExercises
 
@@ -365,21 +458,54 @@ export function TrainingModule({
     <div className="space-y-6 pb-6">
       {/* Encabezado */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold gradient-text">Entrenamiento</h1>
-        <p className="text-gray-500">
-          Gestiona tus rutinas y registra tus progresos
-        </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold gradient-text">Entrenamiento</h1>
+            <p className="text-gray-500">
+              Gestiona tus rutinas y registra tus progresos
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button3D
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/training/elite')}
+              className="flex items-center"
+            >
+              <Brain className="h-4 w-4 mr-1" />
+              Elite
+            </Button3D>
+            <ExperienceModeToggle variant="button" />
+          </div>
+        </div>
       </div>
 
       {/* Pestañas de navegación */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-5 mb-4">
-          <TabsTrigger value="routines">Rutinas</TabsTrigger>
-          <TabsTrigger value="workout">Entrenar</TabsTrigger>
-          <TabsTrigger value="history">Historial</TabsTrigger>
-          <TabsTrigger value="stats">Estadísticas</TabsTrigger>
-          <TabsTrigger value="feedback">Feedback</TabsTrigger>
-        </TabsList>
+        <ExperienceConditional
+          beginnerContent={
+            <TabsList className="grid grid-cols-6 mb-4">
+              <TabsTrigger value="routines">Rutinas</TabsTrigger>
+              <TabsTrigger value="adaptive">IA Adaptiva</TabsTrigger>
+              <TabsTrigger value="workout">Entrenar</TabsTrigger>
+              <TabsTrigger value="history">Historial</TabsTrigger>
+              <TabsTrigger value="stats">Estadísticas</TabsTrigger>
+              <TabsTrigger value="feedback">Feedback</TabsTrigger>
+            </TabsList>
+          }
+          advancedContent={
+            <TabsList className="grid grid-cols-8 mb-4">
+              <TabsTrigger value="routines">Rutinas</TabsTrigger>
+              <TabsTrigger value="adaptive">IA Adaptiva</TabsTrigger>
+              <TabsTrigger value="workout">Entrenar</TabsTrigger>
+              <TabsTrigger value="history">Historial</TabsTrigger>
+              <TabsTrigger value="stats">Estadísticas</TabsTrigger>
+              <TabsTrigger value="periodization">Periodización</TabsTrigger>
+              <TabsTrigger value="analytics">Análisis</TabsTrigger>
+              <TabsTrigger value="feedback">Feedback</TabsTrigger>
+            </TabsList>
+          }
+        />
 
         {/* Contenido de las pestañas */}
         <TabsContent value="routines" className="space-y-4">
@@ -390,6 +516,40 @@ export function TrainingModule({
             onCreateTemplateRoutine={createTemplateRoutine}
             onEditRoutine={editRoutine}
           />
+        </TabsContent>
+
+        <TabsContent value="adaptive" className="space-y-4">
+          {profile && (
+            <div className="space-y-6">
+              {/* Recomendaciones inteligentes */}
+              <SmartRoutineRecommendations
+                userId={profile.id}
+                currentRoutines={routines}
+                onSelectRecommendation={handleSelectAdaptiveRoutine}
+                onPreviewRecommendation={handlePreviewAdaptiveRoutine}
+              />
+
+              {/* Selector de rutinas mejorado */}
+              <EnhancedRoutineSelector
+                routines={routines}
+                userId={profile.id}
+                onSelectRoutine={handleSelectAdaptiveRoutine}
+                onPreviewRoutine={handlePreviewAdaptiveRoutine}
+                onStartWorkout={handleStartAdaptiveWorkout}
+              />
+
+              {/* Modificador en tiempo real - Solo si hay rutina activa */}
+              {selectedAdaptiveRoutine && activeDay && (
+                <RealTimeRoutineModifier
+                  routine={selectedAdaptiveRoutine}
+                  currentDay={activeDay}
+                  userId={profile.id}
+                  onRoutineModified={handleAdaptiveRoutineModified}
+                  onDayModified={handleAdaptiveDayModified}
+                />
+              )}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="workout" className="space-y-4">
@@ -441,17 +601,24 @@ export function TrainingModule({
         </TabsContent>
 
         <TabsContent value="builder" className="space-y-4">
-          <RoutineBuilder
-            isCreating={isCreatingRoutine}
-            onSave={saveRoutine}
-            onCancel={() => {
-              setIsCreatingRoutine(false)
-              setEditingRoutine(null)
-              setActiveTab("routines")
-            }}
-            userId={profile?.id || ""}
-            availableExercises={exercises}
-            existingRoutine={editingRoutine}
+          <ExperienceConditional
+            beginnerContent={
+              <SimplifiedWorkoutBuilder />
+            }
+            advancedContent={
+              <RoutineBuilder
+                isCreating={isCreatingRoutine}
+                onSave={saveRoutine}
+                onCancel={() => {
+                  setIsCreatingRoutine(false)
+                  setEditingRoutine(null)
+                  setActiveTab("routines")
+                }}
+                userId={profile?.id || ""}
+                availableExercises={exercises}
+                existingRoutine={editingRoutine}
+              />
+            }
           />
         </TabsContent>
 
@@ -465,6 +632,19 @@ export function TrainingModule({
               setActiveTab("routines")
             }}
           />
+        </TabsContent>
+
+        {/* Pestañas avanzadas */}
+        <TabsContent value="periodization" className="space-y-4">
+          <ExperienceContent interfaceMode="advanced">
+            <PeriodizationPlanner />
+          </ExperienceContent>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-4">
+          <ExperienceContent interfaceMode="advanced">
+            <PerformanceAnalytics />
+          </ExperienceContent>
         </TabsContent>
       </Tabs>
 

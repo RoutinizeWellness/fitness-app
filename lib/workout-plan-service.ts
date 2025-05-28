@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase-client'
-import { WorkoutPlan, WorkoutDay } from '@/lib/workout-plan-generator'
+import { WorkoutPlan, WorkoutDay, WorkoutExercise } from '@/lib/workout-plan-generator'
 
 /**
  * Obtiene el plan de entrenamiento activo de un usuario
@@ -57,6 +57,17 @@ export const getActiveWorkoutPlan = async (userId: string): Promise<WorkoutPlan 
 
       console.log('Plan de entrenamiento activado:', anyPlan[0])
 
+      // Verificar si el plan tiene días configurados
+      if (!anyPlan[0].days || !Array.isArray(anyPlan[0].days)) {
+        console.warn('El plan activado no tiene días configurados o no es un array:', anyPlan[0].days)
+      } else {
+        console.log(`El plan activado tiene ${anyPlan[0].days.length} días configurados:`,
+          anyPlan[0].days.map((day: any, index: number) => `Día ${index + 1}: ${day.name || 'Sin nombre'} (ID: ${day.id})`))
+      }
+
+      // Asegurar que days sea siempre un array, incluso si es undefined o null
+      const days = Array.isArray(anyPlan[0].days) ? anyPlan[0].days : []
+
       // Transformar los datos al formato esperado
       return {
         id: anyPlan[0].id,
@@ -69,11 +80,22 @@ export const getActiveWorkoutPlan = async (userId: string): Promise<WorkoutPlan 
         daysPerWeek: anyPlan[0].days_per_week,
         createdAt: anyPlan[0].created_at,
         isActive: true,
-        days: anyPlan[0].days || []
+        days: days // Usar la variable days que garantiza ser un array
       }
     }
 
     console.log('Plan de entrenamiento activo obtenido:', data[0])
+
+    // Verificar si el plan tiene días configurados
+    if (!data[0].days || !Array.isArray(data[0].days)) {
+      console.warn('El plan no tiene días configurados o no es un array:', data[0].days)
+    } else {
+      console.log(`El plan tiene ${data[0].days.length} días configurados:`,
+        data[0].days.map((day: any, index: number) => `Día ${index + 1}: ${day.name || 'Sin nombre'} (ID: ${day.id})`))
+    }
+
+    // Asegurar que days sea siempre un array, incluso si es undefined o null
+    const days = Array.isArray(data[0].days) ? data[0].days : []
 
     // Transformar los datos al formato esperado
     return {
@@ -87,7 +109,7 @@ export const getActiveWorkoutPlan = async (userId: string): Promise<WorkoutPlan 
       daysPerWeek: data[0].days_per_week,
       createdAt: data[0].created_at,
       isActive: data[0].is_active,
-      days: data[0].days || []
+      days: days // Usar la variable days que garantiza ser un array
     }
   } catch (error) {
     console.error('Error al obtener el plan de entrenamiento activo:', error)
@@ -173,6 +195,17 @@ export const getWorkoutPlan = async (planId: string): Promise<WorkoutPlan | null
       return null
     }
 
+    // Verificar si el plan tiene días configurados
+    if (!data.days || !Array.isArray(data.days)) {
+      console.warn('El plan no tiene días configurados o no es un array:', data.days)
+    } else {
+      console.log(`El plan tiene ${data.days.length} días configurados:`,
+        data.days.map((day: any, index: number) => `Día ${index + 1}: ${day.name || 'Sin nombre'} (ID: ${day.id})`))
+    }
+
+    // Asegurar que days sea siempre un array, incluso si es undefined o null
+    const days = Array.isArray(data.days) ? data.days : []
+
     // Transformar los datos al formato esperado
     return {
       id: data.id,
@@ -185,7 +218,7 @@ export const getWorkoutPlan = async (planId: string): Promise<WorkoutPlan | null
       daysPerWeek: data.days_per_week,
       createdAt: data.created_at,
       isActive: data.is_active,
-      days: data.days || []
+      days: days // Usar la variable days que garantiza ser un array
     }
   } catch (error) {
     console.error('Error al obtener el plan de entrenamiento:', error)
@@ -269,6 +302,50 @@ export const deleteWorkoutPlan = async (planId: string, userId: string): Promise
 }
 
 /**
+ * Reporta una discrepancia en el plan de entrenamiento
+ * @param userId - ID del usuario
+ * @param planId - ID del plan actual
+ * @param reportType - Tipo de reporte (wrong_plan, missing_exercise, etc)
+ * @param details - Detalles adicionales del reporte
+ * @returns - Éxito o error
+ */
+export const reportWorkoutPlanDiscrepancy = async (
+  userId: string,
+  planId: string,
+  reportType: string,
+  details?: string
+): Promise<{ success: boolean, error?: any }> => {
+  try {
+    if (!userId || !planId || !reportType) {
+      console.error('Error: userId, planId y reportType son requeridos para reportar una discrepancia')
+      return { success: false, error: 'Parámetros incompletos' }
+    }
+
+    // Guardar el reporte en Supabase
+    const { error } = await supabase
+      .from('workout_plan_reports')
+      .insert({
+        user_id: userId,
+        plan_id: planId,
+        report_type: reportType,
+        details: details || '',
+        status: 'pending',
+        created_at: new Date().toISOString()
+      })
+
+    if (error) {
+      console.error('Error al reportar la discrepancia:', error)
+      return { success: false, error }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error al reportar la discrepancia:', error)
+    return { success: false, error }
+  }
+}
+
+/**
  * Actualiza un día de entrenamiento en un plan
  * @param planId - ID del plan
  * @param dayIndex - Índice del día a actualizar
@@ -317,5 +394,105 @@ export const updateWorkoutDay = async (
   } catch (error) {
     console.error('Error al actualizar el día de entrenamiento:', error)
     return { success: false, error }
+  }
+}
+
+/**
+ * Obtiene un día específico de entrenamiento por su ID
+ * @param dayId - ID del día de entrenamiento
+ * @returns - Día de entrenamiento o null si no existe
+ */
+export const getWorkoutDay = async (dayId: string): Promise<WorkoutDay | null> => {
+  try {
+    if (!dayId) {
+      console.error('Error: dayId es requerido para obtener el día de entrenamiento')
+      return null
+    }
+
+    console.log('Obteniendo día de entrenamiento:', dayId)
+
+    // En un entorno real, aquí se haría una consulta a Supabase para obtener el día específico
+    // Por ahora, simulamos la obtención del día desde los planes existentes
+
+    // Obtener todos los planes (esto se optimizaría en un entorno real)
+    const { data: plans, error } = await supabase
+      .from('workout_routines')
+      .select('*')
+
+    if (error) {
+      console.error('Error al obtener los planes para buscar el día:', error)
+      return null
+    }
+
+    // Buscar el día en todos los planes
+    for (const plan of plans || []) {
+      if (plan.days && Array.isArray(plan.days)) {
+        console.log(`Buscando día ${dayId} en plan ${plan.name} (${plan.id}) con ${plan.days.length} días`)
+
+        // Registrar todos los IDs de días en este plan para depuración
+        const dayIds = plan.days.map((d: any) => d.id)
+        console.log('IDs de días en este plan:', dayIds)
+
+        const day = plan.days.find((d: any) => d.id === dayId)
+        if (day) {
+          console.log('Día encontrado en el plan:', plan.name)
+
+          // Añadir información del plan al día
+          return {
+            ...day,
+            planId: plan.id,
+            planName: plan.name
+          }
+        }
+      }
+    }
+
+    console.log('No se encontró el día de entrenamiento:', dayId)
+    return null
+  } catch (error) {
+    console.error('Error al obtener el día de entrenamiento:', error)
+    return null
+  }
+}
+
+/**
+ * Obtiene los ejercicios para un día específico de entrenamiento
+ * @param dayId - ID del día de entrenamiento
+ * @returns - Lista de ejercicios o array vacío en caso de error
+ */
+export const getExercisesForDay = async (dayId: string): Promise<WorkoutExercise[]> => {
+  try {
+    if (!dayId) {
+      console.error('Error: dayId es requerido para obtener los ejercicios')
+      return []
+    }
+
+    console.log('Obteniendo ejercicios para el día:', dayId)
+
+    // Obtener el día de entrenamiento
+    const day = await getWorkoutDay(dayId)
+
+    if (!day) {
+      console.log('No se encontró el día de entrenamiento')
+      return []
+    }
+
+    // Verificar si el día tiene ejercicios
+    if (!day.exercises || !Array.isArray(day.exercises) || day.exercises.length === 0) {
+      console.log('El día no tiene ejercicios configurados')
+      return []
+    }
+
+    console.log('Ejercicios encontrados:', day.exercises.length)
+
+    // Registrar detalles de cada ejercicio para depuración
+    day.exercises.forEach((exercise, index) => {
+      console.log(`Ejercicio ${index + 1}: ${exercise.name || 'Sin nombre'} (ID: ${exercise.id})`)
+    })
+
+    return day.exercises
+  } catch (error) {
+    console.error('Error al obtener los ejercicios del día:', error)
+    return []
   }
 }

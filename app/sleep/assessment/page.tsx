@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import SleepAssessment from "@/components/sleep/sleep-assessment"
@@ -11,7 +11,7 @@ export default function SleepAssessmentPage() {
   const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
-  
+
   // Redirigir a login si no hay usuario autenticado
   useEffect(() => {
     if (!authLoading && !user) {
@@ -20,7 +20,7 @@ export default function SleepAssessmentPage() {
       setIsLoading(false)
     }
   }, [user, authLoading, router])
-  
+
   if (isLoading || authLoading) {
     return (
       <div className="container mx-auto py-6">
@@ -30,7 +30,7 @@ export default function SleepAssessmentPage() {
       </div>
     )
   }
-  
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center mb-6">
@@ -40,7 +40,7 @@ export default function SleepAssessmentPage() {
         </Button>
         <h1 className="text-2xl font-bold">Evaluación de Sueño</h1>
       </div>
-      
+
       <div className="max-w-3xl mx-auto">
         <SleepAssessment />
       </div>

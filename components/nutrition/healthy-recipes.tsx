@@ -1,31 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
-import { Search, Clock, Utensils, ChevronRight, Heart } from "lucide-react"
+import { Search, Clock, Utensils, ChevronRight, Heart, MapPin, RefreshCw } from "lucide-react"
+import spanishRecipes, { Recipe } from "@/lib/data/spanish-recipes-database"
+import { useToast } from "@/components/ui/use-toast"
+import { useAuth } from "@/lib/contexts/auth-context"
 
-// Tipos de datos
-interface Recipe {
-  id: string
-  title: string
-  description: string
-  prepTime: number
-  cookTime: number
-  calories: number
-  protein: number
-  carbs: number
-  fat: number
-  ingredients: string[]
-  steps: string[]
-  image: string
-  category: string[]
-  difficulty: "fácil" | "media" | "difícil"
-  isFavorite?: boolean
-}
+// Tipos de datos ya importados desde spanish-recipes-database.ts
 
 // Datos de ejemplo
 const sampleRecipes: Recipe[] = [
@@ -148,25 +134,208 @@ const sampleRecipes: Recipe[] = [
     image: "/images/mediterranean-salad.jpg",
     category: ["almuerzo", "ensalada", "vegetariano"],
     difficulty: "fácil"
+  },
+  {
+    id: "r5",
+    title: "Tortilla de espinacas y champiñones",
+    description: "Tortilla saludable rica en proteínas y vegetales",
+    prepTime: 10,
+    cookTime: 15,
+    calories: 280,
+    protein: 22,
+    carbs: 8,
+    fat: 18,
+    ingredients: [
+      "4 huevos",
+      "100g de espinacas frescas",
+      "100g de champiñones",
+      "1 diente de ajo",
+      "1 cucharada de aceite de oliva",
+      "Sal y pimienta al gusto"
+    ],
+    steps: [
+      "Lavar y picar las espinacas y los champiñones.",
+      "Saltear el ajo picado, los champiñones y las espinacas en una sartén con aceite.",
+      "Batir los huevos en un recipiente, añadir sal y pimienta.",
+      "Añadir las verduras salteadas a los huevos batidos y mezclar.",
+      "Verter la mezcla en la sartén y cocinar a fuego medio-bajo hasta que cuaje.",
+      "Dar la vuelta y cocinar por el otro lado."
+    ],
+    image: "/images/spinach-mushroom-omelette.jpg",
+    category: ["desayuno", "alto en proteínas", "bajo en carbohidratos", "vegetariano"],
+    difficulty: "fácil"
+  },
+  {
+    id: "r6",
+    title: "Gachas de avena con frutas",
+    description: "Desayuno nutritivo y energético con avena y frutas frescas",
+    prepTime: 5,
+    cookTime: 10,
+    calories: 350,
+    protein: 12,
+    carbs: 60,
+    fat: 8,
+    ingredients: [
+      "50g de copos de avena",
+      "250ml de leche (o bebida vegetal)",
+      "1 plátano",
+      "Un puñado de frutos rojos",
+      "1 cucharada de miel o sirope de arce",
+      "1 cucharadita de canela",
+      "1 cucharada de semillas de chía (opcional)"
+    ],
+    steps: [
+      "Poner la leche y la avena en un cazo a fuego medio.",
+      "Cocinar durante 5-7 minutos, removiendo frecuentemente.",
+      "Añadir la canela y la miel, mezclar bien.",
+      "Servir en un bowl y decorar con el plátano cortado, los frutos rojos y las semillas de chía."
+    ],
+    image: "/images/oatmeal-fruits.jpg",
+    category: ["desayuno", "vegetariano", "alto en fibra"],
+    difficulty: "fácil",
+    isFavorite: true
+  },
+  {
+    id: "r7",
+    title: "Gazpacho andaluz",
+    description: "Sopa fría tradicional española, perfecta para el verano",
+    prepTime: 15,
+    cookTime: 0,
+    calories: 120,
+    protein: 3,
+    carbs: 15,
+    fat: 7,
+    ingredients: [
+      "6 tomates maduros",
+      "1 pepino",
+      "1 pimiento verde",
+      "1 diente de ajo",
+      "100ml de aceite de oliva virgen extra",
+      "2 cucharadas de vinagre de Jerez",
+      "Sal al gusto",
+      "200ml de agua fría"
+    ],
+    steps: [
+      "Lavar y trocear todas las verduras.",
+      "Introducir todos los ingredientes en la batidora.",
+      "Batir hasta conseguir una textura homogénea.",
+      "Colar para eliminar posibles pieles o semillas.",
+      "Refrigerar al menos 2 horas antes de servir.",
+      "Servir frío con guarnición de verduras picadas."
+    ],
+    image: "/images/gazpacho.jpg",
+    category: ["almuerzo", "cena", "vegetariano", "bajo en calorías", "español"],
+    difficulty: "fácil"
+  },
+  {
+    id: "r8",
+    title: "Lentejas con verduras",
+    description: "Plato tradicional español rico en proteínas vegetales y fibra",
+    prepTime: 15,
+    cookTime: 40,
+    calories: 380,
+    protein: 22,
+    carbs: 60,
+    fat: 5,
+    ingredients: [
+      "250g de lentejas",
+      "1 cebolla",
+      "2 zanahorias",
+      "1 pimiento rojo",
+      "2 dientes de ajo",
+      "1 hoja de laurel",
+      "1 cucharadita de pimentón dulce",
+      "2 cucharadas de aceite de oliva",
+      "Sal y pimienta al gusto"
+    ],
+    steps: [
+      "Lavar las lentejas y escurrirlas.",
+      "Picar todas las verduras en dados pequeños.",
+      "En una olla, calentar el aceite y sofreír la cebolla y el ajo.",
+      "Añadir el resto de verduras y sofreír 5 minutos más.",
+      "Incorporar las lentejas, el pimentón, el laurel y cubrir con agua.",
+      "Cocer a fuego medio durante 30-40 minutos hasta que estén tiernas.",
+      "Sazonar con sal y pimienta al final de la cocción."
+    ],
+    image: "/images/lentils-vegetables.jpg",
+    category: ["almuerzo", "cena", "vegetariano", "alto en proteínas", "alto en fibra", "español"],
+    difficulty: "media"
   }
 ]
 
 export default function HealthyRecipes() {
+  const { user } = useAuth()
+  const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
-  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>(sampleRecipes)
+  const [allRecipes, setAllRecipes] = useState<Recipe[]>([])
+  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([])
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Cargar recetas de Supabase y combinarlas con las recetas locales
+  const loadRecipes = async () => {
+    setIsLoading(true)
+
+    try {
+      // Primero cargar las recetas locales
+      const localRecipes = [...sampleRecipes, ...spanishRecipes]
+
+      // Intentar cargar recetas de Supabase
+      const { data: supabaseRecipes, error } = await fetch('/api/recipes').then(res => res.json())
+
+      if (error) {
+        console.warn('Error al cargar recetas de Supabase:', error)
+        // Si hay error, usar solo las recetas locales
+        setAllRecipes(localRecipes)
+        setFilteredRecipes(localRecipes)
+        return
+      }
+
+      // Si hay recetas en Supabase, combinarlas con las locales
+      if (supabaseRecipes && Array.isArray(supabaseRecipes)) {
+        // Crear un Set con los IDs de las recetas de Supabase para evitar duplicados
+        const supabaseIds = new Set(supabaseRecipes.map(recipe => recipe.id))
+
+        // Filtrar recetas locales que no estén en Supabase
+        const uniqueLocalRecipes = localRecipes.filter(recipe => !supabaseIds.has(recipe.id))
+
+        // Combinar recetas
+        const combinedRecipes = [...supabaseRecipes, ...uniqueLocalRecipes]
+        setAllRecipes(combinedRecipes)
+        setFilteredRecipes(combinedRecipes)
+      } else {
+        // Si no hay recetas en Supabase, usar solo las recetas locales
+        setAllRecipes(localRecipes)
+        setFilteredRecipes(localRecipes)
+      }
+    } catch (error) {
+      console.error('Error al cargar recetas:', error)
+      // En caso de error, usar solo las recetas locales
+      const localRecipes = [...sampleRecipes, ...spanishRecipes]
+      setAllRecipes(localRecipes)
+      setFilteredRecipes(localRecipes)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Cargar recetas al montar el componente
+  useEffect(() => {
+    loadRecipes()
+  }, [])
 
   // Filtrar recetas según el término de búsqueda y la categoría seleccionada
   const filterRecipes = (term: string, category: string) => {
-    let filtered = sampleRecipes
+    let filtered = allRecipes
 
     // Filtrar por término de búsqueda
     if (term.trim() !== "") {
-      filtered = filtered.filter(recipe => 
+      filtered = filtered.filter(recipe =>
         recipe.title.toLowerCase().includes(term.toLowerCase()) ||
         recipe.description.toLowerCase().includes(term.toLowerCase()) ||
-        recipe.category.some(cat => cat.toLowerCase().includes(term.toLowerCase()))
+        recipe.category.some(cat => cat.toLowerCase().includes(term.toLowerCase())) ||
+        (recipe.region && recipe.region.toLowerCase().includes(term.toLowerCase()))
       )
     }
 
@@ -174,8 +343,10 @@ export default function HealthyRecipes() {
     if (category !== "all") {
       if (category === "favorites") {
         filtered = filtered.filter(recipe => recipe.isFavorite)
+      } else if (category === "spanish") {
+        filtered = filtered.filter(recipe => recipe.isSpanish)
       } else {
-        filtered = filtered.filter(recipe => 
+        filtered = filtered.filter(recipe =>
           recipe.category.some(cat => cat.toLowerCase() === category.toLowerCase())
         )
       }
@@ -213,9 +384,9 @@ export default function HealthyRecipes() {
     return (
       <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
         <div className="p-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="mb-4"
             onClick={handleCloseRecipeDetail}
           >
@@ -235,6 +406,12 @@ export default function HealthyRecipes() {
               <div>
                 <h1 className="text-xl font-bold">{selectedRecipe.title}</h1>
                 <p className="text-gray-600">{selectedRecipe.description}</p>
+                {selectedRecipe.region && (
+                  <div className="flex items-center text-sm text-gray-500 mt-1">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    <span>Región: {selectedRecipe.region}</span>
+                  </div>
+                )}
               </div>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
                 <Heart className={`h-5 w-5 ${selectedRecipe.isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
@@ -245,7 +422,7 @@ export default function HealthyRecipes() {
               {selectedRecipe.category.map((cat, index) => (
                 <Badge key={index} variant="secondary">{cat}</Badge>
               ))}
-              <Badge variant={selectedRecipe.difficulty === 'fácil' ? 'outline' : 
+              <Badge variant={selectedRecipe.difficulty === 'fácil' ? 'outline' :
                       selectedRecipe.difficulty === 'media' ? 'secondary' : 'destructive'}>
                 {selectedRecipe.difficulty}
               </Badge>
@@ -304,22 +481,34 @@ export default function HealthyRecipes() {
   return (
     <div className="space-y-6">
       {/* Buscador */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-        <Input
-          placeholder="Buscar recetas..."
-          className="pl-10"
-          value={searchTerm}
-          onChange={(e) => handleSearchChange(e.target.value)}
-        />
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Buscar recetas..."
+            className="pl-10"
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={loadRecipes}
+          disabled={isLoading}
+          title="Actualizar recetas"
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+        </Button>
       </div>
 
       {/* Pestañas de categorías */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-5 mb-4">
           <TabsTrigger value="all">Todas</TabsTrigger>
           <TabsTrigger value="desayuno">Desayuno</TabsTrigger>
           <TabsTrigger value="almuerzo">Almuerzo</TabsTrigger>
+          <TabsTrigger value="spanish">Españolas</TabsTrigger>
           <TabsTrigger value="favorites">Favoritas</TabsTrigger>
         </TabsList>
 
@@ -331,8 +520,8 @@ export default function HealthyRecipes() {
           ) : (
             <div className="grid grid-cols-1 gap-4">
               {filteredRecipes.map(recipe => (
-                <Card 
-                  key={recipe.id} 
+                <Card
+                  key={recipe.id}
                   className="bg-white shadow-sm border-none cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => handleRecipeSelect(recipe)}
                 >
@@ -341,7 +530,7 @@ export default function HealthyRecipes() {
                       <div>
                         <h3 className="font-semibold">{recipe.title}</h3>
                         <p className="text-sm text-gray-600 line-clamp-2">{recipe.description}</p>
-                        
+
                         <div className="flex flex-wrap gap-1 mt-2">
                           {recipe.category.slice(0, 2).map((cat, index) => (
                             <Badge key={index} variant="outline" className="text-xs">{cat}</Badge>
@@ -351,16 +540,22 @@ export default function HealthyRecipes() {
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col items-end">
                         <Heart className={`h-5 w-5 mb-2 ${recipe.isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
                         <div className="flex items-center text-sm text-gray-500">
                           <Clock className="h-4 w-4 mr-1" />
                           {recipe.prepTime + recipe.cookTime} min
                         </div>
+                        {recipe.region && (
+                          <div className="flex items-center text-sm text-gray-500 mt-1">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            {recipe.region}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-between mt-3 pt-3 border-t border-gray-100 text-sm">
                       <div>
                         <span className="text-gray-500">Calorías:</span> {recipe.calories} kcal

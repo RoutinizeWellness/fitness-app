@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import RoutineEditor from "@/components/training/routine-editor"
 import { Skeleton } from "@/components/ui/skeleton"
 

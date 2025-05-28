@@ -9,13 +9,12 @@ import { HolisticMind } from "@/components/holistic-mind"
 import { HolisticHealth } from "@/components/holistic-health"
 import { HolisticProfile } from "@/components/holistic-profile"
 import CrossDomainRecommendations from "@/components/cross-domain-recommendations"
-import { useAuth } from "@/contexts/auth-context"
-import { useSupabase } from "@/contexts/supabase-context"
+import { useAuth } from "@/lib/auth/auth-context"
+import { supabase } from "@/lib/supabase-unified"
 import { Workout, Mood, NutritionEntry } from "@/lib/supabase-client"
 
 export default function HolisticPage() {
   const { user, signOut } = useAuth()
-  const { supabase } = useSupabase()
   const router = useRouter()
 
   const [activeTab, setActiveTab] = useState("home")
@@ -72,7 +71,7 @@ export default function HolisticPage() {
     }
 
     fetchUserData()
-  }, [user, supabase, router])
+  }, [user, router])
 
   // Manejar la navegación
   const handleNavigate = (path: string) => {

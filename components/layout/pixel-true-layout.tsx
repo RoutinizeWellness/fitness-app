@@ -21,11 +21,16 @@ export function PixelTrueLayout({ children }: PixelTrueLayoutProps) {
         {children}
       </div>
 
-      {/* Navigation Bar */}
-      <CircularNavBar 
+      {/* Navigation Bar - DEMO ONLY - This is not used in the main application */}
+      <CircularNavBar
         activeTab={activeTab}
         onTabChange={handleTabChange}
       />
+
+      {/* Demo indicator */}
+      <div className="fixed top-0 left-0 right-0 bg-red-500 text-white text-xs text-center py-1 z-50">
+        DEMO MODE - This navigation is for demonstration purposes only
+      </div>
     </div>
   )
 }

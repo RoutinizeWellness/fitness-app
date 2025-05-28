@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { useAuth } from '@/contexts/auth-context'
+import { useAuth } from '@/lib/contexts/auth-context'
 import {
   getUserRoutines,
   saveWorkoutRoutine,

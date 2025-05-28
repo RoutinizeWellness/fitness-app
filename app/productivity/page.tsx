@@ -15,7 +15,7 @@ import {
   CheckSquare,
   MoreVertical
 } from "lucide-react"
-import { OrganicLayout, OrganicSection } from "@/components/organic-layout"
+
 import { OrganicElement, OrganicStaggeredList } from "@/components/transitions/organic-transitions"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -24,7 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PulseLoader } from "@/components/ui/enhanced-skeletons"
 import { useToast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { HabitTracker } from "@/components/productivity/habit-tracker"
 
 // Tipos
@@ -346,9 +346,11 @@ export default function ProductivityPage() {
             variant: "destructive"
           })
         } else {
+          // Proporcionar información más específica del error
+          const errorMessage = error.message || error.details || "No se pudo actualizar el objetivo"
           toast({
             title: "Error",
-            description: "No se pudo actualizar el objetivo",
+            description: errorMessage,
             variant: "destructive"
           })
         }
@@ -377,9 +379,16 @@ export default function ProductivityPage() {
       updatedGoals[goalIndex] = goals[goalIndex]
       setGoals(updatedGoals)
 
+      // Mejorar el manejo de errores con información más específica
+      const errorMessage = error instanceof Error
+        ? error.message
+        : typeof error === 'object' && error !== null
+          ? JSON.stringify(error)
+          : "Error desconocido al actualizar el objetivo"
+
       toast({
         title: "Error",
-        description: "Ocurrió un error al actualizar el objetivo",
+        description: errorMessage || "Ocurrió un error al actualizar el objetivo",
         variant: "destructive"
       })
     }
@@ -654,23 +663,13 @@ export default function ProductivityPage() {
 
   if (isLoading) {
     return (
-      <OrganicLayout activeTab="productivity" title="Productividad">
-        <div className="flex items-center justify-center min-h-[80vh]">
-          <PulseLoader message="Cargando datos de productividad..." />
-        </div>
-      </OrganicLayout>
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <PulseLoader message="Cargando datos de productividad..." />
+      </div>
     )
   }
 
   return (
-    <OrganicLayout
-      activeTab="productivity"
-      title="Productividad"
-      profile={user}
-      showFloatingAction={true}
-      floatingActionIcon={<Plus className="h-6 w-6" />}
-      onFloatingActionClick={() => router.push('/productivity/new-task')}
-    >
       <OrganicElement type="fade">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList className="grid grid-cols-4 mb-4 rounded-full p-1">
@@ -709,7 +708,6 @@ export default function ProductivityPage() {
           </TabsContent>
         </Tabs>
       </OrganicElement>
-    </OrganicLayout>
   )
 }
 

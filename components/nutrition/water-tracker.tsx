@@ -6,17 +6,20 @@ import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  BarChart, 
-  Bar, 
-  LineChart, 
-  Line, 
-  ResponsiveContainer, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend 
+import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ReferenceLine
 } from "recharts"
 import { Droplet, Plus, Minus, TrendingUp, Calendar, BarChart2 } from "lucide-react"
 
@@ -57,7 +60,7 @@ export default function WaterTracker() {
   const addWater = (amount: number) => {
     const newIntake = Math.min(waterGoal * 1.5, waterIntake + amount)
     setWaterIntake(newIntake)
-    
+
     // Añadir al historial
     const now = new Date()
     const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
@@ -68,7 +71,7 @@ export default function WaterTracker() {
   const subtractWater = (amount: number) => {
     const newIntake = Math.max(0, waterIntake - amount)
     setWaterIntake(newIntake)
-    
+
     // Si hay entradas en el historial, eliminar la última
     if (waterHistory.length > 0) {
       setWaterHistory(waterHistory.slice(0, -1))
@@ -115,31 +118,31 @@ export default function WaterTracker() {
                 <div className="relative w-48 h-48 mb-4">
                   {/* Círculo de fondo */}
                   <div className="absolute inset-0 rounded-full border-8 border-gray-100"></div>
-                  
+
                   {/* Círculo de progreso */}
                   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                    <circle 
-                      cx="50" 
-                      cy="50" 
-                      r="46" 
-                      fill="none" 
-                      stroke="#f3f4f6" 
-                      strokeWidth="8" 
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="46"
+                      fill="none"
+                      stroke="#f3f4f6"
+                      strokeWidth="8"
                     />
-                    <circle 
-                      cx="50" 
-                      cy="50" 
-                      r="46" 
-                      fill="none" 
-                      stroke="#3b82f6" 
-                      strokeWidth="8" 
-                      strokeDasharray={`${progress * 2.89}, 289`} 
-                      strokeDashoffset="0" 
-                      strokeLinecap="round" 
-                      transform="rotate(-90 50 50)" 
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="46"
+                      fill="none"
+                      stroke="#3b82f6"
+                      strokeWidth="8"
+                      strokeDasharray={`${progress * 2.89}, 289`}
+                      strokeDashoffset="0"
+                      strokeLinecap="round"
+                      transform="rotate(-90 50 50)"
                     />
                   </svg>
-                  
+
                   {/* Contenido central */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <Droplet className="h-8 w-8 text-blue-500 mb-1" />
@@ -151,22 +154,22 @@ export default function WaterTracker() {
                 <p className="text-center text-sm mb-4">{getProgressMessage()}</p>
 
                 <div className="grid grid-cols-3 gap-3 w-full">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="flex-1"
                     onClick={() => addWater(0.1)}
                   >
                     +100ml
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="flex-1"
                     onClick={() => addWater(0.25)}
                   >
                     +250ml
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="flex-1"
                     onClick={() => addWater(0.5)}
                   >
@@ -175,16 +178,16 @@ export default function WaterTracker() {
                 </div>
 
                 <div className="flex justify-between w-full mt-3">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     onClick={() => subtractWater(0.25)}
                     disabled={waterIntake <= 0}
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     onClick={() => setWaterIntake(0)}
                     disabled={waterIntake <= 0}
@@ -231,15 +234,15 @@ export default function WaterTracker() {
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">Historial de consumo</h2>
             <div className="flex space-x-2">
-              <Button 
-                variant={timeRange === "week" ? "default" : "outline"} 
+              <Button
+                variant={timeRange === "week" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setTimeRange("week")}
               >
                 Semana
               </Button>
-              <Button 
-                variant={timeRange === "month" ? "default" : "outline"} 
+              <Button
+                variant={timeRange === "month" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setTimeRange("month")}
               >
@@ -259,13 +262,13 @@ export default function WaterTracker() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey={timeRange === "week" ? "day" : "week"} />
                     <YAxis />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value) => [`${value} L`, "Consumo de agua"]}
                     />
-                    <Bar 
-                      dataKey="amount" 
-                      name="Consumo de agua" 
-                      fill="#3b82f6" 
+                    <Bar
+                      dataKey="amount"
+                      name="Consumo de agua"
+                      fill="#3b82f6"
                       radius={[4, 4, 0, 0]}
                     />
                     <ReferenceLine y={waterGoal} stroke="#ef4444" strokeDasharray="3 3" />
@@ -328,11 +331,11 @@ export default function WaterTracker() {
                     <span className="text-sm">1.0 L</span>
                     <span className="text-sm">4.0 L</span>
                   </div>
-                  <Slider 
-                    value={[waterGoal]} 
-                    min={1.0} 
-                    max={4.0} 
-                    step={0.1} 
+                  <Slider
+                    value={[waterGoal]}
+                    min={1.0}
+                    max={4.0}
+                    step={0.1}
                     onValueChange={(value) => setWaterGoal(value[0])}
                   />
                 </div>

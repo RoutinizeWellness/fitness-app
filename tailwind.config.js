@@ -17,7 +17,7 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        klasik: ['Klasik', 'sans-serif'],
+        klasik: ['var(--font-klasik)', 'serif'],
         manrope: ['Manrope', 'sans-serif'],
       },
       keyframes: {

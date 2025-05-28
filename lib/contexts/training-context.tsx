@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react'
-import { useAuth } from './auth-context'
+import { useAuth } from '@/lib/auth/auth-context'
 import { useToast } from '@/components/ui/use-toast'
 import {
   WorkoutRoutine,
@@ -38,6 +38,7 @@ type TrainingContextType = {
   saveRoutine: (routine: WorkoutRoutine) => Promise<{ success: boolean, error: any }>
   deleteRoutine: (routineId: string) => Promise<{ success: boolean, error: any }>
   saveLog: (log: WorkoutLog) => Promise<{ success: boolean, error: any }>
+  setRoutines: React.Dispatch<React.SetStateAction<WorkoutRoutine[]>>
 }
 
 const TrainingContext = createContext<TrainingContextType | undefined>(undefined)
@@ -118,11 +119,20 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [user, toast])
 
-  const refreshLogs = async () => {
+  const refreshLogs = useCallback(async (pagination?: PaginationParams) => {
     if (!user) {
       setLogs([])
       setIsLoadingLogs(false)
       return
+    }
+
+    const page = pagination?.page || INITIAL_PAGE
+    const pageSize = pagination?.pageSize || DEFAULT_PAGE_SIZE
+
+    // Reset pagination state if loading first page
+    if (page === INITIAL_PAGE) {
+      setLogsPage(INITIAL_PAGE)
+      setLogs([])
     }
 
     setIsLoadingLogs(true)
@@ -150,9 +160,18 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } finally {
       setIsLoadingLogs(false)
     }
-  }
+  }, [user, toast])
 
-  const refreshExercises = async () => {
+  const refreshExercises = useCallback(async (pagination?: PaginationParams) => {
+    const page = pagination?.page || INITIAL_PAGE
+    const pageSize = pagination?.pageSize || DEFAULT_PAGE_SIZE
+
+    // Reset pagination state if loading first page
+    if (page === INITIAL_PAGE) {
+      setExercisesPage(INITIAL_PAGE)
+      setExercises([])
+    }
+
     setIsLoadingExercises(true)
     try {
       const { data, error } = await getAllExercises()
@@ -178,9 +197,9 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } finally {
       setIsLoadingExercises(false)
     }
-  }
+  }, [toast])
 
-  const refreshStats = async () => {
+  const refreshStats = useCallback(async () => {
     if (!user) {
       setStats(null)
       setIsLoadingStats(false)
@@ -212,7 +231,7 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } finally {
       setIsLoadingStats(false)
     }
-  }
+  }, [user, toast])
 
   const saveRoutine = async (routine: WorkoutRoutine): Promise<{ success: boolean, error: any }> => {
     try {
@@ -220,16 +239,36 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return { success: false, error: new Error('User not authenticated') }
       }
 
+      // Validar la estructura de la rutina antes de guardarla
+      if (!routine.id) {
+        console.error('Error: La rutina no tiene ID')
+        toast({
+          title: 'Error',
+          description: 'La rutina no tiene un ID válido',
+          variant: 'destructive'
+        })
+        return { success: false, error: new Error('La rutina no tiene un ID válido') }
+      }
+
       // Ensure the routine has the correct user ID
       routine.userId = user.id
+
+      console.log('Guardando rutina:', JSON.stringify(routine, null, 2))
 
       const { data, error } = await saveWorkoutRoutine(routine)
 
       if (error) {
         console.error('Error saving routine:', error)
+
+        // Mostrar un mensaje de error más descriptivo
+        let errorMessage = 'Failed to save workout routine'
+        if (error.message) {
+          errorMessage = error.message
+        }
+
         toast({
           title: 'Error',
-          description: 'Failed to save workout routine',
+          description: errorMessage,
           variant: 'destructive'
         })
         return { success: false, error }
@@ -257,12 +296,25 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return { success: true, error: null }
       }
 
+      console.error('No data returned after saving routine')
+      toast({
+        title: 'Error',
+        description: 'No se recibieron datos después de guardar la rutina',
+        variant: 'destructive'
+      })
       return { success: false, error: new Error('No data returned after saving routine') }
     } catch (error) {
       console.error('Unexpected error saving routine:', error)
+
+      // Mostrar un mensaje de error más descriptivo
+      let errorMessage = 'An unexpected error occurred while saving routine'
+      if (error instanceof Error) {
+        errorMessage = error.message
+      }
+
       toast({
         title: 'Error',
-        description: 'An unexpected error occurred while saving routine',
+        description: errorMessage,
         variant: 'destructive'
       })
       return { success: false, error }
@@ -387,17 +439,31 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     await refreshExercises({ page: exercisesPage + 1, pageSize: DEFAULT_PAGE_SIZE });
   }, [isLoadingExercises, hasMoreExercises, exercisesPage, refreshExercises]);
 
-  // Load initial data when user changes
-  useEffect(() => {
-    refreshRoutines({ page: INITIAL_PAGE, pageSize: DEFAULT_PAGE_SIZE })
-    refreshLogs({ page: INITIAL_PAGE, pageSize: DEFAULT_PAGE_SIZE })
-    refreshStats()
-  }, [user, refreshRoutines, refreshLogs])
+  // Add a state to track initial loading
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false)
 
-  // Load exercises once
+  // Load initial data when user changes, but only once
   useEffect(() => {
-    refreshExercises({ page: INITIAL_PAGE, pageSize: DEFAULT_PAGE_SIZE })
-  }, [refreshExercises])
+    // Skip if already loaded or no user
+    if (initialLoadComplete || !user) return
+
+    const loadInitialData = async () => {
+      try {
+        await Promise.all([
+          refreshRoutines({ page: INITIAL_PAGE, pageSize: DEFAULT_PAGE_SIZE }),
+          refreshLogs({ page: INITIAL_PAGE, pageSize: DEFAULT_PAGE_SIZE }),
+          refreshStats(),
+          refreshExercises({ page: INITIAL_PAGE, pageSize: DEFAULT_PAGE_SIZE })
+        ])
+      } catch (error) {
+        console.error("Error loading initial data:", error)
+      } finally {
+        setInitialLoadComplete(true)
+      }
+    }
+
+    loadInitialData()
+  }, [user, initialLoadComplete, refreshRoutines, refreshLogs, refreshStats, refreshExercises])
 
   // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo(() => ({
@@ -421,7 +487,8 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     loadMoreExercises,
     saveRoutine,
     deleteRoutine,
-    saveLog
+    saveLog,
+    setRoutines
   }), [
     routines,
     logs,
@@ -443,7 +510,8 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     loadMoreExercises,
     saveRoutine,
     deleteRoutine,
-    saveLog
+    saveLog,
+    setRoutines
   ])
 
   return <TrainingContext.Provider value={value}>{children}</TrainingContext.Provider>

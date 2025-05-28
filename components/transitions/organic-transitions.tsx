@@ -1,10 +1,71 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { usePathname } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
+import dynamic from "next/dynamic"
 import { cn } from "@/lib/utils"
 import { useOrganicTheme } from "@/components/theme/organic-theme-provider"
+import useIsomorphicLayoutEffect from "@/lib/use-isomorphic-layout-effect"
+
+// Create static fallback components
+const StaticDiv = ({ className, children }: {
+  className?: string,
+  children?: React.ReactNode
+}) => (
+  <div className={className}>{children}</div>
+);
+
+// Simple wrapper that just renders children
+const StaticAnimatePresence = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+
+// Use a completely different approach to avoid webpack issues
+// Create non-dynamic components first that will be used during SSR and initial render
+const NonDynamicDiv = ({ children, className, ...props }: any) => (
+  <div className={className} {...props}>{children}</div>
+);
+
+const NonDynamicAnimatePresence = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+
+// Then create the dynamic components with noSSR option
+const MotionDiv = dynamic(
+  () => new Promise((resolve) => {
+    // Delay import to ensure it only happens in browser
+    if (typeof window !== 'undefined') {
+      import("framer-motion")
+        .then((mod) => {
+          if (mod && mod.motion && typeof mod.motion.div === 'function') {
+            resolve(mod.motion.div);
+          } else {
+            resolve(NonDynamicDiv);
+          }
+        })
+        .catch(() => resolve(NonDynamicDiv));
+    } else {
+      resolve(NonDynamicDiv);
+    }
+  }),
+  { ssr: false, loading: () => <NonDynamicDiv /> }
+);
+
+const AnimatePresence = dynamic(
+  () => new Promise((resolve) => {
+    // Delay import to ensure it only happens in browser
+    if (typeof window !== 'undefined') {
+      import("framer-motion")
+        .then((mod) => {
+          if (mod && typeof mod.AnimatePresence === 'function') {
+            resolve(mod.AnimatePresence);
+          } else {
+            resolve(NonDynamicAnimatePresence);
+          }
+        })
+        .catch(() => resolve(NonDynamicAnimatePresence));
+    } else {
+      resolve(NonDynamicAnimatePresence);
+    }
+  }),
+  { ssr: false, loading: () => <NonDynamicAnimatePresence /> }
+);
 
 interface OrganicTransitionProps {
   children: React.ReactNode
@@ -14,7 +75,15 @@ interface OrganicTransitionProps {
 export function OrganicPageTransition({ children, className }: OrganicTransitionProps) {
   const pathname = usePathname()
   const { animation } = useOrganicTheme()
-  
+  // Use a key to force re-render of the motion component
+  const [key, setKey] = useState(`${pathname}-0`)
+
+  // Use isomorphic layout effect to avoid SSR warnings
+  useIsomorphicLayoutEffect(() => {
+    // Update key on client-side only to avoid hydration mismatch
+    setKey(`${pathname}-1`)
+  }, [pathname])
+
   // Diferentes variantes de animación según el nivel seleccionado
   const getTransitionProps = () => {
     switch (animation) {
@@ -30,8 +99,8 @@ export function OrganicPageTransition({ children, className }: OrganicTransition
           initial: { opacity: 0, y: 16 },
           animate: { opacity: 1, y: 0 },
           exit: { opacity: 0, y: -16 },
-          transition: { 
-            duration: 0.4, 
+          transition: {
+            duration: 0.4,
             ease: [0.43, 0.13, 0.23, 0.96] // Transición spring-organic
           }
         }
@@ -40,8 +109,8 @@ export function OrganicPageTransition({ children, className }: OrganicTransition
           initial: { opacity: 0, scale: 0.97, y: 20 },
           animate: { opacity: 1, scale: 1, y: 0 },
           exit: { opacity: 0, scale: 1.03, y: -20 },
-          transition: { 
-            duration: 0.5, 
+          transition: {
+            duration: 0.5,
             ease: [0.34, 1.56, 0.64, 1], // Transición bounce-organic
             scale: { type: "spring", stiffness: 300, damping: 20 }
           }
@@ -55,13 +124,21 @@ export function OrganicPageTransition({ children, className }: OrganicTransition
         }
     }
   }
-  
+
   const transitionProps = getTransitionProps()
-  
+
+  // Check if we're in a browser environment
+  const isBrowser = typeof window !== 'undefined';
+
+  // If animations are disabled or we're not in a browser, render without animation
+  if (animation === "none" || !isBrowser) {
+    return <div className={cn("min-h-screen", className)}>{children}</div>;
+  }
+
   return (
     <AnimatePresence mode="wait">
-      <motion.div
-        key={pathname}
+      <MotionDiv
+        key={key}
         initial={transitionProps.initial}
         animate={transitionProps.animate}
         exit={transitionProps.exit}
@@ -69,7 +146,7 @@ export function OrganicPageTransition({ children, className }: OrganicTransition
         className={cn("min-h-screen", className)}
       >
         {children}
-      </motion.div>
+      </MotionDiv>
     </AnimatePresence>
   )
 }
@@ -83,35 +160,35 @@ interface OrganicElementTransitionProps {
   type?: "fade" | "slide" | "scale" | "card"
 }
 
-export function OrganicElement({ 
-  children, 
+export function OrganicElement({
+  children,
   className,
   delay = 0,
   duration = 0.5,
   type = "fade"
 }: OrganicElementTransitionProps) {
   const { animation } = useOrganicTheme()
-  
+
   // No animar si las animaciones están desactivadas
   if (animation === "none") {
     return <div className={className}>{children}</div>
   }
-  
+
   // Configurar la animación según el tipo
   const getAnimationProps = () => {
     const isPlayful = animation === "playful"
-    const transitionEase = isPlayful 
+    const transitionEase = isPlayful
       ? [0.34, 1.56, 0.64, 1] // bounce-organic
       : [0.43, 0.13, 0.23, 0.96] // spring-organic
-    
+
     switch (type) {
       case "fade":
         return {
           initial: { opacity: 0, y: 10 },
           animate: { opacity: 1, y: 0 },
-          transition: { 
-            duration: isPlayful ? duration * 1.2 : duration, 
-            delay, 
+          transition: {
+            duration: isPlayful ? duration * 1.2 : duration,
+            delay,
             ease: transitionEase
           }
         }
@@ -119,9 +196,9 @@ export function OrganicElement({
         return {
           initial: { opacity: 0, x: 20 },
           animate: { opacity: 1, x: 0 },
-          transition: { 
-            duration: isPlayful ? duration * 1.2 : duration, 
-            delay, 
+          transition: {
+            duration: isPlayful ? duration * 1.2 : duration,
+            delay,
             ease: transitionEase
           }
         }
@@ -129,9 +206,9 @@ export function OrganicElement({
         return {
           initial: { opacity: 0, scale: 0.9 },
           animate: { opacity: 1, scale: 1 },
-          transition: { 
-            duration: isPlayful ? duration * 1.2 : duration, 
-            delay, 
+          transition: {
+            duration: isPlayful ? duration * 1.2 : duration,
+            delay,
             ease: transitionEase,
             scale: isPlayful ? { type: "spring", stiffness: 300, damping: 20 } : undefined
           }
@@ -140,9 +217,9 @@ export function OrganicElement({
         return {
           initial: { opacity: 0, scale: 0.95, y: 20 },
           animate: { opacity: 1, scale: 1, y: 0 },
-          transition: { 
-            duration: isPlayful ? duration * 1.2 : duration, 
-            delay, 
+          transition: {
+            duration: isPlayful ? duration * 1.2 : duration,
+            delay,
             ease: transitionEase,
             scale: isPlayful ? { type: "spring", stiffness: 300, damping: 20 } : undefined
           }
@@ -155,18 +232,26 @@ export function OrganicElement({
         }
     }
   }
-  
+
   const animationProps = getAnimationProps()
-  
+
+  // Check if we're in a browser environment
+  const isBrowser = typeof window !== 'undefined';
+
+  // If we're not in a browser, render without animation
+  if (!isBrowser) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
-    <motion.div
+    <MotionDiv
       initial={animationProps.initial}
       animate={animationProps.animate}
       transition={animationProps.transition}
       className={className}
     >
       {children}
-    </motion.div>
+    </MotionDiv>
   )
 }
 
@@ -189,7 +274,7 @@ export function OrganicStaggeredList({
   direction = "up"
 }: OrganicStaggeredListProps) {
   const { animation } = useOrganicTheme()
-  
+
   // No animar si las animaciones están desactivadas
   if (animation === "none") {
     return (
@@ -202,12 +287,12 @@ export function OrganicStaggeredList({
       </div>
     )
   }
-  
+
   const isPlayful = animation === "playful"
-  const transitionEase = isPlayful 
+  const transitionEase = isPlayful
     ? [0.34, 1.56, 0.64, 1] // bounce-organic
     : [0.43, 0.13, 0.23, 0.96] // spring-organic
-  
+
   // Configurar la dirección de la animación
   const getDirectionVariants = () => {
     switch (direction) {
@@ -238,9 +323,9 @@ export function OrganicStaggeredList({
         }
     }
   }
-  
+
   const directionVariants = getDirectionVariants()
-  
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -250,12 +335,12 @@ export function OrganicStaggeredList({
       }
     }
   }
-  
+
   const itemVariants = {
     hidden: directionVariants.hidden,
     visible: {
       ...directionVariants.visible,
-      transition: { 
+      transition: {
         duration: isPlayful ? duration * 1.2 : duration,
         ease: transitionEase,
         type: isPlayful ? "spring" : "tween",
@@ -264,19 +349,35 @@ export function OrganicStaggeredList({
       }
     }
   }
-  
+
+  // Check if we're in a browser environment
+  const isBrowser = typeof window !== 'undefined';
+
+  // If we're not in a browser, render without animation
+  if (!isBrowser) {
+    return (
+      <div className={className}>
+        {children.map((child, index) => (
+          <div key={index} className={itemClassName}>
+            {child}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <motion.div
+    <MotionDiv
       variants={containerVariants}
       initial="hidden"
       animate="visible"
       className={className}
     >
       {children.map((child, index) => (
-        <motion.div key={index} variants={itemVariants} className={itemClassName}>
+        <MotionDiv key={index} variants={itemVariants} className={itemClassName}>
           {child}
-        </motion.div>
+        </MotionDiv>
       ))}
-    </motion.div>
+    </MotionDiv>
   )
 }

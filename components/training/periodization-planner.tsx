@@ -1,32 +1,32 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@/lib/context/user-context';
-import { 
-  PeriodizationPlan, 
-  TrainingCycle, 
-  TrainingLevel, 
-  TrainingGoal 
+import { useAuth } from '@/lib/auth/auth-context';
+import {
+  PeriodizationPlan,
+  TrainingCycle,
+  TrainingLevel,
+  TrainingGoal
 } from '@/lib/types/periodization';
-import { 
-  createPeriodizationPlan, 
-  generateTrainingCycles, 
-  getActivePeriodizationPlan, 
-  getTrainingCycles 
+import {
+  createPeriodizationPlan,
+  generateTrainingCycles,
+  getActivePeriodizationPlan,
+  getTrainingCycles
 } from '@/lib/periodization-service';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
 } from '@/components/ui/card';
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
 } from '@/components/ui/tabs';
 import {
   Select,
@@ -132,7 +132,7 @@ const phaseTranslations: Record<string, string> = {
 };
 
 export default function PeriodizationPlanner() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [activePlan, setActivePlan] = useState<PeriodizationPlan | null>(null);
   const [trainingCycles, setTrainingCycles] = useState<TrainingCycle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -158,22 +158,22 @@ export default function PeriodizationPlanner() {
   useEffect(() => {
     async function loadPlan() {
       if (!user?.id) return;
-      
+
       setLoading(true);
       try {
         const plan = await getActivePeriodizationPlan(user.id);
         setActivePlan(plan);
-        
+
         if (plan) {
           const cycles = await getTrainingCycles(plan.id);
           setTrainingCycles(cycles);
-          
+
           // Find current week
           const now = new Date();
-          const currentCycle = cycles.find(cycle => 
+          const currentCycle = cycles.find(cycle =>
             new Date(cycle.startDate) <= now && new Date(cycle.endDate) >= now
           );
-          
+
           if (currentCycle) {
             setCurrentWeek(currentCycle.weekNumber || 1);
           }
@@ -184,14 +184,14 @@ export default function PeriodizationPlanner() {
         setLoading(false);
       }
     }
-    
+
     loadPlan();
   }, [user?.id]);
 
   // Create a new periodization plan
   async function onSubmit(values: PlanFormValues) {
     if (!user?.id) return;
-    
+
     setCreating(true);
     try {
       // Create plan
@@ -203,7 +203,7 @@ export default function PeriodizationPlanner() {
         values.name,
         values.description
       );
-      
+
       if (plan) {
         // Generate training cycles
         const cycles = await generateTrainingCycles(
@@ -213,12 +213,12 @@ export default function PeriodizationPlanner() {
           values.startDate.toISOString(),
           values.duration
         );
-        
+
         setActivePlan(plan);
         if (cycles) {
           setTrainingCycles(cycles);
         }
-        
+
         setActiveTab('overview');
       }
     } catch (error) {
@@ -232,7 +232,7 @@ export default function PeriodizationPlanner() {
   function renderPhaseBadge(phase: string) {
     const colorClass = phaseColors[phase] || 'bg-gray-100 text-gray-800 border-gray-300';
     const phaseName = phaseTranslations[phase] || phase;
-    
+
     return (
       <Badge variant="outline" className={cn('font-medium', colorClass)}>
         {phaseName}
@@ -257,7 +257,7 @@ export default function PeriodizationPlanner() {
           <TabsTrigger value="cycles">Ciclos de Entrenamiento</TabsTrigger>
           <TabsTrigger value="create">Crear Plan</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="overview" className="space-y-4">
           {loading ? (
             <div className="flex justify-center items-center h-64">
@@ -285,9 +285,9 @@ export default function PeriodizationPlanner() {
                       <p className="font-medium">{activePlan.frequency} días por semana</p>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium text-muted-foreground">Progreso</h4>
                     {currentWeek && trainingCycles.length > 0 ? (
@@ -302,11 +302,11 @@ export default function PeriodizationPlanner() {
                       <p>No hay datos de progreso disponibles</p>
                     )}
                   </div>
-                  
+
                   {currentWeek && (
                     <>
                       <Separator />
-                      
+
                       <div className="space-y-2">
                         <h4 className="text-sm font-medium text-muted-foreground">Semana Actual</h4>
                         {trainingCycles.filter(c => c.weekNumber === currentWeek).map(cycle => (
@@ -328,7 +328,7 @@ export default function PeriodizationPlanner() {
                   )}
                 </CardContent>
               </Card>
-              
+
               {currentWeek && (
                 <Alert>
                   <InfoIcon className="h-4 w-4" />
@@ -355,7 +355,7 @@ export default function PeriodizationPlanner() {
             </Card>
           )}
         </TabsContent>
-        
+
         <TabsContent value="cycles" className="space-y-4">
           {loading ? (
             <div className="flex justify-center items-center h-64">
@@ -418,7 +418,7 @@ export default function PeriodizationPlanner() {
             </Card>
           )}
         </TabsContent>
-        
+
         <TabsContent value="create" className="space-y-4">
           <Card>
             <CardHeader>
@@ -446,7 +446,7 @@ export default function PeriodizationPlanner() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="description"
@@ -463,7 +463,7 @@ export default function PeriodizationPlanner() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -492,7 +492,7 @@ export default function PeriodizationPlanner() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="goal"
@@ -521,7 +521,7 @@ export default function PeriodizationPlanner() {
                       )}
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -539,7 +539,7 @@ export default function PeriodizationPlanner() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="duration"
@@ -557,7 +557,7 @@ export default function PeriodizationPlanner() {
                       )}
                     />
                   </div>
-                  
+
                   <FormField
                     control={form.control}
                     name="startDate"
@@ -600,7 +600,7 @@ export default function PeriodizationPlanner() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <Button type="submit" disabled={creating}>
                     {creating ? (
                       <>

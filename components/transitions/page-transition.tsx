@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { OrganicPageTransition } from "./organic-transitions"
+import useIsomorphicLayoutEffect from "@/lib/use-isomorphic-layout-effect"
 
 interface PageTransitionProps {
   children: React.ReactNode
@@ -24,11 +25,19 @@ export function PageTransition({
 
   // Transición clásica como fallback
   const pathname = usePathname()
+  // Use a key to force re-render of the motion component
+  const [key, setKey] = useState(`${pathname}-0`)
+
+  // Use isomorphic layout effect to avoid SSR warnings
+  useIsomorphicLayoutEffect(() => {
+    // Update key on client-side only to avoid hydration mismatch
+    setKey(`${pathname}-1`)
+  }, [pathname])
 
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={pathname}
+        key={key}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
@@ -44,11 +53,19 @@ export function PageTransition({
 // Variante con transición de deslizamiento
 export function SlidePageTransition({ children, className }: PageTransitionProps) {
   const pathname = usePathname()
+  // Use a key to force re-render of the motion component
+  const [key, setKey] = useState(`${pathname}-0`)
+
+  // Use isomorphic layout effect to avoid SSR warnings
+  useIsomorphicLayoutEffect(() => {
+    // Update key on client-side only to avoid hydration mismatch
+    setKey(`${pathname}-1`)
+  }, [pathname])
 
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={pathname}
+        key={key}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
@@ -64,11 +81,19 @@ export function SlidePageTransition({ children, className }: PageTransitionProps
 // Variante con transición de escala
 export function ScalePageTransition({ children, className }: PageTransitionProps) {
   const pathname = usePathname()
+  // Use a key to force re-render of the motion component
+  const [key, setKey] = useState(`${pathname}-0`)
+
+  // Use isomorphic layout effect to avoid SSR warnings
+  useIsomorphicLayoutEffect(() => {
+    // Update key on client-side only to avoid hydration mismatch
+    setKey(`${pathname}-1`)
+  }, [pathname])
 
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={pathname}
+        key={key}
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 1.02 }}
@@ -85,8 +110,14 @@ export function ScalePageTransition({ children, className }: PageTransitionProps
 export function LoadingPageTransition({ children, className }: PageTransitionProps) {
   const pathname = usePathname()
   const [isLoading, setIsLoading] = useState(false)
+  // Use a key to force re-render of the motion component
+  const [key, setKey] = useState(`${pathname}-0`)
 
-  useEffect(() => {
+  // Use isomorphic layout effect to avoid SSR warnings
+  useIsomorphicLayoutEffect(() => {
+    // Update key on client-side only to avoid hydration mismatch
+    setKey(`${pathname}-1`)
+
     setIsLoading(true)
 
     // Simular tiempo de carga
@@ -117,7 +148,7 @@ export function LoadingPageTransition({ children, className }: PageTransitionPro
 
       <AnimatePresence mode="wait">
         <motion.div
-          key={pathname}
+          key={key}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

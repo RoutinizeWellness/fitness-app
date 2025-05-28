@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { RoutinizeLayout } from "@/components/routinize-layout"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ListTodo, Target } from "lucide-react"
@@ -44,9 +44,9 @@ export default function NewProductivityPage() {
     <RoutinizeLayout activeTab="productivity" title="Nueva entrada">
       <div className="container mx-auto p-4 pb-20">
         <div className="flex items-center mb-6">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="mr-2"
             onClick={() => router.back()}
           >
@@ -56,7 +56,7 @@ export default function NewProductivityPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <Card 
+          <Card
             className="p-6 bg-white dark:bg-gray-800 shadow-md rounded-xl cursor-pointer hover:shadow-lg transition-shadow"
             onClick={goToNewTask}
           >
@@ -66,7 +66,7 @@ export default function NewProductivityPage() {
               </div>
               <h2 className="text-xl font-semibold mb-2">Nueva Tarea</h2>
               <p className="text-gray-500">Crea una nueva tarea para organizar tus actividades diarias</p>
-              <Button 
+              <Button
                 className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
                 onClick={goToNewTask}
               >
@@ -75,7 +75,7 @@ export default function NewProductivityPage() {
             </div>
           </Card>
 
-          <Card 
+          <Card
             className="p-6 bg-white dark:bg-gray-800 shadow-md rounded-xl cursor-pointer hover:shadow-lg transition-shadow"
             onClick={goToNewGoal}
           >
@@ -85,7 +85,7 @@ export default function NewProductivityPage() {
               </div>
               <h2 className="text-xl font-semibold mb-2">Nuevo Objetivo</h2>
               <p className="text-gray-500">Establece un nuevo objetivo a largo plazo para tu desarrollo personal</p>
-              <Button 
+              <Button
                 className="mt-4 bg-green-500 hover:bg-green-600 text-white"
                 onClick={goToNewGoal}
               >

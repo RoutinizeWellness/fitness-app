@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { toast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { getClientRelationships } from "@/lib/professional-service"
 import { ClientRelationship } from "@/lib/types/professionals"
 import { getUserProfile } from "@/lib/supabase-client"
@@ -58,7 +58,7 @@ export function ClientProfessionalsView() {
       try {
         // Cargar relaciones con profesionales
         const { data: relationships, error: relationshipsError } = await getClientRelationships(user.id, 'client')
-        
+
         if (relationshipsError) {
           console.error("Error al cargar relaciones con profesionales:", relationshipsError)
           toast({
@@ -71,11 +71,11 @@ export function ClientProfessionalsView() {
         // Cargar información de cada profesional
         if (relationships && relationships.length > 0) {
           const professionalsData: ProfessionalWithDetails[] = []
-          
+
           for (const relationship of relationships) {
             try {
               const { data: professionalProfile } = await getUserProfile(relationship.professionalId)
-              
+
               if (professionalProfile) {
                 professionalsData.push({
                   id: relationship.professionalId,
@@ -94,7 +94,7 @@ export function ClientProfessionalsView() {
               console.error("Error al cargar perfil de profesional:", error)
             }
           }
-          
+
           setProfessionals(professionalsData)
         }
       } catch (error) {
@@ -115,7 +115,7 @@ export function ClientProfessionalsView() {
   // Filtrar profesionales por término de búsqueda y tipo
   const filteredProfessionals = professionals.filter(professional => {
     const matchesSearch = professional.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = activeTab === "all" || 
+    const matchesType = activeTab === "all" ||
                         (activeTab === "trainers" && professional.professionalType === "trainer") ||
                         (activeTab === "nutritionists" && professional.professionalType === "nutritionist")
     return matchesSearch && matchesType
@@ -186,12 +186,12 @@ export function ClientProfessionalsView() {
                           </div>
                           <div className="flex items-center mt-1">
                             <Badge
-                              variant={professional.relationshipStatus === 'active' ? 'outline' : 
+                              variant={professional.relationshipStatus === 'active' ? 'outline' :
                                       professional.relationshipStatus === 'pending' ? 'secondary' : 'destructive'}
                               className="text-xs"
                             >
-                              {professional.relationshipStatus === 'active' ? 'Activo' : 
-                               professional.relationshipStatus === 'pending' ? 'Pendiente' : 
+                              {professional.relationshipStatus === 'active' ? 'Activo' :
+                               professional.relationshipStatus === 'pending' ? 'Pendiente' :
                                professional.relationshipStatus === 'paused' ? 'Pausado' : 'Terminado'}
                             </Badge>
                             {professional.startDate && (

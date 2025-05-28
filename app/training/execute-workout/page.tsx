@@ -1,77 +1,166 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { SafeClientButton as Button } from "@/components/ui/safe-client-button"
 import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, ChevronRight, Calendar, Dumbbell, Clock } from "lucide-react"
+import { Separator } from "@/components/ui/separator"
+import {
+  Play,
+  Calendar,
+  Dumbbell,
+  Clock,
+  ChevronRight,
+  BarChart,
+  Activity,
+  AlertTriangle,
+  ChevronLeft
+} from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { WorkoutPlanVerification } from "@/components/training/workout-plan-verification"
+import { useAuth } from "@/lib/contexts/auth-context"
 
-// Datos simulados para los días de entrenamiento
-const workoutDays = [
-  {
-    id: "day-1",
-    name: "Lunes: Piernas",
-    description: "Entrenamiento enfocado en piernas con énfasis en cuádriceps y glúteos",
-    muscleGroups: ["Piernas", "Glúteos"],
-    exerciseCount: 5,
-    duration: "60-75 min",
-    difficulty: "Intermedio"
-  },
-  {
-    id: "day-2",
-    name: "Martes: Pecho y Espalda",
-    description: "Entrenamiento de empuje y tracción para el tren superior",
-    muscleGroups: ["Pecho", "Espalda"],
-    exerciseCount: 6,
-    duration: "70-80 min",
-    difficulty: "Avanzado"
-  },
-  {
-    id: "day-3",
-    name: "Jueves: Hombros y Brazos",
-    description: "Entrenamiento de hombros, bíceps y tríceps",
-    muscleGroups: ["Hombros", "Brazos"],
-    exerciseCount: 5,
-    duration: "50-60 min",
-    difficulty: "Intermedio"
-  },
-  {
-    id: "day-4",
-    name: "Viernes: Piernas",
-    description: "Segundo entrenamiento de piernas con énfasis en isquiotibiales y glúteos",
-    muscleGroups: ["Piernas"],
-    exerciseCount: 4,
-    duration: "55-65 min",
-    difficulty: "Intermedio"
-  }
-]
+interface WorkoutDay {
+  id: string
+  name: string
+  exercises: any[]
+  estimatedDuration: number
+  difficulty: string
+}
 
-export default function ExecuteWorkoutIndexPage() {
+export default function ExecuteWorkoutPage() {
   const router = useRouter()
-  const { toast } = useToast()
+  const searchParams = useSearchParams()
   const { user } = useAuth()
+  const { toast } = useToast()
+
+  const [isLoading, setIsLoading] = useState(true)
+  const [workoutDays, setWorkoutDays] = useState<WorkoutDay[]>([])
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
+  const [showVerification, setShowVerification] = useState(false)
 
-  // Manejar la selección de un día
-  const handleSelectDay = (dayId: string) => {
-    setSelectedDay(dayId)
-  }
+  const routineId = searchParams.get('routineId')
 
-  // Iniciar el entrenamiento seleccionado
-  const handleStartWorkout = () => {
+  useEffect(() => {
+    const loadWorkoutDays = async () => {
+      try {
+        setIsLoading(true)
+
+        // Mock data for workout days - replace with actual Supabase query
+        const mockDays: WorkoutDay[] = [
+          {
+            id: "day-1",
+            name: "Día 1 - Pecho y Tríceps",
+            exercises: [
+              { name: "Press de banca", sets: 4, reps: "8-10" },
+              { name: "Press inclinado", sets: 3, reps: "10-12" },
+              { name: "Fondos", sets: 3, reps: "12-15" },
+              { name: "Press francés", sets: 3, reps: "10-12" }
+            ],
+            estimatedDuration: 60,
+            difficulty: "Intermedio"
+          },
+          {
+            id: "day-2",
+            name: "Día 2 - Espalda y Bíceps",
+            exercises: [
+              { name: "Dominadas", sets: 4, reps: "6-8" },
+              { name: "Remo con barra", sets: 4, reps: "8-10" },
+              { name: "Curl con barra", sets: 3, reps: "10-12" },
+              { name: "Curl martillo", sets: 3, reps: "12-15" }
+            ],
+            estimatedDuration: 65,
+            difficulty: "Intermedio"
+          },
+          {
+            id: "day-3",
+            name: "Día 3 - Piernas",
+            exercises: [
+              { name: "Sentadillas", sets: 4, reps: "8-10" },
+              { name: "Peso muerto", sets: 4, reps: "6-8" },
+              { name: "Prensa", sets: 3, reps: "12-15" },
+              { name: "Curl femoral", sets: 3, reps: "10-12" }
+            ],
+            estimatedDuration: 70,
+            difficulty: "Avanzado"
+          }
+        ]
+
+        setWorkoutDays(mockDays)
+
+      } catch (error) {
+        console.error("Error loading workout days:", error)
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los días de entrenamiento",
+          variant: "destructive"
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadWorkoutDays()
+  }, [routineId, toast])
+
+  const handleStartWorkout = async () => {
     if (!selectedDay) {
       toast({
         title: "Selecciona un día",
-        description: "Por favor, selecciona un día de entrenamiento para continuar.",
+        description: "Por favor selecciona un día de entrenamiento para continuar",
         variant: "destructive"
       })
       return
     }
 
-    router.push(`/training/execute-workout/${selectedDay}`)
+    try {
+      console.log("Iniciando entrenamiento para día:", selectedDay)
+
+      // Navigate to the specific day execution page
+      const url = `/training/execute-workout/${selectedDay}`
+      console.log("Navegando a:", url)
+
+      router.push(url)
+
+      toast({
+        title: "Iniciando entrenamiento",
+        description: "Preparando tu sesión de entrenamiento...",
+      })
+    } catch (error) {
+      console.error("Error al iniciar entrenamiento:", error)
+      toast({
+        title: "Error",
+        description: "No se pudo iniciar el entrenamiento. Inténtalo de nuevo.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handlePlanChange = (planId: string) => {
+    setIsLoading(true)
+    setTimeout(() => {
+      setIsLoading(false)
+      setShowVerification(false)
+      toast({
+        title: "Plan actualizado",
+        description: "Se ha actualizado tu plan de entrenamiento",
+        variant: "default"
+      })
+    }, 500)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="w-[414px] h-[896px] bg-[#FFF3E9] mx-auto overflow-hidden relative">
+        <div className="flex justify-center items-center h-full">
+          <div className="text-center">
+            <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto"></div>
+            <p className="mt-4 text-[#573353]">Cargando entrenamiento...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -86,196 +175,90 @@ export default function ExecuteWorkoutIndexPage() {
             <ChevronLeft className="h-5 w-5 text-[#573353]" />
           </button>
           <h1 className="text-xl font-bold text-[#573353]">Ejecutar Entrenamiento</h1>
-          <div className="w-10"></div> {/* Spacer para centrar el título */}
+          <div className="w-10"></div>
         </div>
       </div>
 
-      {/* Contenido principal */}
-      <div className="px-6 pb-20 overflow-y-auto h-[calc(896px-140px)]">
-        <div className="mb-6">
-          <h2 className="text-lg font-medium text-[#573353] mb-2">Selecciona un día de entrenamiento</h2>
-          <p className="text-sm text-muted-foreground">
-            Elige el día de entrenamiento que deseas realizar hoy.
-          </p>
-        </div>
+      <div className="px-6 space-y-6">
+        {/* Verification Component */}
+        {showVerification && (
+          <WorkoutPlanVerification
+            currentDay={selectedDay || undefined}
+            onPlanChange={handlePlanChange}
+          />
+        )}
 
-        <div className="space-y-4">
-          {workoutDays.map(day => (
-            <Card
-              key={day.id}
-              className={`cursor-pointer transition-all ${
-                selectedDay === day.id
-                  ? 'border-primary border-2 shadow-md'
-                  : 'hover:border-primary/50'
-              }`}
-              onClick={() => handleSelectDay(day.id)}
-            >
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-medium text-base">{day.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{day.description}</p>
-
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {day.muscleGroups.map(group => (
-                        <Badge key={group} variant="outline" className="text-xs">
-                          {group}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  {selectedDay === day.id && (
-                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 3L4.5 8.5L2 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                  )}
+        {/* Workout Days Selection */}
+        <Card className="bg-white shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center text-[#573353]">
+              <Calendar className="h-5 w-5 mr-2" />
+              Selecciona el día de entrenamiento
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {workoutDays.map((day) => (
+              <div
+                key={day.id}
+                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  selectedDay === day.id
+                    ? "border-[#1B237E] bg-[#1B237E]/5"
+                    : "border-gray-200 hover:border-[#1B237E]/50"
+                }`}
+                onClick={() => setSelectedDay(day.id)}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-medium text-[#573353]">{day.name}</h3>
+                  <Badge variant="secondary">{day.difficulty}</Badge>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 mt-3 text-xs text-muted-foreground">
-                  <div className="flex items-center">
-                    <Dumbbell className="h-3.5 w-3.5 mr-1" />
-                    <span>{day.exerciseCount} ejercicios</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Clock className="h-3.5 w-3.5 mr-1" />
-                    <span>{day.duration}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Badge variant={
-                      day.difficulty === "Principiante" ? "secondary" :
-                      day.difficulty === "Intermedio" ? "default" :
-                      "destructive"
-                    } className="text-[10px] h-5">
-                      {day.difficulty}
-                    </Badge>
-                  </div>
+                <div className="flex items-center text-sm text-gray-600 mb-2">
+                  <Dumbbell className="h-4 w-4 mr-1" />
+                  <span>{day.exercises.length} ejercicios</span>
+                  <Clock className="h-4 w-4 ml-4 mr-1" />
+                  <span>{day.estimatedDuration} min</span>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
-        <div className="mt-8 space-y-4">
-          <Button
-            className="w-full"
-            onClick={handleStartWorkout}
-            disabled={!selectedDay}
-          >
-            Iniciar Entrenamiento
-          </Button>
+                <div className="text-xs text-gray-500">
+                  {day.exercises.slice(0, 3).map((ex, idx) => ex.name).join(", ")}
+                  {day.exercises.length > 3 && "..."}
+                </div>
+              </div>
+            ))}
 
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              onClick={() => router.push('/training/execute-workout/day-1')}
-            >
-              Día 1 (Directo)
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => router.push('/training/execute-workout/day-2')}
-            >
-              Día 2 (Directo)
-            </Button>
-          </div>
+            <Separator className="my-4" />
 
-          <div className="text-xs text-center text-muted-foreground mt-2">
-            Botones de acceso directo para depuración
-          </div>
-        </div>
-      </div>
+            <div className="space-y-3">
+              <Button
+                className="w-full bg-[#1B237E] hover:bg-[#1B237E]/90 text-white"
+                onClick={handleStartWorkout}
+                disabled={!selectedDay}
+              >
+                <Play className="h-4 w-4 mr-2" />
+                Iniciar Entrenamiento
+              </Button>
 
-      {/* Bottom Navigation */}
-      <div className="absolute bottom-0 left-0 right-0 w-[414px] h-[80px] bg-white border-t border-gray-100 flex justify-around items-center py-3 px-2 z-10 shadow-md">
-        <button
-          className="flex flex-col items-center w-[20%]"
-          onClick={() => router.push('/dashboard')}
-        >
-          <div className="w-7 h-7 flex items-center justify-center mb-1">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 22V12H15V22M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"
-                stroke="#573353"
-                strokeOpacity="0.7"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="text-xs font-medium text-[#573353]/70">Home</span>
-        </button>
-
-        <button
-          className="flex flex-col items-center w-[20%]"
-          onClick={() => router.push('/training')}
-        >
-          <div className="w-7 h-7 flex items-center justify-center mb-1">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 20V10M12 20V4M6 20V14"
-                stroke="#573353"
-                strokeOpacity="0.7"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="text-xs font-medium text-[#573353]/70">Training</span>
-        </button>
-
-        <button
-          className="flex flex-col items-center relative w-[20%]"
-          onClick={() => router.push('/training/log-workout')}
-        >
-          <div className="w-[60px] h-[60px] rounded-full bg-gradient-to-r from-[#FDA758] to-[#FE9870] flex items-center justify-center absolute -top-[26px] shadow-lg">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 5V19M5 12H19" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <div className="w-7 h-7 mt-8"></div>
-          <span className="text-xs font-medium text-[#573353]/70">Log</span>
-        </button>
-
-        <button
-          className="flex flex-col items-center w-[20%]"
-          onClick={() => router.push('/training/calendar')}
-        >
-          <div className="w-7 h-7 flex items-center justify-center mb-1">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z"
-                stroke="#573353"
-                strokeOpacity="0.7"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"/>
-              <path d="M16 2V6M8 2V6M3 10H21M8 14H8.01M12 14H12.01M16 14H16.01M8 18H8.01M12 18H12.01M16 18H16.01"
-                stroke="#573353"
-                strokeOpacity="0.7"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="text-xs font-medium text-[#573353]/70">Calendar</span>
-        </button>
-
-        <button
-          className="flex flex-col items-center w-[20%]"
-          onClick={() => router.push('/profile')}
-        >
-          <div className="w-7 h-7 flex items-center justify-center mb-1">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
-                stroke="#573353"
-                strokeOpacity="0.7"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="text-xs font-medium text-[#573353]/70">Profile</span>
-        </button>
+              {!showVerification ? (
+                <Button
+                  variant="outline"
+                  className="w-full border-[#1B237E] text-[#1B237E] hover:bg-[#1B237E]/5"
+                  onClick={() => setShowVerification(true)}
+                >
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  Verificar plan de entrenamiento
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full border-[#1B237E] text-[#1B237E] hover:bg-[#1B237E]/5"
+                  onClick={() => setShowVerification(false)}
+                >
+                  Ocultar verificación
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

@@ -12,20 +12,20 @@ import { Slider } from "@/components/ui/slider"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  Check, 
-  Dumbbell, 
-  Utensils, 
-  Brain, 
-  Heart, 
-  Clock, 
-  Calendar, 
+import {
+  ChevronRight,
+  ChevronLeft,
+  Check,
+  Dumbbell,
+  Utensils,
+  Brain,
+  Heart,
+  Clock,
+  Calendar,
   AlertTriangle,
   Sparkles
 } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { supabase } from "@/lib/supabase-client"
 
 interface AssessmentData {
@@ -35,54 +35,54 @@ interface AssessmentData {
   height: number
   weight: number
   activityLevel: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extremely_active'
-  
+
   // Goals
   primaryGoal: 'fat_loss' | 'muscle_gain' | 'strength' | 'endurance' | 'general_fitness' | 'athletic_performance'
   secondaryGoals: string[]
   targetWeight?: number
   targetDate?: string
-  
+
   // Training Experience
   experienceLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert'
   trainingHistory: string
   preferredTrainingStyle: string[]
-  
+
   // Availability & Resources
   weeklyAvailability: number
   sessionDuration: number
   equipment: string[]
   trainingLocation: 'home' | 'gym' | 'outdoors' | 'mixed'
-  
+
   // Health & Limitations
   injuries: string[]
   medicalConditions: string[]
   medications: string[]
   painAreas: string[]
-  
+
   // Nutrition
   dietType: string
   allergies: string[]
   mealPreferences: string
   supplementsUsed: string[]
-  
+
   // Sleep & Recovery
   averageSleep: number
   sleepQuality: 'poor' | 'fair' | 'good' | 'excellent'
   stressLevel: 'low' | 'moderate' | 'high' | 'very_high'
   recoveryMethods: string[]
-  
+
   // Measurements (optional)
   bodyFatPercentage?: number
   waistCircumference?: number
   hipCircumference?: number
   chestCircumference?: number
-  
+
   // Preferences
   preferredExercises: string[]
   dislikedExercises: string[]
   musicPreference?: string
   outdoorActivities?: string[]
-  
+
   // Wearables & Tracking
   usesWearables: boolean
   wearableDevices?: string[]
@@ -98,7 +98,7 @@ export default function AIAssessmentWizard() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [assessmentComplete, setAssessmentComplete] = useState(false)
   const totalSteps = 8
-  
+
   // Initialize assessment data
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({
     // Personal Information
@@ -107,55 +107,55 @@ export default function AIAssessmentWizard() {
     height: 175,
     weight: 75,
     activityLevel: 'moderately_active',
-    
+
     // Goals
     primaryGoal: 'general_fitness',
     secondaryGoals: [],
-    
+
     // Training Experience
     experienceLevel: 'intermediate',
     trainingHistory: '',
     preferredTrainingStyle: [],
-    
+
     // Availability & Resources
     weeklyAvailability: 4,
     sessionDuration: 60,
     equipment: [],
     trainingLocation: 'gym',
-    
+
     // Health & Limitations
     injuries: [],
     medicalConditions: [],
     medications: [],
     painAreas: [],
-    
+
     // Nutrition
     dietType: 'balanced',
     allergies: [],
     mealPreferences: '',
     supplementsUsed: [],
-    
+
     // Sleep & Recovery
     averageSleep: 7,
     sleepQuality: 'good',
     stressLevel: 'moderate',
     recoveryMethods: [],
-    
+
     // Preferences
     preferredExercises: [],
     dislikedExercises: [],
-    
+
     // Wearables & Tracking
     usesWearables: false,
     tracksNutrition: false
   })
-  
+
   // Update progress when step changes
   const updateProgress = (step: number) => {
     const newProgress = Math.round((step / totalSteps) * 100)
     setProgress(newProgress)
   }
-  
+
   // Handle next step
   const handleNextStep = () => {
     if (currentStep < totalSteps) {
@@ -166,7 +166,7 @@ export default function AIAssessmentWizard() {
       handleSubmit()
     }
   }
-  
+
   // Handle previous step
   const handlePrevStep = () => {
     if (currentStep > 1) {
@@ -175,7 +175,7 @@ export default function AIAssessmentWizard() {
       updateProgress(prevStep)
     }
   }
-  
+
   // Handle form input changes
   const handleChange = (field: keyof AssessmentData, value: any) => {
     setAssessmentData(prev => ({
@@ -183,12 +183,12 @@ export default function AIAssessmentWizard() {
       [field]: value
     }))
   }
-  
+
   // Handle checkbox arrays
   const handleCheckboxChange = (field: keyof AssessmentData, value: string, checked: boolean) => {
     setAssessmentData(prev => {
       const currentArray = prev[field] as string[]
-      
+
       if (checked) {
         return {
           ...prev,
@@ -202,7 +202,7 @@ export default function AIAssessmentWizard() {
       }
     })
   }
-  
+
   // Handle form submission
   const handleSubmit = async () => {
     if (!user) {
@@ -213,9 +213,9 @@ export default function AIAssessmentWizard() {
       })
       return
     }
-    
+
     setIsSubmitting(true)
-    
+
     try {
       // Save assessment data to Supabase
       const { data, error } = await supabase
@@ -228,14 +228,14 @@ export default function AIAssessmentWizard() {
           }
         ])
         .select()
-      
+
       if (error) {
         throw error
       }
-      
+
       // Mark assessment as complete
       setAssessmentComplete(true)
-      
+
       toast({
         title: "Evaluación completada",
         description: "Tus datos han sido guardados y estamos generando tu plan personalizado",
@@ -251,7 +251,7 @@ export default function AIAssessmentWizard() {
       setIsSubmitting(false)
     }
   }
-  
+
   // Render step content based on current step
   const renderStepContent = () => {
     switch (currentStep) {
@@ -259,7 +259,7 @@ export default function AIAssessmentWizard() {
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Información Personal</h3>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="age">Edad</Label>
@@ -270,7 +270,7 @@ export default function AIAssessmentWizard() {
                   onChange={(e) => handleChange('age', parseInt(e.target.value))}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label>Género</Label>
                 <RadioGroup
@@ -293,7 +293,7 @@ export default function AIAssessmentWizard() {
                 </RadioGroup>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="height">Altura (cm)</Label>
@@ -304,7 +304,7 @@ export default function AIAssessmentWizard() {
                   onChange={(e) => handleChange('height', parseInt(e.target.value))}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="weight">Peso (kg)</Label>
                 <Input
@@ -315,7 +315,7 @@ export default function AIAssessmentWizard() {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Nivel de actividad diaria</Label>
               <RadioGroup
@@ -346,12 +346,12 @@ export default function AIAssessmentWizard() {
             </div>
           </div>
         )
-      
+
       case 2:
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Objetivos</h3>
-            
+
             <div className="space-y-2">
               <Label>Objetivo principal</Label>
               <RadioGroup
@@ -384,7 +384,7 @@ export default function AIAssessmentWizard() {
                 </div>
               </RadioGroup>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Objetivos secundarios (opcional)</Label>
               <div className="grid grid-cols-2 gap-2">
@@ -393,7 +393,7 @@ export default function AIAssessmentWizard() {
                     <Checkbox
                       id={goal.toLowerCase().replace(/\s/g, '_')}
                       checked={assessmentData.secondaryGoals.includes(goal)}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         handleCheckboxChange('secondaryGoals', goal, checked as boolean)
                       }
                     />
@@ -402,7 +402,7 @@ export default function AIAssessmentWizard() {
                 ))}
               </div>
             </div>
-            
+
             {(assessmentData.primaryGoal === 'fat_loss' || assessmentData.primaryGoal === 'muscle_gain') && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -414,7 +414,7 @@ export default function AIAssessmentWizard() {
                     onChange={(e) => handleChange('targetWeight', parseInt(e.target.value))}
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="targetDate">Fecha objetivo</Label>
                   <Input
@@ -428,13 +428,13 @@ export default function AIAssessmentWizard() {
             )}
           </div>
         )
-      
+
       // Additional steps will be implemented in the next section
       default:
         return <div>Paso no implementado</div>
     }
   }
-  
+
   // Render assessment completion
   if (assessmentComplete) {
     return (
@@ -465,7 +465,7 @@ export default function AIAssessmentWizard() {
       </Card>
     )
   }
-  
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -485,7 +485,7 @@ export default function AIAssessmentWizard() {
           </div>
           <Progress value={progress} className="h-2" />
         </div>
-        
+
         {renderStepContent()}
       </CardContent>
       <CardFooter className="flex justify-between">
@@ -497,7 +497,7 @@ export default function AIAssessmentWizard() {
           <ChevronLeft className="h-4 w-4 mr-2" />
           Anterior
         </Button>
-        
+
         <Button
           onClick={handleNextStep}
           disabled={isSubmitting}

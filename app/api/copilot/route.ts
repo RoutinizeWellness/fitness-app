@@ -5,23 +5,32 @@ import { CopilotContext } from '@/lib/copilot-service';
 
 /**
  * Endpoint para comunicarse con Microsoft Copilot Studio
- * 
+ *
  * Este endpoint maneja las solicitudes al bot de Microsoft Copilot Studio
  * y devuelve las respuestas al cliente.
  */
 export async function POST(request: NextRequest) {
   try {
-    // Obtener la sesión del usuario
-    const supabase = createRouteHandlerClient({ cookies });
+    // Obtener las cookies y crear el cliente de Supabase
+    const cookieStore = await cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     const { data: { session } } = await supabase.auth.getSession();
 
     // Verificar autenticación
     if (!session) {
+      console.error('No session found in Copilot API');
       return NextResponse.json(
-        { error: 'No autorizado' },
+        { error: 'No autorizado. Por favor, inicia sesión nuevamente.' },
         { status: 401 }
       );
     }
+
+    // Log session info for debugging
+    console.log('Session found:', {
+      userId: session.user.id,
+      email: session.user.email,
+      hasMetadata: !!session.user.user_metadata
+    });
 
     // Obtener datos del cuerpo de la solicitud
     const body = await request.json();
@@ -60,18 +69,29 @@ export async function POST(request: NextRequest) {
 
     // En un entorno real, aquí se realizaría la llamada a la API de Microsoft Copilot Studio
     // Por ahora, simulamos la respuesta para desarrollo
-    
+
     // Simulación de latencia de red
     await new Promise(resolve => setTimeout(resolve, 800));
-    
+
     // Generar respuesta simulada
     const response = getMockResponse(message, userContext);
 
     return NextResponse.json({ response });
   } catch (error) {
     console.error('Error al procesar la solicitud:', error);
+
+    // Provide more detailed error information
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    const errorStack = error instanceof Error ? error.stack : '';
+
+    console.error('Error details:', { message: errorMessage, stack: errorStack });
+
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      {
+        error: 'Error interno del servidor',
+        details: errorMessage,
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     );
   }
@@ -84,7 +104,7 @@ export async function POST(request: NextRequest) {
 function getMockResponse(message: string, context: CopilotContext) {
   const lowerMessage = message.toLowerCase();
   const userName = context.userName ? ` ${context.userName}` : '';
-  
+
   // Respuestas personalizadas basadas en el contexto del usuario
   if (context.currentModule === 'training') {
     if (lowerMessage.includes('rutina') || lowerMessage.includes('ejercicio')) {
@@ -97,15 +117,15 @@ function getMockResponse(message: string, context: CopilotContext) {
       };
     }
   }
-  
+
   if (context.currentModule === 'nutrition') {
     if (lowerMessage.includes('comida') || lowerMessage.includes('dieta') || lowerMessage.includes('receta')) {
-      const dietType = context.dietPreferences?.includes('vegetarian') 
-        ? 'vegetariana' 
-        : context.dietPreferences?.includes('vegan') 
-          ? 'vegana' 
+      const dietType = context.dietPreferences?.includes('vegetarian')
+        ? 'vegetariana'
+        : context.dietPreferences?.includes('vegan')
+          ? 'vegana'
           : 'equilibrada';
-      
+
       return {
         message: `Tengo algunas recomendaciones de alimentación ${dietType} que podrían ayudarte a alcanzar tus objetivos. ¿Quieres ver un plan alimenticio personalizado?`,
         suggestions: ['Ver plan alimenticio', 'Recetas recomendadas', 'Registrar comida'],
@@ -115,7 +135,7 @@ function getMockResponse(message: string, context: CopilotContext) {
       };
     }
   }
-  
+
   // Respuestas basadas en el módulo de entrenamiento
   if (lowerMessage.includes('entrena') || lowerMessage.includes('ejercicio') || lowerMessage.includes('rutina')) {
     return {
@@ -126,7 +146,7 @@ function getMockResponse(message: string, context: CopilotContext) {
       ]
     };
   }
-  
+
   // Respuestas basadas en el módulo de nutrición
   if (lowerMessage.includes('nutri') || lowerMessage.includes('comida') || lowerMessage.includes('dieta')) {
     return {
@@ -137,7 +157,7 @@ function getMockResponse(message: string, context: CopilotContext) {
       ]
     };
   }
-  
+
   // Respuestas para saludos
   if (lowerMessage.includes('hola') || lowerMessage.includes('saludos')) {
     return {
@@ -145,7 +165,7 @@ function getMockResponse(message: string, context: CopilotContext) {
       suggestions: ['Entrenamientos', 'Nutrición', 'Sueño', 'Bienestar']
     };
   }
-  
+
   // Respuesta por defecto
   return {
     message: `Estoy aquí para ayudarte con tu bienestar${userName}. Puedo asistirte con entrenamientos, nutrición, sueño y hábitos saludables. ¿Podrías darme más detalles sobre lo que necesitas?`,

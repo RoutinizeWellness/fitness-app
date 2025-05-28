@@ -3,19 +3,19 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { RoutinizeLayout } from "@/components/routinize-layout"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Slider } from "@/components/ui/slider"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -49,7 +49,7 @@ export default function NewGoalPage() {
   // Guardar objetivo
   const handleSave = async () => {
     if (!user) return
-    
+
     if (!title.trim()) {
       toast({
         title: "Error",
@@ -58,9 +58,9 @@ export default function NewGoalPage() {
       })
       return
     }
-    
+
     setIsSaving(true)
-    
+
     const newGoal = {
       id: uuidv4(),
       title: title.trim(),
@@ -72,23 +72,23 @@ export default function NewGoalPage() {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }
-    
+
     try {
       // Guardar en Supabase
       const { error } = await supabase
         .from('goals')
         .insert(newGoal)
-      
+
       if (error) {
         console.error("Error al guardar objetivo:", error)
         throw error
       }
-      
+
       toast({
         title: "Objetivo creado",
         description: "El objetivo se ha creado correctamente",
       })
-      
+
       // Redirigir a la página de productividad
       setTimeout(() => {
         router.push("/productivity")
@@ -119,9 +119,9 @@ export default function NewGoalPage() {
     <RoutinizeLayout activeTab="productivity" title="Nuevo objetivo">
       <div className="container mx-auto p-4 pb-20">
         <div className="flex items-center mb-6">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="mr-2"
             onClick={() => router.back()}
           >
@@ -141,7 +141,7 @@ export default function NewGoalPage() {
                 placeholder="¿Qué quieres lograr?"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="description">Descripción (opcional)</Label>
               <Textarea
@@ -152,7 +152,7 @@ export default function NewGoalPage() {
                 className="min-h-[100px]"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="category">Categoría</Label>
               <Select value={category} onValueChange={setCategory}>
@@ -168,7 +168,7 @@ export default function NewGoalPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <Label>Fecha objetivo (opcional)</Label>
               <Popover>
@@ -194,9 +194,9 @@ export default function NewGoalPage() {
                 </PopoverContent>
               </Popover>
               {targetDate && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="text-gray-500"
                   onClick={() => setTargetDate(undefined)}
                 >
@@ -204,7 +204,7 @@ export default function NewGoalPage() {
                 </Button>
               )}
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Label>Progreso inicial</Label>
@@ -222,14 +222,14 @@ export default function NewGoalPage() {
         </Card>
 
         <div className="flex space-x-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="flex-1"
             onClick={() => router.push("/productivity")}
           >
             Cancelar
           </Button>
-          <Button 
+          <Button
             className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
             onClick={handleSave}
             disabled={isSaving || !title.trim()}

@@ -39,7 +39,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { supabase } from "@/lib/supabase-client"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
+import { getUserFriendlyErrorMessage, isEmptyErrorObject, logErrorWithContext } from "@/lib/error-utils"
+import { handleEmptyErrorRecovery } from "@/lib/utils/cookie-cleaner"
 
 export default function ProfilePage() {
   const { user, profile, refreshProfile, isLoading, isAdmin } = useAuth()
@@ -259,14 +261,207 @@ export default function ProfilePage() {
         updatedProfile.avatar_url = publicUrl
       }
 
-      // Actualizar perfil en Supabase
-      const { data, error } = await supabase
+      // Verificar si el perfil existe
+      const { data: existingProfile, error: checkError } = await supabase
         .from('profiles')
-        .update(updatedProfile)
-        .eq('id', user.id)
-        .select()
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
 
-      if (error) throw error
+      // Manejar errores vacíos en la verificación
+      if (isEmptyErrorObject(checkError)) {
+        logErrorWithContext(checkError, {
+          action: 'profile_check',
+          userId: user.id,
+          component: 'ProfilePage'
+        })
+        console.warn('Error vacío detectado al verificar perfil. Intentando crear perfil...')
+
+        try {
+          // Intentar insertar un nuevo perfil
+          const { data: insertData, error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: user.id,
+              ...updatedProfile
+            })
+            .select()
+
+          if (insertError) {
+            console.error('Error al insertar perfil:', insertError)
+            throw new Error('No se pudo crear el perfil. Verifica la conexión y la estructura de datos.')
+          }
+
+          // Actualizar el contexto
+          await refreshProfile()
+
+          toast({
+            title: "Perfil creado",
+            description: "Tu perfil ha sido creado correctamente",
+          })
+
+          return
+        } catch (insertErr) {
+          console.error('Error al intentar crear perfil después de error vacío:', insertErr)
+          throw new Error('No se pudo crear el perfil después de detectar un error vacío.')
+        }
+      }
+
+      if (checkError) {
+        console.error('Error al verificar perfil:', checkError)
+        throw checkError
+      }
+
+      // Si el perfil no existe, crearlo
+      if (!existingProfile) {
+        const { data: insertData, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            ...updatedProfile
+          })
+          .select()
+
+        if (insertError) throw insertError
+
+        // Actualizar el contexto
+        await refreshProfile()
+
+        toast({
+          title: "Perfil creado",
+          description: "Tu perfil ha sido creado correctamente",
+        })
+
+        return
+      }
+
+      // Si el perfil existe, actualizarlo
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .update(updatedProfile)
+          .eq('user_id', user.id)
+          .select()
+
+        // Manejar errores vacíos en la actualización
+        if (isEmptyErrorObject(error)) {
+          logErrorWithContext(error, {
+            action: 'profile_update',
+            userId: user.id,
+            profileData: JSON.stringify(updatedProfile).substring(0, 100) + '...',
+            component: 'ProfilePage'
+          })
+          console.warn('Error vacío detectado al actualizar perfil. Intentando método alternativo...')
+
+          try {
+            // Intentar método alternativo usando la API
+            const response = await fetch('/api/profile', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                user_id: user.id,
+                ...updatedProfile
+              }),
+            })
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({
+                error: 'No se pudo parsear la respuesta de error',
+                status: response.status,
+                statusText: response.statusText
+              }));
+
+              // Registrar el error con contexto adicional
+              logErrorWithContext(errorData, {
+                action: 'profile_update_api',
+                userId: user.id,
+                status: response.status,
+                statusText: response.statusText,
+                component: 'ProfilePage'
+              });
+
+              throw new Error(`Error al actualizar perfil a través de la API: ${response.status} ${response.statusText}`);
+            }
+
+            // Actualizar el contexto
+            await refreshProfile()
+
+            toast({
+              title: "Perfil actualizado",
+              description: "Tu perfil ha sido actualizado correctamente",
+            })
+
+            return
+          } catch (apiError) {
+            console.error('Error al intentar actualizar perfil a través de la API:', apiError)
+
+            // Intentar un tercer método como último recurso
+            try {
+              console.info('Intentando tercer método de actualización...')
+
+              // Usar upsert como alternativa
+              const { error: upsertError } = await supabase
+                .from('profiles')
+                .upsert({
+                  user_id: user.id,
+                  ...updatedProfile,
+                  updated_at: new Date().toISOString()
+                })
+
+              if (upsertError) {
+                // Registrar el error con contexto adicional
+                logErrorWithContext(upsertError, {
+                  action: 'profile_update_upsert',
+                  userId: user.id,
+                  component: 'ProfilePage'
+                });
+
+                // Si es un error vacío, proporcionar un mensaje más específico
+                if (isEmptyErrorObject(upsertError)) {
+                  throw new Error('Error de conexión al intentar actualizar el perfil. Por favor, verifica tu conexión a internet e inténtalo más tarde.');
+                } else {
+                  throw new Error('Todos los métodos de actualización fallaron. Por favor, inténtalo más tarde.');
+                }
+              }
+
+              // Actualizar el contexto
+              await refreshProfile()
+
+              toast({
+                title: "Perfil actualizado",
+                description: "Tu perfil ha sido actualizado correctamente (método alternativo)",
+              })
+
+              return
+            } catch (finalError) {
+              // Registrar el error con contexto adicional
+              logErrorWithContext(finalError, {
+                action: 'profile_update_final_attempt',
+                userId: user.id,
+                component: 'ProfilePage'
+              });
+
+              // Proporcionar un mensaje de error específico basado en el tipo de error
+              if (isEmptyErrorObject(finalError)) {
+                throw new Error('Error de conexión persistente. Por favor, verifica tu conexión a internet y refresca la página.');
+              } else {
+                const errorMessage = getUserFriendlyErrorMessage(
+                  finalError,
+                  'No se pudo actualizar el perfil después de intentar todos los métodos disponibles.'
+                );
+                throw new Error(errorMessage);
+              }
+            }
+          }
+        }
+
+        if (error) throw error
+      } catch (updateError) {
+        console.error('Error durante la actualización del perfil:', updateError)
+        throw updateError
+      }
 
       // Actualizar el contexto
       await refreshProfile()
@@ -276,12 +471,53 @@ export default function ProfilePage() {
         description: "Tu perfil ha sido actualizado correctamente",
       })
     } catch (error) {
-      console.error("Error al actualizar perfil:", error)
+      // Registrar el error con contexto adicional
+      logErrorWithContext(error, {
+        userId: user?.id,
+        action: 'profile_update',
+        component: 'ProfilePage',
+        timestamp: new Date().toISOString()
+      });
+
+      // Obtener un mensaje de error amigable para el usuario
+      const errorMessage = getUserFriendlyErrorMessage(
+        error,
+        "No se pudo actualizar el perfil. Por favor, inténtalo de nuevo más tarde."
+      );
+
+      // Determinar el título del error basado en el tipo
+      let errorTitle = "Error";
+      if (isEmptyErrorObject(error)) {
+        errorTitle = "Error de conexión";
+      } else if (error instanceof Error && error.name === "NetworkError") {
+        errorTitle = "Error de red";
+      } else if (error instanceof Error && error.name === "TimeoutError") {
+        errorTitle = "Tiempo de espera agotado";
+      }
+
+      // Mostrar el mensaje de error al usuario
       toast({
-        title: "Error",
-        description: "No se pudo actualizar el perfil. Inténtalo de nuevo.",
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive",
-      })
+      });
+
+      // Intentar recuperación automática si es un error de conexión
+      if (isEmptyErrorObject(error) && navigator.onLine) {
+        console.info("🔧 Intentando recuperación automática...");
+
+        // Intentar limpiar cookies corruptas y recuperar
+        const recoveryAttempted = handleEmptyErrorRecovery();
+
+        if (!recoveryAttempted) {
+          // Si no se intentó la recuperación automática, intentar refrescar el perfil
+          setTimeout(() => {
+            refreshProfile().catch(refreshError => {
+              console.warn("⚠️ Error en la recuperación automática:", refreshError);
+            });
+          }, 2000);
+        }
+      }
     } finally {
       setIsSaving(false)
     }
@@ -290,7 +526,9 @@ export default function ProfilePage() {
   // Cerrar sesión
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
+      // Use the unified authentication system
+      const { supabaseAuth } = await import('@/lib/auth/supabase-auth')
+      const { error } = await supabaseAuth.signOut()
 
       if (error) {
         console.error("Error al cerrar sesión:", error)

@@ -20,7 +20,7 @@ import {
   AlertTriangle,
   Sparkles
 } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { supabase } from "@/lib/supabase-client"
 
 interface NutritionAssessmentData {

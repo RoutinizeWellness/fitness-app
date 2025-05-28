@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import {
-  CheckCircle, XCircle, Dumbbell, Utensils, 
+  CheckCircle, XCircle, Dumbbell, Utensils,
   Shield, Eye, Clock, Filter, Search,
   Award, Calendar, BadgeCheck, AlertCircle
 } from "lucide-react"
@@ -25,7 +25,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { updateProfessionalVerification } from "@/lib/admin-dashboard-service"
 import { supabase } from "@/lib/supabase-client"
 
@@ -90,13 +90,13 @@ export function AdminProfessionalVerification() {
       const requestsWithProfiles = await Promise.all(
         (data || []).map(async (request) => {
           const table = request.professional_type === 'trainer' ? 'trainer_profiles' : 'nutritionist_profiles'
-          
+
           const { data: profileData, error: profileError } = await supabase
             .from(table)
             .select('*')
             .eq('user_id', request.user_id)
             .single()
-          
+
           return {
             id: request.id,
             userId: request.user_id,
@@ -143,7 +143,7 @@ export function AdminProfessionalVerification() {
   const handleVerification = async (userId: string, professionalType: 'trainer' | 'nutritionist', isVerified: boolean) => {
     try {
       const { data, error } = await updateProfessionalVerification(userId, professionalType, isVerified)
-      
+
       if (error) throw error
 
       // Actualizar el estado de la solicitud
@@ -167,8 +167,8 @@ export function AdminProfessionalVerification() {
           user_id: userId,
           type: isVerified ? 'verification_approved' : 'verification_rejected',
           title: isVerified ? 'Verificación aprobada' : 'Verificación rechazada',
-          content: isVerified 
-            ? 'Tu perfil profesional ha sido verificado. Ahora puedes comenzar a trabajar con clientes.' 
+          content: isVerified
+            ? 'Tu perfil profesional ha sido verificado. Ahora puedes comenzar a trabajar con clientes.'
             : `Tu solicitud de verificación ha sido rechazada. ${reviewNotes}`,
           is_read: false,
           created_at: new Date().toISOString()
@@ -180,8 +180,8 @@ export function AdminProfessionalVerification() {
 
       toast({
         title: isVerified ? "Perfil verificado" : "Perfil rechazado",
-        description: isVerified 
-          ? "El perfil profesional ha sido verificado correctamente" 
+        description: isVerified
+          ? "El perfil profesional ha sido verificado correctamente"
           : "El perfil profesional ha sido rechazado",
       })
 
@@ -218,7 +218,7 @@ export function AdminProfessionalVerification() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
+
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
           <TabsList>
             <TabsTrigger value="pending" className="flex items-center">
@@ -236,7 +236,7 @@ export function AdminProfessionalVerification() {
           </TabsList>
         </Tabs>
       </div>
-      
+
       <Card3D>
         <Card3DHeader>
           <div className="flex items-center justify-between">
@@ -276,7 +276,7 @@ export function AdminProfessionalVerification() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center space-x-2">
                         <Button3D
                           variant="outline"
@@ -286,7 +286,7 @@ export function AdminProfessionalVerification() {
                           <Eye className="h-4 w-4 mr-1" />
                           Revisar
                         </Button3D>
-                        
+
                         {activeTab === 'pending' && (
                           <>
                             <Button3D
@@ -310,7 +310,7 @@ export function AdminProfessionalVerification() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="mt-2 text-xs text-gray-500">
                       <p>Solicitud enviada: {new Date(request.submittedAt).toLocaleDateString()}</p>
                       {request.processedAt && (
@@ -346,7 +346,7 @@ export function AdminProfessionalVerification() {
           )}
         </Card3DContent>
       </Card3D>
-      
+
       {/* Diálogo de revisión */}
       {showReviewDialog && selectedRequest && (
         <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
@@ -357,7 +357,7 @@ export function AdminProfessionalVerification() {
                 Revisa la información del profesional antes de aprobar o rechazar su solicitud.
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div className="flex items-center">
                 <Avatar className="h-12 w-12 mr-4">
@@ -379,7 +379,7 @@ export function AdminProfessionalVerification() {
                   </div>
                 </div>
               </div>
-              
+
               {selectedRequest.profile && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Card3D>
@@ -418,7 +418,7 @@ export function AdminProfessionalVerification() {
                       </div>
                     </Card3DContent>
                   </Card3D>
-                  
+
                   <Card3D>
                     <Card3DHeader>
                       <Card3DTitle>Biografía</Card3DTitle>
@@ -431,7 +431,7 @@ export function AdminProfessionalVerification() {
                   </Card3D>
                 </div>
               )}
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Notas de revisión</label>
                 <Textarea
@@ -442,7 +442,7 @@ export function AdminProfessionalVerification() {
                 />
               </div>
             </div>
-            
+
             <DialogFooter className="flex justify-end space-x-2">
               <DialogClose asChild>
                 <Button3D variant="outline">

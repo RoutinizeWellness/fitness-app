@@ -1,16 +1,23 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
-import Link from "next/link"
+import { motion, AnimatePresence } from "framer-motion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Loader2, Heart, MessageSquare, Share2 } from "lucide-react"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Loader2, Heart, MessageSquare, Share2, Plus, Search,
+  Filter, TrendingUp, Users, Award, ChevronLeft, Send,
+  ThumbsUp, Eye, Bookmark, MoreHorizontal
+} from "lucide-react"
 import { getCommunityActivities, addCommunityActivity, getUserProfile, type CommunityActivity } from "@/lib/supabase"
 import { toast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
+import { SafeClientButton } from "@/components/ui/safe-client-button"
 
 export default function CommunityPage() {
   const { user } = useAuth()
@@ -20,6 +27,11 @@ export default function CommunityPage() {
   const [postText, setPostText] = useState("")
   const [isPosting, setIsPosting] = useState(false)
   const [userProfile, setUserProfile] = useState<any>(null)
+  const [activeFilter, setActiveFilter] = useState<'all' | 'trending' | 'following'>('all')
+  const [searchQuery, setSearchQuery] = useState("")
+  const [showNewPost, setShowNewPost] = useState(false)
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
+  const [bookmarkedPosts, setBookmarkedPosts] = useState<Set<string>>(new Set())
 
   // Cargar actividades de la comunidad
   useEffect(() => {
@@ -98,6 +110,7 @@ export default function CommunityPage() {
       }
 
       setPostText("")
+      setShowNewPost(false)
       toast({
         title: "Publicación exitosa",
         description: "Tu publicación ha sido compartida con la comunidad",
@@ -113,6 +126,40 @@ export default function CommunityPage() {
       setIsPosting(false)
     }
   }
+
+  // Manejar like de publicación
+  const handleLike = useCallback((postId: string) => {
+    setLikedPosts(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(postId)) {
+        newSet.delete(postId)
+      } else {
+        newSet.add(postId)
+      }
+      return newSet
+    })
+  }, [])
+
+  // Manejar bookmark de publicación
+  const handleBookmark = useCallback((postId: string) => {
+    setBookmarkedPosts(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(postId)) {
+        newSet.delete(postId)
+      } else {
+        newSet.add(postId)
+      }
+      return newSet
+    })
+  }, [])
+
+  // Filtrar actividades
+  const filteredActivities = activities.filter(activity => {
+    if (searchQuery) {
+      return activity.content?.toLowerCase().includes(searchQuery.toLowerCase())
+    }
+    return true
+  })
 
 
 
@@ -137,146 +184,319 @@ export default function CommunityPage() {
 
   return (
     <div className="w-[414px] h-[896px] bg-[#FFF3E9] overflow-hidden mx-auto relative">
-      {/* Background */}
-      <img className="absolute left-[20px] top-[297px] w-[374px] h-[164px]" src="/images/habit-builder/background0.svg" alt="" />
-
-      {/* Post 4 */}
-      <div className="absolute left-[20px] top-[640px] w-[374px] h-[164px]">
-        <img className="absolute left-[0px] top-[0px] w-[374px] h-[164px]" src="/images/habit-builder/background0.svg" alt="" />
-        <div className="absolute left-[36px] top-[704px] text-[#573353] font-['Manrope-Medium'] text-[14px] leading-[20px] tracking-[-0.03em] font-medium w-[343px]">
-          James Clear&#039;s Habit&#039;s Academy course has tremendously changed my life for the better! Having been a self improvement aficionado for decades...
-        </div>
-        <img className="absolute left-[352px] top-[651px] w-[32px] h-[32px]" src="/images/habit-builder/share-post0.svg" alt="" />
-
-        <div className="absolute left-[36px] top-[653px] w-[82px] h-[28px]">
-          <img className="absolute left-[0px] top-[0px] w-[28px] h-[28px] rounded-full" src="/images/habit-builder/ellipse-8380.png" alt="" />
-          <div className="absolute left-[42px] top-[0px] text-[#573353] font-['Manrope-Bold'] text-[14px] leading-[14px] tracking-[-0.03em] font-bold">
-            Colin
-          </div>
-          <div className="absolute left-[42px] top-[14px] text-[#573353] font-['Manrope-Medium'] text-[12px] leading-[14px] tracking-[-0.03em] font-medium opacity-50">
-            41m ago
-          </div>
-        </div>
-
-        <div className="absolute left-[323px] top-[779px] w-[67px] h-[11px]">
-          <div className="absolute left-[326px] top-[779px] text-[#573353] text-center font-['Manrope-Medium'] text-[8px] tracking-[-0.03em] font-medium">
-            3.1k
-          </div>
-          <div className="absolute left-[368px] top-[779px] text-[#573353] text-center font-['Manrope-Medium'] text-[8px] tracking-[-0.03em] font-medium opacity-50">
-            22
-          </div>
-          <img className="absolute left-[355px] top-[779px] w-[10px] h-[10px]" src="/images/habit-builder/speech-bubble-10.svg" alt="" />
-          <img className="absolute left-[323px] top-[779px] w-[12px] h-[10px]" src="/images/habit-builder/vector0.svg" alt="" />
-        </div>
-      </div>
-
-      {/* Post 3 */}
-      <div className="absolute left-[20px] top-[469px] w-[374px] h-[164px]">
-        <img className="absolute left-[0px] top-[0px] w-[374px] h-[164px]" src="/images/habit-builder/background0.svg" alt="" />
-        <div className="absolute left-[36px] top-[533px] text-[#573353] font-['Manrope-Medium'] text-[14px] leading-[20px] tracking-[-0.03em] font-medium w-[348px]">
-          This course contains the most complete material on habit formation that I&#039;ve seen. There is just enough theory to explain the principles, and not so much...
-        </div>
-        <img className="absolute left-[352px] top-[480px] w-[32px] h-[32px]" src="/images/habit-builder/share-post1.svg" alt="" />
-
-        <div className="absolute left-[40px] top-[480px] w-[78px] h-[28px]">
-          <div className="absolute left-[0px] top-[0px] text-[#573353] font-['Manrope-Bold'] text-[14px] leading-[14px] tracking-[-0.03em] font-bold">
-            Al
-          </div>
-          <div className="absolute left-[0px] top-[14px] text-[#573353] font-['Manrope-Medium'] text-[12px] leading-[14px] tracking-[-0.03em] font-medium opacity-50">
-            41m ago
-          </div>
-          <img className="absolute left-[0px] top-[0px] w-[28px] h-[28px] rounded-full" src="/images/habit-builder/ellipse-8410.png" alt="" />
-        </div>
-
-        <div className="absolute left-[323px] top-[607px] w-[67px] h-[11px]">
-          <div className="absolute left-[326px] top-[607px] text-[#573353] text-center font-['Manrope-Medium'] text-[8px] tracking-[-0.03em] font-medium">
-            3.1k
-          </div>
-          <div className="absolute left-[368px] top-[607px] text-[#573353] text-center font-['Manrope-Medium'] text-[8px] tracking-[-0.03em] font-medium opacity-50">
-            22
-          </div>
-          <img className="absolute left-[355px] top-[607px] w-[10px] h-[10px]" src="/images/habit-builder/speech-bubble-10.svg" alt="" />
-          <img className="absolute left-[323px] top-[607px] w-[12px] h-[10px]" src="/images/habit-builder/vector0.svg" alt="" />
-        </div>
-      </div>
-
-      {/* Post 2 */}
-      <div className="absolute left-[20px] top-[297px] w-[348px] h-[138px]">
-        <div className="absolute left-[36px] top-[361px] text-[#573353] font-['Manrope-Medium'] text-[14px] leading-[20px] tracking-[-0.03em] font-medium w-[337px]">
-          I loved the course! I&#039;ve been trying to break all this great stuff down into manageable chunks to help my clients develop healthy habits and achieve their personal...
-        </div>
-        <img className="absolute left-[352px] top-[307px] w-[32px] h-[32px]" src="/images/habit-builder/share-post0.svg" alt="" />
-
-        <div className="absolute left-[36px] top-[309px] w-[99px] h-[28px]">
-          <img className="absolute left-[0px] top-[0px] w-[28px] h-[28px] rounded-full" src="/images/habit-builder/ellipse-8411.png" alt="" />
-          <div className="absolute left-[42px] top-[0px] text-[#573353] font-['Manrope-Bold'] text-[14px] leading-[14px] tracking-[-0.03em] font-bold">
-            Gretchen
-          </div>
-          <div className="absolute left-[42px] top-[14px] text-[#573353] font-['Manrope-Medium'] text-[12px] leading-[14px] tracking-[-0.03em] font-medium opacity-50">
-            41m ago
-          </div>
-        </div>
-
-        <div className="absolute left-[323px] top-[435px] w-[67px] h-[11px]">
-          <div className="absolute left-[326px] top-[435px] text-[#573353] text-center font-['Manrope-Medium'] text-[8px] tracking-[-0.03em] font-medium">
-            3.1k
-          </div>
-          <div className="absolute left-[368px] top-[435px] text-[#573353] text-center font-['Manrope-Medium'] text-[8px] tracking-[-0.03em] font-medium opacity-50">
-            22
-          </div>
-          <img className="absolute left-[355px] top-[435px] w-[10px] h-[10px]" src="/images/habit-builder/speech-bubble-10.svg" alt="" />
-          <img className="absolute left-[323px] top-[435px] w-[12px] h-[10px]" src="/images/habit-builder/vector0.svg" alt="" />
-        </div>
-      </div>
-
-      {/* Post 1 */}
-      <div className="absolute left-[20px] top-[125px] w-[374px] h-[164px]">
-        <img className="absolute left-[0px] top-[0px] w-[374px] h-[164px]" src="/images/habit-builder/background0.svg" alt="" />
-        <div className="absolute left-[36px] top-[189px] text-[#573353] font-['Manrope-Medium'] text-[14px] leading-[20px] tracking-[-0.03em] font-medium w-[343px]">
-          Man, you&#039;re my new guru! Viewing the lessons for a second time. Thoroughly pleased. And impressed that you draw from scientific literature in telling memorable...
-        </div>
-
-        <div className="absolute left-[36px] top-[137px] w-[87px] h-[28px]">
-          <div className="absolute left-[42px] top-[0px] text-[#573353] font-['Manrope-Bold'] text-[14px] leading-[14px] tracking-[-0.03em] font-bold">
-            Jerome
-          </div>
-          <div className="absolute left-[42px] top-[14px] text-[#573353] font-['Manrope-Medium'] text-[12px] leading-[14px] tracking-[-0.03em] font-medium opacity-50">
-            41m ago
-          </div>
-          <img className="absolute left-[0px] top-[0px] w-[28px] h-[28px] rounded-full" src="/images/habit-builder/image0.png" alt="" />
-        </div>
-
-        <img className="absolute left-[352px] top-[135px] w-[32px] h-[32px]" src="/images/habit-builder/share-post0.svg" alt="" />
-
-        <div className="absolute left-[323px] top-[263px] w-[67px] h-[11px]">
-          <div className="absolute left-[326px] top-[263px] text-[#573353] text-center font-['Manrope-Medium'] text-[8px] tracking-[-0.03em] font-medium">
-            3.1k
-          </div>
-          <div className="absolute left-[368px] top-[263px] text-[#573353] text-center font-['Manrope-Medium'] text-[8px] tracking-[-0.03em] font-medium opacity-50">
-            22
-          </div>
-          <img className="absolute left-[355px] top-[263px] w-[10px] h-[10px]" src="/images/habit-builder/speech-bubble-10.svg" alt="" />
-          <img className="absolute left-[323px] top-[263px] w-[12px] h-[10px]" src="/images/habit-builder/vector0.svg" alt="" />
-        </div>
-      </div>
       {/* Header */}
-      <div className="absolute left-[10px] top-[28px] w-[64px] h-[65px] overflow-hidden">
-        <div className="absolute left-[15.62%] top-[16.92%] right-[15.62%] bottom-[15.38%] bg-[#573353] rounded-[25px] opacity-10"></div>
-        <img className="absolute left-[10px] top-[11px] w-[44px] h-[44px]" src="/images/habit-builder/hamburger-menu0.svg" alt="" />
-      </div>
+      <div className="absolute top-0 left-0 right-0 h-20 bg-[#FFF3E9] border-b border-[#DDDCFE]/20 z-10">
+        <div className="flex items-center justify-between px-4 h-full">
+          <SafeClientButton
+            onClick={() => router.back()}
+            variant="ghost"
+            size="sm"
+            className="text-[#573353] hover:bg-[#B1AFE9]/20"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </SafeClientButton>
 
-      <img className="absolute left-[350px] top-[39px]" src="/images/habit-builder/profile4.svg" alt="" />
+          <h1 className="text-[#573353] font-['Manrope-Bold'] text-lg font-bold">
+            Comunidad
+          </h1>
 
-      <div className="absolute left-[162px] top-[45px] w-[91px] h-[32px]">
-        <div className="absolute left-[-3.3%] top-[0%] right-[-4.4%] bottom-[0%] text-[#573353] text-center font-['Manrope-Bold'] text-[18px] leading-[32px] tracking-[-0.03em] font-bold">
-          Community
+          <div className="flex items-center gap-2">
+            <SafeClientButton
+              onClick={() => setSearchQuery(searchQuery ? "" : "buscar")}
+              variant="ghost"
+              size="sm"
+              className="text-[#573353] hover:bg-[#B1AFE9]/20"
+            >
+              <Search className="h-5 w-5" />
+            </SafeClientButton>
+
+            <SafeClientButton
+              onClick={() => setShowNewPost(true)}
+              variant="ghost"
+              size="sm"
+              className="text-[#FEA800] hover:bg-[#FEA800]/20"
+            >
+              <Plus className="h-5 w-5" />
+            </SafeClientButton>
+          </div>
         </div>
       </div>
 
-      {/* Bottom Menu */}
-      <div className="absolute left-[0px] top-[772px] w-[414px] h-[124px]">
-        <img className="absolute left-[0px] top-[44px] right-[0px] bottom-[0px] w-full h-[64.52%]" src="/images/habit-builder/menu1.svg" alt="" />
-        <img className="absolute left-[42.27%] top-[0px] right-[42.27%] bottom-[48.39%] w-[15.46%] h-[51.61%]" src="/images/habit-builder/plus-button0.svg" alt="" />
+      {/* Filtros */}
+      <div className="absolute top-20 left-0 right-0 h-12 bg-[#FFF3E9] border-b border-[#DDDCFE]/20 z-10">
+        <div className="flex items-center justify-center gap-4 h-full px-4">
+          {(['all', 'trending', 'following'] as const).map((filter) => (
+            <SafeClientButton
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              variant="ghost"
+              size="sm"
+              className={`text-sm font-medium transition-colors ${
+                activeFilter === filter
+                  ? 'text-[#1B237E] bg-[#B1AFE9]/30 border-b-2 border-[#1B237E]'
+                  : 'text-[#573353] hover:text-[#1B237E] hover:bg-[#B1AFE9]/20'
+              }`}
+            >
+              {filter === 'all' && 'Todo'}
+              {filter === 'trending' && 'Tendencias'}
+              {filter === 'following' && 'Siguiendo'}
+            </SafeClientButton>
+          ))}
+        </div>
+      </div>
+
+      {/* Feed de publicaciones */}
+      <div className="absolute top-32 left-0 right-0 bottom-20 overflow-y-auto">
+        <div className="px-4 py-4 space-y-4">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-[#1B237E]" />
+              <span className="ml-2 text-[#573353]">Cargando comunidad...</span>
+            </div>
+          ) : filteredActivities.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="h-12 w-12 text-[#B1AFE9] mx-auto mb-4" />
+              <p className="text-[#573353] font-medium">No hay publicaciones aún</p>
+              <p className="text-[#573353]/60 text-sm mt-1">¡Sé el primero en compartir algo!</p>
+            </div>
+          ) : (
+            <AnimatePresence>
+              {filteredActivities.map((activity, index) => (
+                <motion.div
+                  key={activity.id || index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
+                  <Card className="bg-white/80 backdrop-blur-sm border-[#DDDCFE]/30 shadow-sm">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10 border-2 border-[#B1AFE9]/30">
+                            <AvatarImage
+                              src={activity.user_profile?.avatar_url || "/placeholder.svg"}
+                              alt={activity.user_profile?.full_name || "Usuario"}
+                            />
+                            <AvatarFallback className="bg-[#B1AFE9] text-[#1B237E] font-bold">
+                              {(activity.user_profile?.full_name || "U").charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-['Manrope-Bold'] text-[#573353] font-bold text-sm">
+                              {activity.user_profile?.full_name || "Usuario"}
+                            </p>
+                            <p className="text-[#573353]/60 text-xs">
+                              {formatRelativeTime(activity.created_at || new Date().toISOString())}
+                            </p>
+                          </div>
+                        </div>
+                        <SafeClientButton
+                          variant="ghost"
+                          size="sm"
+                          className="text-[#573353]/60 hover:text-[#573353] hover:bg-[#B1AFE9]/20"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </SafeClientButton>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <p className="text-[#573353] font-['Manrope-Medium'] text-sm leading-relaxed mb-4">
+                        {activity.content}
+                      </p>
+
+                      {/* Acciones de la publicación */}
+                      <div className="flex items-center justify-between pt-3 border-t border-[#DDDCFE]/20">
+                        <div className="flex items-center gap-4">
+                          <SafeClientButton
+                            onClick={() => handleLike(activity.id || '')}
+                            variant="ghost"
+                            size="sm"
+                            className={`flex items-center gap-1 ${
+                              likedPosts.has(activity.id || '')
+                                ? 'text-[#FF6767] hover:text-[#FF6767]/80'
+                                : 'text-[#573353]/60 hover:text-[#FF6767]'
+                            }`}
+                          >
+                            <Heart className={`h-4 w-4 ${likedPosts.has(activity.id || '') ? 'fill-current' : ''}`} />
+                            <span className="text-xs">
+                              {Math.floor(Math.random() * 100) + (likedPosts.has(activity.id || '') ? 1 : 0)}
+                            </span>
+                          </SafeClientButton>
+
+                          <SafeClientButton
+                            variant="ghost"
+                            size="sm"
+                            className="flex items-center gap-1 text-[#573353]/60 hover:text-[#1B237E]"
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                            <span className="text-xs">{Math.floor(Math.random() * 20)}</span>
+                          </SafeClientButton>
+
+                          <SafeClientButton
+                            variant="ghost"
+                            size="sm"
+                            className="flex items-center gap-1 text-[#573353]/60 hover:text-[#FEA800]"
+                          >
+                            <Share2 className="h-4 w-4" />
+                          </SafeClientButton>
+                        </div>
+
+                        <SafeClientButton
+                          onClick={() => handleBookmark(activity.id || '')}
+                          variant="ghost"
+                          size="sm"
+                          className={`${
+                            bookmarkedPosts.has(activity.id || '')
+                              ? 'text-[#FEA800] hover:text-[#FEA800]/80'
+                              : 'text-[#573353]/60 hover:text-[#FEA800]'
+                          }`}
+                        >
+                          <Bookmark className={`h-4 w-4 ${bookmarkedPosts.has(activity.id || '') ? 'fill-current' : ''}`} />
+                        </SafeClientButton>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
+        </div>
+      </div>
+
+      {/* Modal para nueva publicación */}
+      <AnimatePresence>
+        {showNewPost && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowNewPost(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-lg p-6 w-full max-w-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-[#573353] font-['Manrope-Bold'] text-lg font-bold">
+                  Nueva Publicación
+                </h3>
+                <SafeClientButton
+                  onClick={() => setShowNewPost(false)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-[#573353]/60 hover:text-[#573353]"
+                >
+                  ×
+                </SafeClientButton>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10 border-2 border-[#B1AFE9]/30">
+                    <AvatarImage
+                      src={userProfile?.avatar_url || "/placeholder.svg"}
+                      alt={userProfile?.full_name || "Usuario"}
+                    />
+                    <AvatarFallback className="bg-[#B1AFE9] text-[#1B237E] font-bold">
+                      {(userProfile?.full_name || "U").charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-['Manrope-Bold'] text-[#573353] font-bold text-sm">
+                      {userProfile?.full_name || "Usuario"}
+                    </p>
+                  </div>
+                </div>
+
+                <Textarea
+                  value={postText}
+                  onChange={(e) => setPostText(e.target.value)}
+                  placeholder="¿Qué quieres compartir con la comunidad?"
+                  className="min-h-[100px] border-[#DDDCFE]/30 focus:border-[#1B237E] resize-none"
+                />
+
+                <div className="flex justify-end gap-2">
+                  <SafeClientButton
+                    onClick={() => setShowNewPost(false)}
+                    variant="outline"
+                    className="border-[#DDDCFE] text-[#573353] hover:bg-[#B1AFE9]/20"
+                  >
+                    Cancelar
+                  </SafeClientButton>
+                  <SafeClientButton
+                    onClick={handlePost}
+                    disabled={!postText.trim() || isPosting}
+                    className="bg-[#1B237E] hover:bg-[#1B237E]/90 text-white"
+                  >
+                    {isPosting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Publicando...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-2" />
+                        Publicar
+                      </>
+                    )}
+                  </SafeClientButton>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Navegación inferior */}
+      <div className="absolute bottom-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-sm border-t border-[#DDDCFE]/30">
+        <div className="flex items-center justify-around h-full px-4">
+          <SafeClientButton
+            onClick={() => router.push('/dashboard')}
+            variant="ghost"
+            className="flex flex-col items-center gap-1 text-[#573353]/60 hover:text-[#1B237E]"
+          >
+            <Home className="h-5 w-5" />
+            <span className="text-xs">Inicio</span>
+          </SafeClientButton>
+
+          <SafeClientButton
+            onClick={() => router.push('/training')}
+            variant="ghost"
+            className="flex flex-col items-center gap-1 text-[#573353]/60 hover:text-[#1B237E]"
+          >
+            <Dumbbell className="h-5 w-5" />
+            <span className="text-xs">Entreno</span>
+          </SafeClientButton>
+
+          <SafeClientButton
+            onClick={() => setShowNewPost(true)}
+            className="bg-[#FEA800] hover:bg-[#FEA800]/90 text-white rounded-full p-3"
+          >
+            <Plus className="h-6 w-6" />
+          </SafeClientButton>
+
+          <SafeClientButton
+            variant="ghost"
+            className="flex flex-col items-center gap-1 text-[#1B237E] hover:text-[#1B237E]/80"
+          >
+            <Users className="h-5 w-5" />
+            <span className="text-xs">Comunidad</span>
+          </SafeClientButton>
+
+          <SafeClientButton
+            onClick={() => router.push('/profile')}
+            variant="ghost"
+            className="flex flex-col items-center gap-1 text-[#573353]/60 hover:text-[#1B237E]"
+          >
+            <User className="h-5 w-5" />
+            <span className="text-xs">Perfil</span>
+          </SafeClientButton>
+        </div>
       </div>
     </div>
   )

@@ -99,13 +99,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Se requiere un parámetro de acción' }, { status: 400 });
   }
 
-  // Para cualquier acción, devolver datos simulados para evitar errores de hidratación
+  // getCurrentUser function has been moved to the unified authentication system
+  // Use lib/auth/supabase-auth.ts instead
   if (action === 'getCurrentUser') {
-    // Devolver un usuario simulado o nulo
     return NextResponse.json({
-      user: null,
-      error: null
-    });
+      error: 'getCurrentUser has been moved to the unified system. Use lib/auth/supabase-auth.ts instead.'
+    }, { status: 410 });
   }
   else if (action === 'getUserProfile') {
     // Devolver un perfil simulado
@@ -168,53 +167,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Se requiere un parámetro de acción' }, { status: 400 });
     }
 
-    // Para cualquier acción, devolver datos simulados para evitar errores de hidratación
-    if (action === 'signIn') {
-      const { email, password } = data;
-      if (!email || !password) {
-        return NextResponse.json({ error: 'Se requieren email y password' }, { status: 400 });
-      }
-
-      // Crear un usuario y perfil simulados con UUID válido
-      const mockUser = {
-        id: `00000000-0000-0000-0000-${Date.now().toString().slice(-12)}`,
-        email: email,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-
-      const mockProfile = createMockProfile(mockUser.id);
-
+    // Authentication actions have been moved to the unified authentication system
+    // Use lib/auth/supabase-auth.ts instead
+    if (action === 'signIn' || action === 'signUp') {
       return NextResponse.json({
-        data: {
-          user: mockUser,
-          session: {
-            access_token: 'mock-token',
-            expires_at: Date.now() + 3600000
-          }
-        },
-        profile: mockProfile,
-        error: null
-      });
-    }
-    else if (action === 'signUp') {
-      const { email, password } = data;
-      if (!email || !password) {
-        return NextResponse.json({ error: 'Se requieren email y password' }, { status: 400 });
-      }
-
-      // Simular registro exitoso con UUID válido
-      return NextResponse.json({
-        data: {
-          user: {
-            id: `00000000-0000-0000-0000-${Date.now().toString().slice(-12)}`,
-            email: email,
-            created_at: new Date().toISOString()
-          },
-          session: null
-        },
-        error: null
-      });
+        error: 'Authentication actions have been moved to the unified system. Use lib/auth/supabase-auth.ts instead.'
+      }, { status: 410 });
     }
     else if (action === 'createUserProfile') {
       const { profile } = data;

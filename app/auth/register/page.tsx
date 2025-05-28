@@ -1,301 +1,479 @@
-"use client"
+'use client';
 
-import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import Image from "next/image"
-import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2 } from "lucide-react"
-import { AuthLayout } from "@/components/auth/auth-layout"
-import { Checkbox } from "@/components/ui/checkbox"
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
+import { AuthLayout } from '@/components/auth/auth-layout';
+import { MotionComponent } from '@/components/ui/motion-fallback';
+import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/lib/auth/auth-context';
+import { handleSignUpError } from '@/lib/auth-error-handler';
 
 export default function RegisterPage() {
-  const [name, setName] = useState("Mira Passaquindici")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [keepSignedIn, setKeepSignedIn] = useState(true)
-  const [emailMarketing, setEmailMarketing] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
-  const [isFacebookLoading, setIsFacebookLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
-  const router = useRouter()
-  const { signUp, signInWithGoogle } = useAuth()
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isFacebookLoading, setIsFacebookLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [returnUrl, setReturnUrl] = useState<string | null>(null);
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Check for return URL in query parameters
+  useEffect(() => {
+    const returnPath = searchParams.get('returnUrl');
+    if (returnPath) {
+      setReturnUrl(returnPath);
+      console.log('Return URL set to:', returnPath);
+    }
+  }, [searchParams]);
+
+  /**
+   * Maneja el envío del formulario de registro
+   */
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setErrorMessage("")
+    e.preventDefault();
+    setIsLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    // Validar formulario
+    if (!validateForm()) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Configurar un timeout para detectar problemas de conexión
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        console.warn('El registro está tardando demasiado tiempo');
+        setErrorMessage('La conexión está tardando demasiado. Por favor, verifica tu conexión a internet e inténtalo de nuevo.');
+        setIsLoading(false);
+      }
+    }, 15000); // 15 segundos de timeout
 
     try {
-      const { data, error } = await signUp(email, password, {
+      console.log('Iniciando proceso de registro...');
+
+      // Almacenar información de registro para depuración
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('register_attempt', new Date().toISOString());
+        if (returnUrl) {
+          localStorage.setItem('register_return_url', returnUrl);
+        }
+      }
+
+      // Configurar opciones de registro
+      const options = {
         data: {
-          full_name: name,
-          email_marketing: emailMarketing,
+          full_name: fullName,
+          level: 'beginner',
+          onboarding_completed: false,
+          experience_level: 'beginner',
+          interface_mode: 'beginner'
         },
-      })
+        redirectTo: `${window.location.origin}/auth/verify-email`
+      };
+
+      // Registrar usuario
+      const { data, error, status, message } = await authService.signUp(email, password, options);
+
+      // Limpiar el timeout ya que la respuesta llegó
+      clearTimeout(timeoutId);
 
       if (error) {
-        console.error("Error de registro:", error)
-        setErrorMessage(error.message || "Error al crear la cuenta. Por favor, inténtalo de nuevo.")
-      } else {
-        // Mostrar mensaje de éxito y redirigir a la página de confirmación
-        router.push("/auth/verify-email")
+        console.error('Error de registro:', error);
+
+        // Usar el manejador de errores de autenticación para mensajes consistentes
+        const friendlyErrorMessage = handleSignUpError(error, true);
+        setErrorMessage(friendlyErrorMessage);
+        setIsLoading(false);
+        return;
       }
+
+      // Mostrar mensaje de éxito
+      setSuccessMessage('Registro exitoso. Por favor, verifica tu correo electrónico para activar tu cuenta.');
+      console.log('Registro exitoso, redirigiendo a verificación de email...');
+
+      // Mostrar toast de éxito
+      toast({
+        title: 'Registro exitoso',
+        description: 'Te hemos enviado un correo electrónico para verificar tu cuenta.',
+      });
+
+      // Almacenar información para depuración
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('register_success', 'true');
+        localStorage.setItem('register_email', email);
+        localStorage.setItem('register_time', new Date().toISOString());
+      }
+
+      // Redirigir a la página de verificación de email
+      setTimeout(() => {
+        router.push('/auth/verify-email?email=' + encodeURIComponent(email));
+      }, 2000);
     } catch (error) {
-      console.error("Error inesperado:", error)
-      setErrorMessage("Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.")
-    } finally {
-      setIsLoading(false)
+      // Limpiar el timeout ya que la respuesta llegó (con error)
+      clearTimeout(timeoutId);
+
+      console.error('Error inesperado durante el registro:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Ocurrió un error inesperado';
+      setErrorMessage(`Error: ${errorMsg}. Por favor, inténtalo de nuevo más tarde.`);
+      setIsLoading(false);
+
+      // Mostrar notificación toast
+      toast({
+        title: 'Error de registro',
+        description: 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.',
+        variant: 'destructive',
+      });
     }
-  }
+  };
+
+  /**
+   * Valida el formulario de registro
+   */
+  const validateForm = (): boolean => {
+    // Validar nombre completo
+    if (!fullName.trim()) {
+      setErrorMessage('Por favor, ingresa tu nombre completo.');
+      return false;
+    }
+
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email)) {
+      setErrorMessage('Por favor, ingresa un correo electrónico válido.');
+      return false;
+    }
+
+    // Validar contraseña
+    if (password.length < 6) {
+      setErrorMessage('La contraseña debe tener al menos 6 caracteres.');
+      return false;
+    }
+
+    // Validar confirmación de contraseña
+    if (password !== confirmPassword) {
+      setErrorMessage('Las contraseñas no coinciden.');
+      return false;
+    }
+
+    // Validar aceptación de términos
+    if (!acceptTerms) {
+      setErrorMessage('Debes aceptar los términos y condiciones para registrarte.');
+      return false;
+    }
+
+    return true;
+  };
 
   const handleGoogleSignIn = async () => {
-    setIsGoogleLoading(true)
-    setErrorMessage("")
+    setIsGoogleLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
 
     try {
-      const { error } = await signInWithGoogle()
+      // Almacenar la URL de retorno en localStorage para usarla después de la redirección OAuth
+      if (returnUrl) {
+        localStorage.setItem('auth_return_url', returnUrl);
+        console.log('URL de retorno almacenada para después de redirección OAuth:', returnUrl);
+      }
+
+      // Almacenar información adicional para depuración
+      localStorage.setItem('google_auth_start', new Date().toISOString());
+      localStorage.setItem('google_auth_path', window.location.pathname);
+
+      // Intentar iniciar sesión con Google
+      const { data, error } = await authService.signInWithProvider('google');
 
       if (error) {
-        console.error("Error de inicio de sesión con Google:", error)
-        setErrorMessage(error.message || "Error al iniciar sesión con Google. Por favor, inténtalo de nuevo.")
+        console.error('Error de inicio de sesión con Google:', error);
+        setErrorMessage(error.message || 'Error al iniciar sesión con Google. Por favor, inténtalo de nuevo.');
+        setIsGoogleLoading(false);
+      } else {
+        setSuccessMessage('Redirigiendo a Google para iniciar sesión...');
+
+        // No necesitamos redireccionar aquí, ya que la redirección la maneja Supabase
+        // Pero mantenemos el estado de carga para indicar que se está procesando
       }
-      // No necesitamos redireccionar aquí, ya que la redirección la maneja Supabase
     } catch (error) {
-      console.error("Error inesperado:", error)
-      setErrorMessage("Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.")
-    } finally {
-      setIsGoogleLoading(false)
+      console.error('Error inesperado:', error);
+      setErrorMessage('Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.');
+      setIsGoogleLoading(false);
     }
-  }
+  };
 
   const handleFacebookSignIn = async () => {
-    setIsFacebookLoading(true)
-    setErrorMessage("")
+    setIsFacebookLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
 
     try {
       // Implementación pendiente para Facebook
       setTimeout(() => {
-        setIsFacebookLoading(false)
-        setErrorMessage("Inicio de sesión con Facebook no implementado aún")
-      }, 1000)
+        setIsFacebookLoading(false);
+        setErrorMessage('Inicio de sesión con Facebook no implementado aún');
+
+        toast({
+          title: 'Funcionalidad no disponible',
+          description: 'El inicio de sesión con Facebook no está implementado todavía.',
+          variant: 'destructive',
+        });
+      }, 1000);
     } catch (error) {
-      console.error("Error inesperado:", error)
-      setErrorMessage("Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.")
-      setIsFacebookLoading(false)
+      console.error('Error inesperado:', error);
+      setErrorMessage('Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.');
+      setIsFacebookLoading(false);
     }
-  }
+  };
 
   const toggleShowPassword = () => {
-    setShowPassword(!showPassword)
-  }
+    setShowPassword(!showPassword);
+  };
 
+  const toggleShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  // Register illustration component
   const registerIllustration = (
-    <div className="relative w-full h-48">
-      <Image
-        src="/images/auth/register-illustration.png"
-        alt="Register Illustration"
-        width={300}
-        height={300}
-        className="object-contain"
-        priority
-        onError={(e) => {
-          // Fallback para imagen no encontrada
-          const target = e.target as HTMLImageElement;
-          target.style.display = 'none';
-          const parent = target.parentElement;
-          if (parent) {
-            const fallback = document.createElement('div');
-            fallback.className = "w-32 h-32 rounded-full bg-[#FDA758]/20 flex items-center justify-center mx-auto";
-            fallback.innerHTML = "<span class='text-[#573353] font-medium'>Register Image</span>";
-            parent.appendChild(fallback);
-          }
-        }}
-      />
+    <div className="flex flex-col items-center justify-center space-y-4">
+      <div className="w-32 h-32 relative">
+        <Image
+          src="/images/register-illustration-1.svg"
+          alt="Register Illustration"
+          width={160}
+          height={160}
+          className="object-contain"
+          priority
+          onError={(e) => {
+            // Fallback para imagen no encontrada
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            const parent = target.parentElement;
+            if (parent) {
+              const fallback = document.createElement('div');
+              fallback.className = "w-32 h-32 rounded-full bg-[#FDA758]/20 flex items-center justify-center";
+              fallback.innerHTML = "<span class='text-[#573353] font-medium'>Register</span>";
+              parent.appendChild(fallback);
+            }
+          }}
+        />
+      </div>
+      <div className="w-16 h-16 relative">
+        <Image
+          src="/images/monumental-logo.svg"
+          alt="Monumental Logo"
+          width={64}
+          height={64}
+          className="object-contain"
+          priority
+        />
+      </div>
     </div>
-  )
+  );
 
+  // Register footer component
   const registerFooter = (
     <p className="text-[#573353] text-sm">
-      Already have an account? <Link href="/auth/login" className="font-medium text-[#FDA758]">Sign in</Link>
+      ¿Ya tienes una cuenta? <Link href="/auth/login" className="font-medium text-[#FDA758]">Inicia sesión</Link>
     </p>
-  )
+  );
 
   return (
-    <div className="min-h-screen bg-[#FFF5EB] flex flex-col items-center justify-center px-4">
-      <h1 className="text-[#573353] text-2xl font-bold mb-8">CREATE YOUR ACCOUNT</h1>
-
-      {/* Register Images */}
-      <div className="relative w-full max-w-md flex flex-col items-center mb-6">
-        <div className="w-40 h-40 rounded-full bg-[#FFDFC8] flex items-center justify-center mb-4">
-          <span className="text-[#573353] text-lg">Register Image</span>
-        </div>
-        <div className="w-40 h-40 rounded-full bg-[#FFDFC8] flex items-center justify-center">
-          <span className="text-[#573353] text-lg">Register Image</span>
-        </div>
-      </div>
-
-      {/* Register Form */}
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-md p-6">
-        {errorMessage && (
-          <Alert className="mb-4 bg-red-50 text-red-800 border-red-200">
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
+    <AuthLayout
+      title="Crear cuenta"
+      illustration={registerIllustration}
+      footer={registerFooter}
+      showBackButton={true}
+    >
+      <div className="p-6">
+        {/* Success Message */}
+        {successMessage && (
+          <MotionComponent
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded-lg"
+          >
+            <p className="text-sm">{successMessage}</p>
+          </MotionComponent>
         )}
 
-        <div className="text-center mb-6">
-          <h2 className="text-[#573353] text-lg font-medium">Create your account</h2>
-        </div>
-
-        {/* Name Input */}
-        <div className="mb-4">
-          <Input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            className="w-full px-6 py-6 rounded-full border border-gray-200 text-[#573353] focus-visible:ring-1 focus-visible:ring-[#573353] focus-visible:ring-offset-0"
-            placeholder="Full Name"
-          />
-        </div>
-
-        {/* Email Input */}
-        <div className="mb-4">
-          <Input
-            id="email"
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-6 py-6 rounded-full border border-gray-200 text-[#573353] focus-visible:ring-1 focus-visible:ring-[#573353] focus-visible:ring-offset-0"
-          />
-        </div>
-
-        {/* Password Input */}
-        <div className="mb-6 relative">
-          <Input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-6 py-6 rounded-full border border-gray-200 text-[#573353] focus-visible:ring-1 focus-visible:ring-[#573353] focus-visible:ring-offset-0"
-          />
-          <button
-            type="button"
-            onClick={toggleShowPassword}
-            className="text-[#573353] text-sm absolute right-6 top-1/2 transform -translate-y-1/2"
+        {/* Error Message */}
+        {errorMessage && (
+          <MotionComponent
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg"
           >
-            {showPassword ? "Hide" : "Show"}
-          </button>
-        </div>
+            <p className="text-sm">{errorMessage}</p>
+          </MotionComponent>
+        )}
 
-        {/* Checkboxes */}
-        <div className="space-y-3 mb-6">
-          <div className="flex items-start space-x-2">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Full Name Input */}
+          <div className="space-y-2">
+            <label htmlFor="fullName" className="text-sm font-medium text-[#573353]">
+              Nombre completo
+            </label>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#573353]/50">
+                <User className="h-5 w-5" />
+              </div>
+              <Input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-[#573353] focus-visible:ring-2 focus-visible:ring-[#FDA758] focus-visible:ring-offset-0"
+                placeholder="Nombre y apellido"
+              />
+            </div>
+          </div>
+
+          {/* Email Input */}
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium text-[#573353]">
+              Correo electrónico
+            </label>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#573353]/50">
+                <Mail className="h-5 w-5" />
+              </div>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-[#573353] focus-visible:ring-2 focus-visible:ring-[#FDA758] focus-visible:ring-offset-0"
+                placeholder="correo@ejemplo.com"
+              />
+            </div>
+          </div>
+
+          {/* Password Input */}
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium text-[#573353]">
+              Contraseña
+            </label>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#573353]/50">
+                <Lock className="h-5 w-5" />
+              </div>
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 text-[#573353] focus-visible:ring-2 focus-visible:ring-[#FDA758] focus-visible:ring-offset-0"
+              />
+              <button
+                type="button"
+                onClick={toggleShowPassword}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#573353]/70 hover:text-[#573353]"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Confirm Password Input */}
+          <div className="space-y-2">
+            <label htmlFor="confirmPassword" className="text-sm font-medium text-[#573353]">
+              Confirmar contraseña
+            </label>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#573353]/50">
+                <Lock className="h-5 w-5" />
+              </div>
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirmar contraseña"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 text-[#573353] focus-visible:ring-2 focus-visible:ring-[#FDA758] focus-visible:ring-offset-0"
+              />
+              <button
+                type="button"
+                onClick={toggleShowConfirmPassword}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#573353]/70 hover:text-[#573353]"
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Terms and Conditions Checkbox */}
+          <div className="flex items-start space-x-2 mt-4">
             <Checkbox
-              id="keep-signed-in"
-              checked={keepSignedIn}
-              onCheckedChange={(checked) => setKeepSignedIn(checked as boolean)}
-              className="mt-1 border-[#FDA758] text-[#FDA758] rounded-md"
+              id="terms"
+              checked={acceptTerms}
+              onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
+              className="border-[#FDA758] text-[#FDA758] rounded-md mt-1"
             />
-            <label htmlFor="keep-signed-in" className="text-[#573353] text-sm">
-              Keep me signed in
+            <label htmlFor="terms" className="text-sm text-[#573353]">
+              Acepto los <Link href="/terms" className="text-[#FDA758] hover:underline">Términos y Condiciones</Link> y la <Link href="/privacy" className="text-[#FDA758] hover:underline">Política de Privacidad</Link>
             </label>
           </div>
-          <div className="flex items-start space-x-2">
-            <Checkbox
-              id="email-marketing"
-              checked={emailMarketing}
-              onCheckedChange={(checked) => setEmailMarketing(checked as boolean)}
-              className="mt-1 border-[#FDA758] text-[#FDA758] rounded-md"
-            />
-            <label htmlFor="email-marketing" className="text-[#573353] text-sm">
-              Email me about special pricing and more
-            </label>
-          </div>
-        </div>
 
-        {/* Register Button */}
-        <Button
-          onClick={handleSubmit}
-          disabled={isLoading}
-          className="w-full bg-[#FDA758] hover:bg-[#FDA758]/90 text-white font-medium rounded-full py-6 mb-6"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating account...
-            </>
-          ) : (
-            "Create Account"
+          {/* Register Button */}
+          <div>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-[#FDA758] hover:bg-[#FDA758]/90 text-white font-medium rounded-xl py-3 transition-all duration-200 shadow-md hover:shadow-lg"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Registrando...
+                </>
+              ) : (
+                "Crear cuenta"
+              )}
+            </Button>
+          </div>
+
+          {/* Loading Overlay */}
+          {isLoading && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-xl shadow-lg text-center">
+                <Loader2 className="h-10 w-10 animate-spin mx-auto text-[#FDA758]" />
+                <p className="mt-4 text-[#573353] font-medium">Creando tu cuenta...</p>
+                <p className="mt-2 text-[#573353]/70 text-sm">Por favor, espera mientras procesamos tu registro</p>
+              </div>
+            </div>
           )}
-        </Button>
-
-        {/* Social Login Divider */}
-        <div className="flex items-center mb-6">
-          <div className="flex-1 h-px bg-[#573353] opacity-10"></div>
-          <span className="px-4 text-[#573353] text-sm">Or sign up with</span>
-          <div className="flex-1 h-px bg-[#573353] opacity-10"></div>
-        </div>
-
-        {/* Social Login Buttons */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Button
-            variant="outline"
-            onClick={handleGoogleSignIn}
-            disabled={isGoogleLoading}
-            className="bg-white hover:bg-gray-50 text-[#573353] rounded-full py-5 border border-gray-200"
-          >
-            {isGoogleLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path fill="#FBBB00" d="M5.31891 14.5034L4.4835 17.6221L1.43011 17.6867C0.517594 15.9942 0 14.0577 0 11.9999C0 10.01 0.483938 8.1335 1.34175 6.4812H1.34241L4.06078 6.97958L5.25159 9.68164C5.00236 10.4082 4.86652 11.1882 4.86652 11.9999C4.86661 12.8808 5.02617 13.7247 5.31891 14.5034Z"/>
-                  <path fill="#518EF8" d="M23.7902 9.8738C23.928 10.5627 23.9999 11.2742 23.9999 12C23.9999 12.8591 23.9095 13.6971 23.7375 14.5055C23.1533 17.2563 21.6269 19.6582 19.5124 21.358L19.5118 21.3574L16.0878 21.1827L15.6032 18.1576C17.0063 17.3347 18.1028 16.047 18.6822 14.5055H12.2637V9.8738H18.774H23.7902Z"/>
-                  <path fill="#28B446" d="M19.5114 21.3574L19.5121 21.358C17.4556 23.011 14.8433 24 11.9999 24C7.4524 24 3.5542 21.4457 1.43011 17.6867L5.31891 14.5034C6.3323 17.2081 8.94408 19.1334 11.9999 19.1334C13.2886 19.1334 14.5034 18.778 15.6028 18.1576L19.5114 21.3574Z"/>
-                  <path fill="#F14336" d="M19.6596 2.76262L15.7721 5.94525C14.6295 5.26153 13.3571 4.86656 12 4.86656C8.87213 4.86656 6.21431 6.88017 5.25156 9.68164L1.34175 6.4812H1.34109C3.43402 2.63476 7.36284 0 12 0C14.9117 0 17.5814 1.03716 19.6596 2.76262Z"/>
-                </svg>
-                Google
-              </>
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleFacebookSignIn}
-            disabled={isFacebookLoading}
-            className="bg-white hover:bg-gray-50 text-[#573353] rounded-full py-5 border border-gray-200"
-          >
-            {isFacebookLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M24 12C24 5.37258 18.6274 0 12 0C5.37258 0 0 5.37258 0 12C0 17.9895 4.3882 22.954 10.125 23.8542V15.4688H7.07812V12H10.125V9.35625C10.125 6.34875 11.9166 4.6875 14.6576 4.6875C15.9701 4.6875 17.3438 4.92188 17.3438 4.92188V7.875H15.8306C14.34 7.875 13.875 8.80008 13.875 9.75V12H17.2031L16.6711 15.4688H13.875V23.8542C19.6118 22.954 24 17.9895 24 12Z" fill="#1772EA"/>
-                </svg>
-                Facebook
-              </>
-            )}
-          </Button>
-        </div>
-
-        {/* Login Link */}
-        <div className="flex justify-center">
-          <p className="text-[#573353] text-sm">
-            Already have an account? <Link href="/auth/login" className="font-medium text-[#FDA758]">Sign in</Link>
-          </p>
-        </div>
+        </form>
       </div>
-    </div>
-  )
+    </AuthLayout>
+  );
 }

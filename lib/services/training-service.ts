@@ -1,13 +1,27 @@
-import { supabase } from '@/lib/supabase-client'
+/**
+ * Training Service
+ *
+ * This service handles all training-related operations with Supabase.
+ * It provides methods for:
+ * - Managing workout routines
+ * - Logging workouts
+ * - Tracking performance
+ * - Managing periodization plans
+ * - Accessing exercise library
+ */
+
+import { supabaseService, QueryResponse } from "@/lib/supabase-service"
+import { TABLES } from "@/lib/config/supabase-config"
+import { v4 as uuidv4 } from "uuid"
+
+// Import types from the types directory
 import {
   WorkoutRoutine,
   WorkoutDay,
   ExerciseSet,
   WorkoutLog,
-  Exercise,
-  QueryResponse
+  Exercise
 } from '@/lib/types/training'
-import { v4 as uuidv4 } from 'uuid'
 
 /**
  * Get a workout routine by ID
@@ -59,50 +73,74 @@ export const getRoutineById = async (routineId: string): Promise<QueryResponse<W
 /**
  * Get all workout routines for a user
  * @param userId - The ID of the user
+ * @param options - Query options
  * @returns An array of workout routines
  */
-export const getUserRoutines = async (userId: string): Promise<QueryResponse<WorkoutRoutine[]>> => {
-  try {
-    if (!userId) {
-      return { data: [], error: new Error('User ID is required') }
-    }
+export const getUserRoutines = async (
+  userId: string,
+  options: {
+    includeTemplates?: boolean
+    includePublic?: boolean
+    limit?: number
+    offset?: number
+    useCache?: boolean
+  } = {}
+): Promise<QueryResponse<WorkoutRoutine[]>> => {
+  if (!userId) {
+    return { data: [], error: { message: 'User ID is required' }, status: 400 }
+  }
 
-    const { data, error } = await supabase
-      .from('workout_routines')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
+  const {
+    includeTemplates = false,
+    includePublic = false,
+    limit = 20,
+    offset = 0,
+    useCache = true
+  } = options
 
-    if (error) {
-      console.error('Error fetching routines:', error)
-      return { data: [], error }
-    }
+  let queryOptions: any = {
+    select: '*',
+    limit,
+    offset,
+    order: { created_at: 'desc' },
+    useCache
+  }
 
-    if (!data || data.length === 0) {
-      return { data: [], error: null }
-    }
+  if (includeTemplates && includePublic) {
+    queryOptions.or = `user_id.eq.${userId},is_template.eq.true,is_public.eq.true`
+  } else if (includeTemplates) {
+    queryOptions.or = `user_id.eq.${userId},is_template.eq.true`
+  } else if (includePublic) {
+    queryOptions.or = `user_id.eq.${userId},is_public.eq.true`
+  } else {
+    queryOptions.eq = { user_id: userId }
+  }
 
-    // Transform data to match our application's expected format
-    const transformedData: WorkoutRoutine[] = data.map(item => ({
+  const response = await supabaseService.query<any[]>(TABLES.WORKOUT_ROUTINES, queryOptions)
+
+  // Transform data to match our application's expected format
+  if (response.data) {
+    const transformedData: WorkoutRoutine[] = response.data.map(item => ({
       id: item.id,
       userId: item.user_id,
       name: item.name,
       description: item.description || '',
       level: item.level || 'principiante',
       goal: item.goal || 'general',
-      frequency: item.frequency || '3-4 días por semana',
+      frequency: item.frequency || 3,
       days: Array.isArray(item.days) ? item.days : [],
       isActive: item.is_active || true,
       isTemplate: item.is_template || false,
+      periodizationType: item.periodization_type,
+      mesocycleData: item.mesocycle_data,
       createdAt: item.created_at,
       updatedAt: item.updated_at || item.created_at
     }))
 
-    return { data: transformedData, error: null }
-  } catch (error) {
-    console.error('Error in getUserRoutines:', error)
-    return { data: [], error }
+    return { ...response, data: transformedData }
   }
+
+  return response
 }
 
 /**
@@ -111,162 +149,171 @@ export const getUserRoutines = async (userId: string): Promise<QueryResponse<Wor
  * @returns The saved workout routine
  */
 export const saveWorkoutRoutine = async (routine: WorkoutRoutine): Promise<QueryResponse<WorkoutRoutine>> => {
-  try {
-    // Validate routine data
-    if (!routine.id) {
-      routine.id = uuidv4()
-    }
-
-    if (!routine.userId) {
-      return { data: null, error: new Error('User ID is required') }
-    }
-
-    if (!routine.name) {
-      return { data: null, error: new Error('Routine name is required') }
-    }
-
-    // Prepare data for Supabase
-    const supabaseData = {
-      id: routine.id,
-      user_id: routine.userId,
-      name: routine.name,
-      description: routine.description || '',
-      level: routine.level || 'principiante',
-      goal: routine.goal || 'general',
-      frequency: routine.frequency || '3-4 días por semana',
-      days: routine.days || [],
-      is_active: routine.isActive,
-      is_template: routine.isTemplate || false,
-      created_at: routine.createdAt || new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
-
-    // Check if the routine exists
-    const { data: existingData, error: checkError } = await supabase
-      .from('workout_routines')
-      .select('id')
-      .eq('id', routine.id)
-      .maybeSingle()
-
-    if (checkError) {
-      console.error('Error checking if routine exists:', checkError)
-      return { data: null, error: checkError }
-    }
-
-    let result
-
-    if (!existingData) {
-      // If it doesn't exist, insert it
-      result = await supabase
-        .from('workout_routines')
-        .insert(supabaseData)
-        .select()
-    } else {
-      // If it exists, update it
-      result = await supabase
-        .from('workout_routines')
-        .update(supabaseData)
-        .eq('id', routine.id)
-        .select()
-    }
-
-    const { data, error } = result
-
-    if (error) {
-      console.error('Error saving routine:', error)
-      return { data: null, error }
-    }
-
-    if (!data || data.length === 0) {
-      return { data: null, error: new Error('No data returned after saving routine') }
-    }
-
-    // Transform the returned data to match our application's expected format
-    const savedRoutine: WorkoutRoutine = {
-      id: data[0].id,
-      userId: data[0].user_id,
-      name: data[0].name,
-      description: data[0].description || '',
-      level: data[0].level || 'principiante',
-      goal: data[0].goal || 'general',
-      frequency: data[0].frequency || '3-4 días por semana',
-      days: Array.isArray(data[0].days) ? data[0].days : [],
-      isActive: data[0].is_active || true,
-      isTemplate: data[0].is_template || false,
-      createdAt: data[0].created_at,
-      updatedAt: data[0].updated_at || data[0].created_at
-    }
-
-    return { data: savedRoutine, error: null }
-  } catch (error) {
-    console.error('Error in saveWorkoutRoutine:', error)
-    return { data: null, error }
+  // Validate routine data
+  if (!routine.id) {
+    routine.id = uuidv4()
   }
+
+  if (!routine.userId) {
+    return { data: null, error: { message: 'User ID is required' }, status: 400 }
+  }
+
+  if (!routine.name) {
+    return { data: null, error: { message: 'Routine name is required' }, status: 400 }
+  }
+
+  // Prepare data for Supabase
+  const supabaseData = {
+    id: routine.id,
+    user_id: routine.userId,
+    name: routine.name,
+    description: routine.description || '',
+    level: routine.level || 'principiante',
+    goal: routine.goal || 'general',
+    frequency: routine.frequency || 3,
+    days: routine.days || [],
+    is_active: routine.isActive,
+    is_template: routine.isTemplate || false,
+    periodization_type: routine.periodizationType,
+    mesocycle_data: routine.mesocycleData,
+    created_at: routine.createdAt || new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+
+  // Check if the routine exists
+  const existingResponse = await supabaseService.query<any>(TABLES.WORKOUT_ROUTINES, {
+    select: 'id',
+    eq: { id: routine.id },
+    single: true
+  })
+
+  let response
+
+  if (!existingResponse.data) {
+    // If it doesn't exist, insert it
+    response = await supabaseService.insert<any>(TABLES.WORKOUT_ROUTINES, supabaseData)
+  } else {
+    // If it exists, update it
+    response = await supabaseService.update<any>(
+      TABLES.WORKOUT_ROUTINES,
+      supabaseData,
+      { eq: { id: routine.id } }
+    )
+  }
+
+  // Transform the returned data to match our application's expected format
+  if (response.data) {
+    const item = Array.isArray(response.data) ? response.data[0] : response.data
+
+    const savedRoutine: WorkoutRoutine = {
+      id: item.id,
+      userId: item.user_id,
+      name: item.name,
+      description: item.description || '',
+      level: item.level || 'principiante',
+      goal: item.goal || 'general',
+      frequency: item.frequency || 3,
+      days: Array.isArray(item.days) ? item.days : [],
+      isActive: item.is_active || true,
+      isTemplate: item.is_template || false,
+      periodizationType: item.periodization_type,
+      mesocycleData: item.mesocycle_data,
+      createdAt: item.created_at,
+      updatedAt: item.updated_at || item.created_at
+    }
+
+    return { ...response, data: savedRoutine }
+  }
+
+  return response
 }
 
 /**
  * Delete a workout routine
  * @param routineId - The ID of the routine to delete
  * @param userId - The ID of the user who owns the routine
- * @returns A success flag and any error
+ * @returns Query response
  */
-export const deleteWorkoutRoutine = async (routineId: string, userId: string): Promise<{ success: boolean, error: any }> => {
-  try {
-    if (!routineId) {
-      return { success: false, error: new Error('Routine ID is required') }
-    }
-
-    if (!userId) {
-      return { success: false, error: new Error('User ID is required') }
-    }
-
-    // Delete the routine
-    const { error } = await supabase
-      .from('workout_routines')
-      .delete()
-      .eq('id', routineId)
-      .eq('user_id', userId)
-
-    if (error) {
-      console.error('Error deleting routine:', error)
-      return { success: false, error }
-    }
-
-    return { success: true, error: null }
-  } catch (error) {
-    console.error('Error in deleteWorkoutRoutine:', error)
-    return { success: false, error }
+export const deleteWorkoutRoutine = async (
+  routineId: string,
+  userId: string
+): Promise<QueryResponse<WorkoutRoutine>> => {
+  if (!routineId) {
+    return { data: null, error: { message: 'Routine ID is required' }, status: 400 }
   }
+
+  if (!userId) {
+    return { data: null, error: { message: 'User ID is required' }, status: 400 }
+  }
+
+  // Delete the routine
+  return supabaseService.delete<WorkoutRoutine>(
+    TABLES.WORKOUT_ROUTINES,
+    {
+      eq: {
+        id: routineId,
+        user_id: userId
+      }
+    }
+  )
 }
 
 /**
  * Get all workout logs for a user
  * @param userId - The ID of the user
+ * @param options - Query options
  * @returns An array of workout logs
  */
-export const getWorkoutLogs = async (userId: string): Promise<QueryResponse<WorkoutLog[]>> => {
-  try {
-    if (!userId) {
-      return { data: [], error: new Error('User ID is required') }
-    }
+export const getWorkoutLogs = async (
+  userId: string,
+  options: {
+    startDate?: string
+    endDate?: string
+    routineId?: string
+    limit?: number
+    offset?: number
+    useCache?: boolean
+  } = {}
+): Promise<QueryResponse<WorkoutLog[]>> => {
+  if (!userId) {
+    return { data: [], error: { message: 'User ID is required' }, status: 400 }
+  }
 
-    const { data, error } = await supabase
-      .from('workout_logs')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false })
+  const {
+    startDate,
+    endDate,
+    routineId,
+    limit = 20,
+    offset = 0,
+    useCache = true
+  } = options
 
-    if (error) {
-      console.error('Error fetching workout logs:', error)
-      return { data: [], error }
-    }
+  let queryOptions: any = {
+    select: '*',
+    eq: { user_id: userId },
+    limit,
+    offset,
+    order: { date: 'desc' },
+    useCache
+  }
 
-    if (!data || data.length === 0) {
-      return { data: [], error: null }
-    }
+  if (routineId) {
+    queryOptions.eq = { ...queryOptions.eq, routine_id: routineId }
+  }
 
-    // Transform data to match our application's expected format
-    const transformedData: WorkoutLog[] = data.map(item => ({
+  if (startDate) {
+    queryOptions.gte = { date: startDate }
+  }
+
+  if (endDate) {
+    queryOptions.lte = { date: endDate }
+  }
+
+  const response = await supabaseService.query<any[]>(TABLES.WORKOUT_LOGS, queryOptions)
+
+  // Transform data to match our application's expected format
+  if (response.data) {
+    const transformedData: WorkoutLog[] = response.data.map(item => ({
       id: item.id,
       userId: item.user_id,
       routineId: item.routine_id,
@@ -282,11 +329,10 @@ export const getWorkoutLogs = async (userId: string): Promise<QueryResponse<Work
       createdAt: item.created_at
     }))
 
-    return { data: transformedData, error: null }
-  } catch (error) {
-    console.error('Error in getWorkoutLogs:', error)
-    return { data: [], error }
+    return { ...response, data: transformedData }
   }
+
+  return response
 }
 
 /**
@@ -295,98 +341,137 @@ export const getWorkoutLogs = async (userId: string): Promise<QueryResponse<Work
  * @returns The saved workout log
  */
 export const saveWorkoutLog = async (log: WorkoutLog): Promise<QueryResponse<WorkoutLog>> => {
-  try {
-    // Validate log data
-    if (!log.id) {
-      log.id = uuidv4()
-    }
-
-    if (!log.userId) {
-      return { data: null, error: new Error('User ID is required') }
-    }
-
-    if (!log.date) {
-      return { data: null, error: new Error('Date is required') }
-    }
-
-    // Prepare data for Supabase
-    const supabaseData = {
-      id: log.id,
-      user_id: log.userId,
-      routine_id: log.routineId,
-      routine_name: log.routineName,
-      day_id: log.dayId,
-      day_name: log.dayName,
-      date: log.date,
-      duration: log.duration,
-      completed_sets: log.completedSets || [],
-      notes: log.notes,
-      fatigue: log.fatigue,
-      mood: log.mood,
-      created_at: log.createdAt || new Date().toISOString()
-    }
-
-    // Save the log
-    const { data, error } = await supabase
-      .from('workout_logs')
-      .upsert(supabaseData)
-      .select()
-
-    if (error) {
-      console.error('Error saving workout log:', error)
-      return { data: null, error }
-    }
-
-    if (!data || data.length === 0) {
-      return { data: null, error: new Error('No data returned after saving workout log') }
-    }
-
-    // Transform the returned data to match our application's expected format
-    const savedLog: WorkoutLog = {
-      id: data[0].id,
-      userId: data[0].user_id,
-      routineId: data[0].routine_id,
-      routineName: data[0].routine_name,
-      dayId: data[0].day_id,
-      dayName: data[0].day_name,
-      date: data[0].date,
-      duration: data[0].duration,
-      completedSets: data[0].completed_sets || [],
-      notes: data[0].notes,
-      fatigue: data[0].fatigue,
-      mood: data[0].mood,
-      createdAt: data[0].created_at
-    }
-
-    return { data: savedLog, error: null }
-  } catch (error) {
-    console.error('Error in saveWorkoutLog:', error)
-    return { data: null, error }
+  // Validate log data
+  if (!log.id) {
+    log.id = uuidv4()
   }
+
+  if (!log.userId) {
+    return { data: null, error: { message: 'User ID is required' }, status: 400 }
+  }
+
+  if (!log.date) {
+    return { data: null, error: { message: 'Date is required' }, status: 400 }
+  }
+
+  // Prepare data for Supabase
+  const supabaseData = {
+    id: log.id,
+    user_id: log.userId,
+    routine_id: log.routineId,
+    routine_name: log.routineName,
+    day_id: log.dayId,
+    day_name: log.dayName,
+    date: log.date,
+    duration: log.duration,
+    completed_sets: log.completedSets || [],
+    notes: log.notes,
+    fatigue: log.fatigue,
+    mood: log.mood,
+    created_at: log.createdAt || new Date().toISOString()
+  }
+
+  // Use upsert to handle both insert and update
+  const response = await supabaseService.insert<any>(
+    TABLES.WORKOUT_LOGS,
+    supabaseData,
+    { upsert: true }
+  )
+
+  // Transform the returned data to match our application's expected format
+  if (response.data) {
+    const item = Array.isArray(response.data) ? response.data[0] : response.data
+
+    const savedLog: WorkoutLog = {
+      id: item.id,
+      userId: item.user_id,
+      routineId: item.routine_id,
+      routineName: item.routine_name,
+      dayId: item.day_id,
+      dayName: item.day_name,
+      date: item.date,
+      duration: item.duration,
+      completedSets: item.completed_sets || [],
+      notes: item.notes,
+      fatigue: item.fatigue,
+      mood: item.mood,
+      createdAt: item.created_at
+    }
+
+    return { ...response, data: savedLog }
+  }
+
+  return response
 }
 
 /**
  * Get all exercises
+ * @param options - Query options
  * @returns An array of exercises
  */
-export const getExercises = async (): Promise<QueryResponse<Exercise[]>> => {
-  try {
-    const { data, error } = await supabase
-      .from('exercises')
-      .select('*')
-      .order('name')
+export const getExercises = async (options: {
+  category?: string
+  muscle_group?: string
+  difficulty?: string
+  equipment?: string
+  is_compound?: boolean
+  limit?: number
+  offset?: number
+  search?: string
+  useCache?: boolean
+} = {}): Promise<QueryResponse<Exercise[]>> => {
+  const {
+    category,
+    muscle_group,
+    difficulty,
+    equipment,
+    is_compound,
+    limit = 100,
+    offset = 0,
+    search,
+    useCache = true
+  } = options
 
-    if (error) {
-      console.error('Error fetching exercises:', error)
-      return { data: [], error }
-    }
+  let queryOptions: any = {
+    select: '*',
+    order: { name: 'asc' },
+    limit,
+    offset,
+    useCache
+  }
 
-    if (!data || data.length === 0) {
-      return { data: [], error: null }
-    }
+  // Add filters
+  if (category) {
+    queryOptions.eq = { ...queryOptions.eq, category }
+  }
 
-    // Transform data to match our application's expected format
-    const transformedData: Exercise[] = data.map(item => ({
+  if (difficulty) {
+    queryOptions.eq = { ...queryOptions.eq, difficulty }
+  }
+
+  if (is_compound !== undefined) {
+    queryOptions.eq = { ...queryOptions.eq, is_compound }
+  }
+
+  // For array fields, use contains
+  if (muscle_group) {
+    queryOptions.contains = { ...queryOptions.contains, muscle_group: [muscle_group] }
+  }
+
+  if (equipment) {
+    queryOptions.contains = { ...queryOptions.contains, equipment: [equipment] }
+  }
+
+  // For search, use ilike on name or description
+  if (search) {
+    queryOptions.or = `name.ilike.%${search}%,description.ilike.%${search}%`
+  }
+
+  const response = await supabaseService.query<any[]>(TABLES.EXERCISES, queryOptions)
+
+  // Transform data to match our application's expected format
+  if (response.data) {
+    const transformedData: Exercise[] = response.data.map(item => ({
       id: item.id,
       name: item.name,
       description: item.description,
@@ -405,66 +490,40 @@ export const getExercises = async (): Promise<QueryResponse<Exercise[]>> => {
       updatedAt: item.updated_at
     }))
 
-    return { data: transformedData, error: null }
-  } catch (error) {
-    console.error('Error in getExercises:', error)
-    return { data: [], error }
+    return { ...response, data: transformedData }
   }
+
+  return response
 }
 
 /**
  * Search exercises by name, category, or muscle group
  * @param query - The search query
+ * @param options - Additional search options
  * @returns An array of exercises that match the query
  */
-export const searchExercises = async (query: string): Promise<QueryResponse<Exercise[]>> => {
-  try {
-    if (!query || query.trim() === '') {
-      return getExercises()
-    }
-
-    const normalizedQuery = query.toLowerCase().trim()
-
-    const { data, error } = await supabase
-      .from('exercises')
-      .select('*')
-      .or(`name.ilike.%${normalizedQuery}%,category.ilike.%${normalizedQuery}%`)
-      .order('name')
-
-    if (error) {
-      console.error('Error searching exercises:', error)
-      return { data: [], error }
-    }
-
-    if (!data || data.length === 0) {
-      return { data: [], error: null }
-    }
-
-    // Transform data to match our application's expected format
-    const transformedData: Exercise[] = data.map(item => ({
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      category: item.category,
-      muscleGroup: item.muscle_group || [],
-      secondaryMuscleGroups: item.secondary_muscle_groups || [],
-      difficulty: item.difficulty || 'intermediate',
-      equipment: item.equipment || [],
-      isCompound: item.is_compound || false,
-      imageUrl: item.image_url,
-      videoUrl: item.video_url,
-      instructions: item.instructions,
-      tips: item.tips,
-      alternatives: item.alternatives,
-      createdAt: item.created_at,
-      updatedAt: item.updated_at
-    }))
-
-    return { data: transformedData, error: null }
-  } catch (error) {
-    console.error('Error in searchExercises:', error)
-    return { data: [], error }
+export const searchExercises = async (
+  query: string,
+  options: {
+    limit?: number
+    offset?: number
+    useCache?: boolean
+  } = {}
+): Promise<QueryResponse<Exercise[]>> => {
+  if (!query || query.trim() === '') {
+    return getExercises(options)
   }
+
+  const { limit = 20, offset = 0, useCache = true } = options
+  const normalizedQuery = query.toLowerCase().trim()
+
+  // Use the getExercises function with search parameter
+  return getExercises({
+    search: normalizedQuery,
+    limit,
+    offset,
+    useCache
+  })
 }
 
 /**

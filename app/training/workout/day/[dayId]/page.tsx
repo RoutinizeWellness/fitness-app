@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChevronLeft, Play, Dumbbell, Clock, RotateCcw } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { ExerciseItem } from "@/components/training/exercise-item"
 import { Exercise } from "@/lib/types/training"
 
@@ -174,21 +174,21 @@ export default function WorkoutPage({ params }: { params: { dayId: string } }) {
       try {
         // En un entorno real, aquí cargaríamos los datos de Supabase
         // Para este ejemplo, usamos datos simulados
-        
+
         // Obtener información del día de entrenamiento
         const day = workoutDays[params.dayId]
         if (!day) {
           throw new Error("Día de entrenamiento no encontrado")
         }
-        
+
         setWorkoutDay(day)
-        
+
         // Obtener ejercicios para este día
-        const dayExercises = mockExercises.filter(ex => 
+        const dayExercises = mockExercises.filter(ex =>
           day.exercises.includes(ex.id)
         )
         setExercises(dayExercises)
-        
+
       } catch (error) {
         console.error("Error al cargar los datos del entrenamiento:", error)
         toast({
@@ -200,7 +200,7 @@ export default function WorkoutPage({ params }: { params: { dayId: string } }) {
         setIsLoading(false)
       }
     }
-    
+
     loadWorkoutData()
   }, [params.dayId, toast])
 
@@ -211,17 +211,17 @@ export default function WorkoutPage({ params }: { params: { dayId: string } }) {
 
   // Manejar el cambio de un ejercicio por una alternativa
   const handleChangeExercise = (oldExerciseId: string, newExerciseId: string) => {
-    setExercises(prevExercises => 
-      prevExercises.map(ex => 
-        ex.id === oldExerciseId 
-          ? mockExercises.find(newEx => newEx.id === newExerciseId) || ex 
+    setExercises(prevExercises =>
+      prevExercises.map(ex =>
+        ex.id === oldExerciseId
+          ? mockExercises.find(newEx => newEx.id === newExerciseId) || ex
           : ex
       )
     )
-    
+
     // Actualizar el día de entrenamiento
     if (workoutDay) {
-      const updatedExercises = workoutDay.exercises.map((id: string) => 
+      const updatedExercises = workoutDay.exercises.map((id: string) =>
         id === oldExerciseId ? newExerciseId : id
       )
       setWorkoutDay({
@@ -278,7 +278,7 @@ export default function WorkoutPage({ params }: { params: { dayId: string } }) {
           <h1 className="text-xl font-bold text-[#573353]">Training</h1>
           <div className="w-10"></div> {/* Spacer para centrar el título */}
         </div>
-        
+
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-4 bg-white">
@@ -288,13 +288,13 @@ export default function WorkoutPage({ params }: { params: { dayId: string } }) {
           </TabsList>
         </Tabs>
       </div>
-      
+
       {/* Contenido principal */}
       <div className="px-6 pb-20 overflow-y-auto h-[calc(896px-140px)]">
         <div className="mb-4">
           <h2 className="text-xl font-bold text-[#573353]">{workoutDay.name}</h2>
           <p className="text-sm text-muted-foreground">{workoutDay.description}</p>
-          
+
           <div className="flex flex-wrap gap-2 mt-2">
             {workoutDay.muscleGroups.map((group: string) => (
               <Badge key={group} variant="secondary" className="text-xs">
@@ -303,12 +303,12 @@ export default function WorkoutPage({ params }: { params: { dayId: string } }) {
             ))}
           </div>
         </div>
-        
+
         <Button className="w-full mb-6" onClick={handleStartWorkout}>
           <Play className="h-4 w-4 mr-2" />
           Iniciar Entrenamiento
         </Button>
-        
+
         <div className="space-y-4">
           {exercises.map(exercise => (
             <ExerciseItem
@@ -320,7 +320,7 @@ export default function WorkoutPage({ params }: { params: { dayId: string } }) {
             />
           ))}
         </div>
-        
+
         <Card className="mt-6">
           <CardHeader>
             <CardTitle className="flex items-center text-base">
@@ -352,7 +352,7 @@ export default function WorkoutPage({ params }: { params: { dayId: string } }) {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Bottom Navigation */}
       <div className="absolute bottom-0 left-0 right-0 w-[414px] h-[80px] bg-white border-t border-gray-100 flex justify-around items-center py-3 px-2 z-10 shadow-md">
         <button
@@ -371,7 +371,7 @@ export default function WorkoutPage({ params }: { params: { dayId: string } }) {
           </div>
           <span className="text-xs font-medium text-[#573353]/70">Home</span>
         </button>
-        
+
         <button
           className="flex flex-col items-center w-[20%]"
           onClick={() => router.push('/training')}
@@ -388,7 +388,7 @@ export default function WorkoutPage({ params }: { params: { dayId: string } }) {
           </div>
           <span className="text-xs font-medium text-[#573353]/70">Training</span>
         </button>
-        
+
         <button
           className="flex flex-col items-center relative w-[20%]"
           onClick={() => router.push('/training/log-workout')}
@@ -401,7 +401,7 @@ export default function WorkoutPage({ params }: { params: { dayId: string } }) {
           <div className="w-7 h-7 mt-8"></div>
           <span className="text-xs font-medium text-[#573353]/70">Log</span>
         </button>
-        
+
         <button
           className="flex flex-col items-center w-[20%]"
           onClick={() => router.push('/training/calendar')}
@@ -424,7 +424,7 @@ export default function WorkoutPage({ params }: { params: { dayId: string } }) {
           </div>
           <span className="text-xs font-medium text-[#573353]/70">Calendar</span>
         </button>
-        
+
         <button
           className="flex flex-col items-center w-[20%]"
           onClick={() => router.push('/profile')}

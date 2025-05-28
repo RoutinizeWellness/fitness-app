@@ -37,8 +37,7 @@ import { format, formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 import { useRouter } from "next/navigation"
 
-import { useNotifications } from "@/hooks/use-notifications"
-import { Notification, Achievement } from "@/lib/notification-service"
+import { useNotifications, Notification } from "@/lib/contexts/notification-context"
 import { Trophy } from "lucide-react"
 
 interface NotificationCenterProps {
@@ -54,7 +53,9 @@ export function NotificationCenter({
     notifications,
     unreadCount,
     markAsRead,
-    deleteNotification
+    markAllAsRead,
+    deleteNotification,
+    deleteAllNotifications
   } = useNotifications()
   const [activeTab, setActiveTab] = useState<string>("all")
 
@@ -150,12 +151,7 @@ export function NotificationCenter({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    // Mark all unread notifications as read
-                    notifications
-                      .filter(n => !n.read && n.id)
-                      .forEach(n => n.id && markAsRead(n.id))
-                  }}
+                  onClick={markAllAsRead}
                   disabled={unreadCount === 0}
                 >
                   Marcar todo como leído
@@ -312,12 +308,7 @@ export function NotificationCenter({
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => {
-                // Delete all notifications
-                notifications
-                  .filter(n => n.id)
-                  .forEach(n => n.id && deleteNotification(n.id))
-              }}
+              onClick={deleteAllNotifications}
               disabled={notifications.length === 0}
             >
               Borrar todas las notificaciones

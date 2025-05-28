@@ -12,7 +12,7 @@ import {
   ArrowLeft,
   Loader2
 } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import NutritionAssessment from "@/components/nutrition/nutrition-assessment"
 import { getNutritionProfile } from "@/lib/nutrition-personalization-service"
 import { generateMealPlan } from "@/lib/meal-plan-generator-fixed"

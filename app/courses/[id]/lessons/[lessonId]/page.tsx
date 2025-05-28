@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Loader2, ArrowLeft, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { getCourseById, getLessonById, getLessonsByCourseId, updateLessonProgress } from "@/lib/supabase-courses"
 import { Course, Lesson } from "@/lib/types/courses"
 import { toast } from "@/components/ui/use-toast"
@@ -43,7 +43,7 @@ export default function LessonPage({ params }: LessonPageProps) {
         const { data: lessonData, error: lessonError } = await getLessonById(params.lessonId, user?.id)
         if (lessonError) throw lessonError
         setLesson(lessonData)
-        
+
         // Set initial progress seconds
         if (lessonData?.progress) {
           setProgressSeconds(lessonData.progress.progress_seconds || 0)
@@ -126,7 +126,7 @@ export default function LessonPage({ params }: LessonPageProps) {
     setIsCompleting(true)
     try {
       await updateLessonProgress(user.id, lesson.id, true, progressSeconds)
-      
+
       // Update local state
       setLesson(prev => {
         if (!prev) return null

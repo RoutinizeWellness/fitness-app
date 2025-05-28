@@ -56,6 +56,7 @@ export default function EnhancedMindfulness({ userId, className = "" }: Enhanced
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
   const [volume, setVolume] = useState(70)
   const [isMuted, setIsMuted] = useState(false)
+  const { toast } = useToast()
 
   // Estado para ejercicios y sesiones
   const [exercises, setExercises] = useState<any[]>([])
@@ -338,14 +339,14 @@ export default function EnhancedMindfulness({ userId, className = "" }: Enhanced
       setShowCompletionDialog(false)
       setShowSessionDialog(false)
 
-      // Mostrar mensaje de éxito
-      useToast().toast({
+      // Mostrar mensaje de éxito usando la instancia de toast del componente
+      toast({
         title: "Sesión completada",
         description: "Tu sesión de mindfulness ha sido registrada correctamente.",
       })
     } catch (error) {
       console.error("Error al completar sesión:", error)
-      useToast().toast({
+      toast({
         title: "Error",
         description: "No se pudo guardar la sesión. Inténtalo de nuevo.",
         variant: "destructive",

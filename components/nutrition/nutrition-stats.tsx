@@ -11,10 +11,13 @@ import { useToast } from "@/components/ui/use-toast"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts"
 import { useNutrition } from "@/contexts/nutrition-context"
 import { NutritionStats } from "@/lib/types/nutrition"
+import { handleSupabaseError } from "@/lib/error-handlers/supabase-error-handler"
+import NutritionErrorBoundaryWithRouter from "./nutrition-error-boundary"
 
 interface NutritionStatsProps {}
 
-export default function NutritionStats({}: NutritionStatsProps) {
+// Componente principal envuelto en límite de error
+function NutritionStatsContent({}: NutritionStatsProps) {
   const [activeTab, setActiveTab] = useState("week")
   const [dateRange, setDateRange] = useState({
     start: format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd"),
@@ -22,7 +25,7 @@ export default function NutritionStats({}: NutritionStatsProps) {
   })
   const [stats, setStats] = useState<NutritionStats | null>(null)
   const { toast } = useToast()
-  
+
   // Usar el contexto de nutrición
   const {
     dailyStats,
@@ -70,14 +73,14 @@ export default function NutritionStats({}: NutritionStatsProps) {
       consistencyScore: 85,
       streakDays: 5
     }
-    
+
     setStats(mockStats)
   }, [dateRange])
 
   // Cambiar rango de fechas según la pestaña activa
   useEffect(() => {
     const today = new Date()
-    
+
     if (activeTab === "week") {
       setDateRange({
         start: format(startOfWeek(today, { weekStartsOn: 1 }), "yyyy-MM-dd"),
@@ -123,6 +126,19 @@ export default function NutritionStats({}: NutritionStatsProps) {
     )
   }
 
+  // Manejar errores de carga
+  useEffect(() => {
+    // Verificar si hay errores en el contexto de nutrición
+    const { dailyStatsError } = useNutrition();
+
+    if (dailyStats === null && !isLoadingDailyStats && dailyStatsError) {
+      handleSupabaseError(dailyStatsError, {
+        context: 'Estadísticas de Nutrición',
+        showToast: true
+      })
+    }
+  }, [dailyStats, isLoadingDailyStats])
+
   return (
     <div className="space-y-4">
       <Tabs defaultValue="week" value={activeTab} onValueChange={setActiveTab}>
@@ -151,12 +167,12 @@ export default function NutritionStats({}: NutritionStatsProps) {
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="date" 
+                    <XAxis
+                      dataKey="date"
                       tickFormatter={(date) => format(new Date(date), "EEE", { locale: es })}
                     />
                     <YAxis />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value) => [`${value} kcal`, "Calorías"]}
                       labelFormatter={(date) => format(new Date(date), "EEEE, d MMMM", { locale: es })}
                     />
@@ -301,13 +317,13 @@ export default function NutritionStats({}: NutritionStatsProps) {
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="date" 
+                    <XAxis
+                      dataKey="date"
                       tickFormatter={(date) => format(new Date(date), "dd/MM")}
                       interval={2}
                     />
                     <YAxis />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value) => [`${value} kcal`, "Calorías"]}
                       labelFormatter={(date) => format(new Date(date), "EEEE, d MMMM", { locale: es })}
                     />
@@ -322,5 +338,14 @@ export default function NutritionStats({}: NutritionStatsProps) {
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+// Componente exportado con límite de error
+export default function NutritionStats(props: NutritionStatsProps) {
+  return (
+    <NutritionErrorBoundaryWithRouter>
+      <NutritionStatsContent {...props} />
+    </NutritionErrorBoundaryWithRouter>
   )
 }

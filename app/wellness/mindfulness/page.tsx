@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { useRouter } from "next/navigation"
-import { OrganicLayout } from "@/components/organic-layout"
+
 import { Brain, ChevronLeft, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -39,19 +39,12 @@ export default function MindfulnessPage() {
   }
 
   return (
-    <OrganicLayout
-      activeTab="wellness"
-      onTabChange={setActiveTab}
-      profile={profile}
-      showFloatingAction={false}
-      notifications={0}
-    >
       <div className="space-y-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="mr-2"
               onClick={() => router.push("/wellness")}
             >
@@ -70,6 +63,5 @@ export default function MindfulnessPage() {
 
         {user && <EnhancedMindfulness userId={user.id} />}
       </div>
-    </OrganicLayout>
   )
 }

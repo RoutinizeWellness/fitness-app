@@ -1,5 +1,5 @@
-import { supabase } from './supabase-client';
-import { getCurrentUser } from './supabase-auth';
+import { supabase } from './supabase-unified';
+import { supabaseAuth } from './auth/supabase-auth';
 
 // Tipo para favoritos de ejercicios
 export type ExerciseFavorite = {
@@ -12,10 +12,11 @@ export type ExerciseFavorite = {
 // Obtener todos los ejercicios favoritos del usuario actual
 export async function getUserFavoriteExercises() {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const { data: sessionData } = await supabaseAuth.getSession();
+    if (!sessionData.session?.user) {
       return { data: null, error: new Error('Usuario no autenticado') };
     }
+    const user = sessionData.session.user;
 
     const { data, error } = await supabase
       .from('exercise_favorites')
@@ -32,11 +33,12 @@ export async function getUserFavoriteExercises() {
 // Obtener IDs de ejercicios favoritos del usuario actual
 export async function getUserFavoriteExerciseIds() {
   try {
-    const { user, error: userError } = await getCurrentUser();
-    if (userError || !user) {
-      console.log('No hay usuario autenticado o error:', userError);
+    const { data: sessionData } = await supabaseAuth.getSession();
+    if (!sessionData.session?.user) {
+      console.log('No hay usuario autenticado');
       return { data: [], error: null }; // Devolvemos un array vacío en lugar de null
     }
+    const user = sessionData.session.user;
 
     const { data, error } = await supabase
       .from('exercise_favorites')
@@ -60,10 +62,11 @@ export async function getUserFavoriteExerciseIds() {
 // Añadir un ejercicio a favoritos
 export async function addExerciseToFavorites(exerciseId: string) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const { data: sessionData } = await supabaseAuth.getSession();
+    if (!sessionData.session?.user) {
       return { data: null, error: new Error('Usuario no autenticado') };
     }
+    const user = sessionData.session.user;
 
     // Verificar si ya existe
     const { data: existingFavorite } = await supabase
@@ -97,10 +100,11 @@ export async function addExerciseToFavorites(exerciseId: string) {
 // Eliminar un ejercicio de favoritos
 export async function removeExerciseFromFavorites(exerciseId: string) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
+    const { data: sessionData } = await supabaseAuth.getSession();
+    if (!sessionData.session?.user) {
       return { error: new Error('Usuario no autenticado') };
     }
+    const user = sessionData.session.user;
 
     const { error } = await supabase
       .from('exercise_favorites')
@@ -118,11 +122,12 @@ export async function removeExerciseFromFavorites(exerciseId: string) {
 // Alternar estado de favorito (añadir si no existe, eliminar si existe)
 export async function toggleExerciseFavorite(exerciseId: string) {
   try {
-    const { user, error: userError } = await getCurrentUser();
-    if (userError || !user) {
-      console.log('No hay usuario autenticado o error:', userError);
+    const { data: sessionData } = await supabaseAuth.getSession();
+    if (!sessionData.session?.user) {
+      console.log('No hay usuario autenticado');
       return { data: null, error: new Error('Usuario no autenticado. Por favor, inicia sesión para guardar favoritos.'), added: false };
     }
+    const user = sessionData.session.user;
 
     // Verificar si ya existe
     try {

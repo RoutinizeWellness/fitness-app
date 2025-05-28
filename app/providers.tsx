@@ -1,27 +1,68 @@
 "use client"
 
-import React, { Suspense, lazy } from 'react'
+import React, { useState, useEffect } from 'react'
 import { AuthProvider } from '@/lib/contexts/auth-context'
+import { ProfileProvider } from '@/lib/contexts/profile-context'
+import { TrainingProvider } from '@/lib/contexts/training-context'
+import { NutritionProvider } from '@/lib/contexts/nutrition-context'
+import { GeminiProvider } from '@/lib/contexts/gemini-provider'
+import { NotificationProvider } from '@/lib/contexts/notification-context'
+import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from '@/components/ui/toaster'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import ErrorBoundary from './error-boundary'
 
-// Lazy load providers that aren't needed for initial render
-const ProfileProvider = lazy(() => import('@/lib/contexts/profile-context').then(mod => ({ default: mod.ProfileProvider })))
-const TrainingProvider = lazy(() => import('@/lib/contexts/training-context').then(mod => ({ default: mod.TrainingProvider })))
-const Toaster = lazy(() => import('@/components/ui/toaster').then(mod => ({ default: mod.Toaster })))
-
-// Loading fallback component
-const LoadingFallback = () => <div className="min-h-screen bg-background"></div>
+import { AuthDiagnostics } from '@/components/auth/auth-diagnostics'
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  // Add a state to track if providers are ready
+  const [providersReady, setProvidersReady] = useState(false)
+
+  // Use an effect to mark providers as ready after initial render
+  useEffect(() => {
+    // Small delay to ensure all providers are properly initialized
+    const timer = setTimeout(() => {
+      setProvidersReady(true)
+    }, 100) // Aumentado a 100ms para dar más tiempo a la inicialización
+
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
-    <AuthProvider>
-      <Suspense fallback={<LoadingFallback />}>
-        <ProfileProvider>
-          <TrainingProvider>
-            {children}
-            <Toaster />
-          </TrainingProvider>
-        </ProfileProvider>
-      </Suspense>
-    </AuthProvider>
+    <ErrorBoundary>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <TooltipProvider>
+          <AuthProvider>
+          <ProfileProvider>
+            {/* Only render TrainingProvider when providers are ready */}
+            {providersReady ? (
+              <TrainingProvider>
+                <NutritionProvider>
+                  <NotificationProvider>
+                    <GeminiProvider>
+                      {children}
+                      <Toaster />
+                      {/* Añadir el componente de diagnóstico solo en desarrollo */}
+                      {process.env.NODE_ENV === 'development' && <AuthDiagnostics />}
+                    </GeminiProvider>
+                  </NotificationProvider>
+                </NutritionProvider>
+              </TrainingProvider>
+            ) : (
+              <>
+                {children}
+                <Toaster />
+              </>
+            )}
+          </ProfileProvider>
+          </AuthProvider>
+        </TooltipProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }

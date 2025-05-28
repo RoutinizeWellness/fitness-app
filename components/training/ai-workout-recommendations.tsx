@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Separator } from "@/components/ui/separator"
 import { OrganicElement } from "@/components/transitions/organic-transitions"
 import { WorkoutRecommendation, ExerciseAdjustment, WorkoutRoutine } from "@/lib/types/training"
-import { getWorkoutLogs, getUserRoutines, saveWorkoutRoutine } from "@/lib/training-service"
+import { useTraining } from "@/lib/contexts/training-context"
 import { useToast } from "@/components/ui/use-toast"
 import {
   Lightbulb,
@@ -35,24 +35,23 @@ interface AIWorkoutRecommendationsProps {
 
 export function AIWorkoutRecommendations({ userId }: AIWorkoutRecommendationsProps) {
   const [recommendations, setRecommendations] = useState<WorkoutRecommendation[]>([])
-  const [routines, setRoutines] = useState<WorkoutRoutine[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
+  const {
+    routines,
+    setRoutines,
+    logs,
+    isLoadingRoutines,
+    isLoadingLogs,
+    saveRoutine
+  } = useTraining()
 
-  // Cargar recomendaciones y rutinas
+  // Cargar recomendaciones
   useEffect(() => {
     const loadData = async () => {
-      setIsLoading(true)
       try {
-        // Cargar rutinas
-        const { data: routinesData, error: routinesError } = await getUserRoutines(userId)
-
-        if (routinesError) {
-          console.error("Error al cargar rutinas:", routinesError)
-        } else if (routinesData) {
-          setRoutines(routinesData)
-        }
+        // Las rutinas ya se cargan a través del contexto de entrenamiento
 
         // Cargar recomendaciones desde Supabase
         const { data: recommendationsData, error: recommendationsError } = await supabase
@@ -101,8 +100,7 @@ export function AIWorkoutRecommendations({ userId }: AIWorkoutRecommendationsPro
     })
 
     try {
-      // Obtener datos de entrenamiento recientes
-      const { data: logs } = await getWorkoutLogs(userId)
+      // Usar los logs del contexto de entrenamiento
 
       if (!logs || logs.length === 0) {
         toast({
@@ -318,14 +316,22 @@ export function AIWorkoutRecommendations({ userId }: AIWorkoutRecommendationsPro
         })
       })
 
-      // Guardar rutina actualizada
-      const { error } = await saveWorkoutRoutine(updatedRoutine)
+      // Guardar rutina actualizada usando el contexto
+      console.log("Guardando rutina actualizada:", updatedRoutine)
+      const { success, error } = await saveRoutine(updatedRoutine)
 
-      if (error) {
+      if (!success || error) {
         console.error("Error al actualizar rutina:", error)
+
+        // Mostrar un mensaje de error más descriptivo
+        let errorMessage = "No se pudo actualizar la rutina con las recomendaciones"
+        if (error && error.message) {
+          errorMessage = error.message
+        }
+
         toast({
           title: "Error",
-          description: "No se pudo actualizar la rutina con las recomendaciones",
+          description: errorMessage,
           variant: "destructive"
         })
         return

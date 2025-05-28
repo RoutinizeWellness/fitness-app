@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChevronLeft, ChevronRight, Calendar, Dumbbell } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { getActiveWorkoutPlan } from "@/lib/workout-plan-service"
 import { WorkoutPlan, WorkoutDay } from "@/lib/workout-plan-generator"
 
@@ -29,15 +29,15 @@ export default function WorkoutCalendar() {
       try {
         const plan = await getActiveWorkoutPlan(user.id)
         setWorkoutPlan(plan)
-        
+
         // Si hay un plan, seleccionar el día actual por defecto
         if (plan && plan.days && plan.days.length > 0) {
           const today = new Date()
           const dayOfWeek = today.getDay() // 0 = domingo, 1 = lunes, etc.
-          
+
           // Ajustar para que 0 = lunes, 6 = domingo
           const adjustedDayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1
-          
+
           // Seleccionar el día correspondiente si existe
           if (adjustedDayOfWeek < plan.days.length) {
             setSelectedDay(plan.days[adjustedDayOfWeek])
@@ -98,10 +98,10 @@ export default function WorkoutCalendar() {
             const isToday = isSameDay(date, new Date())
             const dayName = format(date, "EEE", { locale: es })
             const dayNumber = format(date, "d")
-            
+
             // Obtener el día de entrenamiento correspondiente
             const workoutDay = workoutPlan?.days && workoutPlan.days[index % workoutPlan.days.length]
-            
+
             return (
               <div
                 key={date.toString()}
@@ -150,7 +150,7 @@ export default function WorkoutCalendar() {
 
         <div className="space-y-2">
           <p className="text-sm text-gray-500">{selectedDay.description}</p>
-          
+
           {selectedDay.targetMuscleGroups.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {selectedDay.targetMuscleGroups.map((group) => (

@@ -179,7 +179,7 @@ export function StatCard({
     return (
       <Card
         className={cn(
-          "overflow-hidden transition-all duration-300 hover:shadow-lg card-hover",
+          "overflow-hidden transition-all duration-300 hover:shadow-lg card-hover border-2 border-primary/10 hover:border-primary/20",
           className
         )}
         {...props}
@@ -188,7 +188,7 @@ export function StatCard({
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-              <h3 className="text-2xl font-bold">{value}</h3>
+              <h3 className="text-2xl font-bold text-primary">{value}</h3>
               {description && (
                 <p className="text-xs text-muted-foreground mt-1">{description}</p>
               )}
@@ -197,7 +197,7 @@ export function StatCard({
                   <span
                     className={cn(
                       "text-xs font-medium",
-                      trend.isPositive ? "text-green-500" : "text-red-500"
+                      trend.isPositive ? "text-green-600 font-semibold" : "text-red-600 font-semibold"
                     )}
                   >
                     {trend.isPositive ? "+" : "-"}{trend.value}%
@@ -210,7 +210,7 @@ export function StatCard({
                 </div>
               )}
             </div>
-            <div className={cn("rounded-full p-3", iconBgColor)}>
+            <div className={cn("rounded-full p-3 shadow-sm", iconBgColor)}>
               <Icon className={cn("h-5 w-5", iconColor)} />
             </div>
           </div>
@@ -225,8 +225,9 @@ export function StatCard({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         className={cn(
-          "rounded-lg border p-4 shadow-sm",
+          "rounded-lg border-2 p-4 shadow-sm hover:shadow-md transition-all duration-300",
           currentScheme.background,
+          "border-primary/10 hover:border-primary/20",
           className
         )}
         {...props}
@@ -239,12 +240,12 @@ export function StatCard({
                 <div className="h-8 w-24 bg-muted animate-pulse rounded"></div>
               ) : (
                 <>
-                  <h3 className="text-2xl font-bold">
+                  <h3 className="text-2xl font-bold text-primary">
                     {typeof value === "number" ? displayValue.toLocaleString() : value}
                     {unit && <span className="ml-1 text-lg">{unit}</span>}
                   </h3>
                   {!isTrendObject && calculatedTrend && calculatedTrendValue && (
-                    <div className={cn("flex items-center ml-2", trendColor)}>
+                    <div className={cn("flex items-center ml-2", trendColor, "font-semibold")}>
                       <TrendIcon className="h-4 w-4 mr-1" />
                       <span className="text-sm font-medium">{calculatedTrendValue}%</span>
                     </div>
@@ -257,7 +258,7 @@ export function StatCard({
             )}
           </div>
           {icon && !Icon && (
-            <div className={cn("p-2 rounded-full", currentScheme.icon)}>
+            <div className={cn("p-2 rounded-full shadow-sm", currentScheme.icon)}>
               {icon}
             </div>
           )}

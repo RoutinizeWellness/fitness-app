@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { RoutinizeLayout } from "@/components/routinize-layout"
 import { WorkoutQuestionnaire, WorkoutPreferences } from "@/components/training/workout-questionnaire"
 import { WorkoutGenerator, GeneratedWorkout } from "@/components/training/workout-generator"
@@ -15,41 +15,41 @@ export default function CreateRoutinePage() {
   const { user, profile, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
-  
+
   const [step, setStep] = useState<"questionnaire" | "generator" | "complete">("questionnaire")
   const [preferences, setPreferences] = useState<WorkoutPreferences | null>(null)
-  
+
   // Manejar finalización del cuestionario
   const handleQuestionnaireComplete = (prefs: WorkoutPreferences) => {
     setPreferences(prefs)
     setStep("generator")
   }
-  
+
   // Manejar edición de preferencias
   const handleEditPreferences = () => {
     setStep("questionnaire")
   }
-  
+
   // Manejar guardado de rutina
   const handleSaveWorkout = (workout: GeneratedWorkout) => {
     toast({
       title: "Rutina guardada",
       description: "Tu rutina personalizada ha sido guardada correctamente",
     })
-    
+
     setStep("complete")
-    
+
     // Redirigir a la página de entrenamiento después de un breve retraso
     setTimeout(() => {
       router.push("/training")
     }, 1500)
   }
-  
+
   // Manejar cancelación
   const handleCancel = () => {
     router.push("/training")
   }
-  
+
   // Mostrar loader mientras se carga la autenticación
   if (authLoading) {
     return (
@@ -60,13 +60,13 @@ export default function CreateRoutinePage() {
       </RoutinizeLayout>
     )
   }
-  
+
   // Redirigir si no hay usuario autenticado
   if (!user) {
     router.push("/welcome")
     return null
   }
-  
+
   return (
     <RoutinizeLayout>
       <div className="container max-w-md mx-auto p-4 pt-20 pb-24">
@@ -81,14 +81,14 @@ export default function CreateRoutinePage() {
           </Button3D>
           <h1 className="text-2xl font-bold">Crear rutina personalizada</h1>
         </div>
-        
+
         {step === "questionnaire" && (
           <WorkoutQuestionnaire
             onComplete={handleQuestionnaireComplete}
             onCancel={handleCancel}
           />
         )}
-        
+
         {step === "generator" && preferences && (
           <WorkoutGenerator
             preferences={preferences}
@@ -98,7 +98,7 @@ export default function CreateRoutinePage() {
             onCancel={handleCancel}
           />
         )}
-        
+
         {step === "complete" && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="bg-primary/10 text-primary rounded-full w-20 h-20 flex items-center justify-center mb-6">

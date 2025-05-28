@@ -1,4 +1,4 @@
-import { enhancedSupabase } from './enhanced-supabase-client'
+import { supabase } from './supabase-unified'
 import { PostgrestError } from '@supabase/supabase-js'
 
 // Tipos para las respuestas de las operaciones
@@ -13,22 +13,14 @@ export type OperationResponse<T> = {
 export async function getById<T>(
   table: string,
   id: string,
-  columns: string = '*',
-  useCache: boolean = true
+  columns: string = '*'
 ): Promise<OperationResponse<T>> {
   try {
-    const cacheKey = useCache ? `${table}:${id}:${columns}` : undefined
-    
-    const result = await enhancedSupabase.withRetry(
-      async () => {
-        return await enhancedSupabase.supabase
-          .from(table)
-          .select(columns)
-          .eq('id', id)
-          .maybeSingle()
-      },
-      cacheKey
-    )
+    const result = await supabase
+      .from(table)
+      .select(columns)
+      .eq('id', id)
+      .maybeSingle()
 
     if (result.error) {
       return {
@@ -62,36 +54,26 @@ export async function getByUserId<T>(
   columns: string = '*',
   options: {
     orderBy?: { column: string, ascending?: boolean },
-    limit?: number,
-    useCache?: boolean
+    limit?: number
   } = {}
 ): Promise<OperationResponse<T[]>> {
   try {
-    const { orderBy, limit, useCache = true } = options
-    
-    const cacheKey = useCache 
-      ? `${table}:user:${userId}:${columns}:${orderBy?.column || ''}:${orderBy?.ascending}:${limit || ''}`
-      : undefined
-    
-    const result = await enhancedSupabase.withRetry(
-      async () => {
-        let query = enhancedSupabase.supabase
-          .from(table)
-          .select(columns)
-          .eq('user_id', userId)
-        
-        if (orderBy) {
-          query = query.order(orderBy.column, { ascending: orderBy.ascending ?? false })
-        }
-        
-        if (limit) {
-          query = query.limit(limit)
-        }
-        
-        return await query
-      },
-      cacheKey
-    )
+    const { orderBy, limit } = options
+
+    let query = supabase
+      .from(table)
+      .select(columns)
+      .eq('user_id', userId)
+
+    if (orderBy) {
+      query = query.order(orderBy.column, { ascending: orderBy.ascending ?? false })
+    }
+
+    if (limit) {
+      query = query.limit(limit)
+    }
+
+    const result = await query
 
     if (result.error) {
       return {
@@ -125,15 +107,11 @@ export async function insert<T>(
   returnColumns: string = '*'
 ): Promise<OperationResponse<T>> {
   try {
-    const result = await enhancedSupabase.withRetry(
-      async () => {
-        return await enhancedSupabase.supabase
-          .from(table)
-          .insert(data)
-          .select(returnColumns)
-          .single()
-      }
-    )
+    const result = await supabase
+      .from(table)
+      .insert(data)
+      .select(returnColumns)
+      .single()
 
     if (result.error) {
       return {
@@ -143,9 +121,6 @@ export async function insert<T>(
         message: `Error al insertar en ${table}: ${result.error.message}`
       }
     }
-
-    // Invalidar caché relacionada con esta tabla
-    enhancedSupabase.invalidateCache(`${table}:`)
 
     return {
       data: result.data as T,
@@ -172,16 +147,12 @@ export async function update<T>(
   returnColumns: string = '*'
 ): Promise<OperationResponse<T>> {
   try {
-    const result = await enhancedSupabase.withRetry(
-      async () => {
-        return await enhancedSupabase.supabase
-          .from(table)
-          .update(data)
-          .eq('id', id)
-          .select(returnColumns)
-          .single()
-      }
-    )
+    const result = await supabase
+      .from(table)
+      .update(data)
+      .eq('id', id)
+      .select(returnColumns)
+      .single()
 
     if (result.error) {
       return {
@@ -191,9 +162,6 @@ export async function update<T>(
         message: `Error al actualizar ${table} con ID ${id}: ${result.error.message}`
       }
     }
-
-    // Invalidar caché relacionada con este registro
-    enhancedSupabase.invalidateCache(`${table}:${id}`)
 
     return {
       data: result.data as T,
@@ -218,14 +186,10 @@ export async function remove(
   id: string
 ): Promise<OperationResponse<null>> {
   try {
-    const result = await enhancedSupabase.withRetry(
-      async () => {
-        return await enhancedSupabase.supabase
-          .from(table)
-          .delete()
-          .eq('id', id)
-      }
-    )
+    const result = await supabase
+      .from(table)
+      .delete()
+      .eq('id', id)
 
     if (result.error) {
       return {
@@ -235,10 +199,6 @@ export async function remove(
         message: `Error al eliminar ${table} con ID ${id}: ${result.error.message}`
       }
     }
-
-    // Invalidar caché relacionada con este registro
-    enhancedSupabase.invalidateCache(`${table}:${id}`)
-    enhancedSupabase.invalidateCache(`${table}:user:`)
 
     return {
       data: null,
@@ -259,11 +219,10 @@ export async function remove(
 
 // Función para realizar una consulta personalizada
 export async function customQuery<T>(
-  queryFn: () => Promise<{ data: T | null, error: PostgrestError | null }>,
-  cacheKey?: string
+  queryFn: () => Promise<{ data: T | null, error: PostgrestError | null }>
 ): Promise<OperationResponse<T>> {
   try {
-    const result = await enhancedSupabase.withRetry(queryFn, cacheKey)
+    const result = await queryFn()
 
     if (result.error) {
       return {
@@ -293,17 +252,18 @@ export async function customQuery<T>(
 // Función para verificar la salud de la conexión
 export async function checkHealth(): Promise<OperationResponse<{ status: string }>> {
   try {
-    const isConnected = await enhancedSupabase.checkConnection()
-    
-    if (!isConnected) {
+    // Hacer una consulta simple para verificar la conexión
+    const { error } = await supabase.from('profiles').select('count').limit(1)
+
+    if (error) {
       return {
         data: null,
-        error: new Error('No se pudo establecer conexión con Supabase'),
+        error: error,
         status: 'error',
         message: 'La conexión con Supabase no está disponible'
       }
     }
-    
+
     return {
       data: { status: 'healthy' },
       error: null,

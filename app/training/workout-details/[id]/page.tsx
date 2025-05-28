@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { use } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -44,7 +44,9 @@ interface WorkoutLog {
 }
 
 export default function WorkoutDetailsPage({ params }: { params: { id: string } }) {
-  const workoutId = params.id
+  // Usar React.use() para desenvolver params que ahora es una Promesa
+  const unwrappedParams = use(params)
+  const workoutId = unwrappedParams.id
 
   const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()
@@ -65,17 +67,116 @@ export default function WorkoutDetailsPage({ params }: { params: { id: string } 
         console.log('Usuario actual:', user)
         console.log('ID del usuario actual:', user.id)
 
+        // Verificar si la tabla existe
+        try {
+          const { count, error: tableCheckError } = await supabase
+            .from('workout_logs')
+            .select('*', { count: 'exact', head: true })
+            .limit(1)
+
+          if (tableCheckError || count === null) {
+            console.warn('La tabla workout_logs podría no existir:', tableCheckError)
+            // Mostrar mensaje y usar datos de ejemplo
+            toast({
+              title: "Información",
+              description: "Usando datos de ejemplo porque no se pudo acceder a la base de datos.",
+              variant: "default",
+            })
+
+            // Crear un registro de ejemplo
+            setWorkoutLog({
+              id: workoutId,
+              userId: user.id,
+              routineId: "sample-routine",
+              routineName: "Rutina de ejemplo",
+              dayId: "sample-day",
+              dayName: "Día de ejemplo",
+              date: new Date().toISOString(),
+              duration: 60,
+              muscleGroupFatigue: {
+                "Pecho": 7,
+                "Espalda": 6,
+                "Hombros": 8
+              },
+              notes: "Este es un registro de entrenamiento de ejemplo.",
+              overallFatigue: 7,
+              performance: 'good',
+              createdAt: new Date().toISOString()
+            })
+
+            setIsLoading(false)
+            return
+          }
+        } catch (tableError) {
+          console.error("Error al verificar la tabla:", tableError)
+        }
+
         // Obtener el registro de entrenamiento usando el servicio
-        const logData = await getWorkoutLog(workoutId)
+        const { data: logData, error } = await getWorkoutLog(workoutId)
+
+        if (error) {
+          console.error('Error al cargar los detalles del entrenamiento:', error)
+          toast({
+            title: "Error",
+            description: "Ocurrió un error al cargar los detalles del entrenamiento. Mostrando datos de ejemplo.",
+            variant: "destructive",
+          })
+
+          // Crear un registro de ejemplo en caso de error
+          setWorkoutLog({
+            id: workoutId,
+            userId: user.id,
+            routineId: "sample-routine",
+            routineName: "Rutina de ejemplo",
+            dayId: "sample-day",
+            dayName: "Día de ejemplo",
+            date: new Date().toISOString(),
+            duration: 60,
+            muscleGroupFatigue: {
+              "Pecho": 7,
+              "Espalda": 6,
+              "Hombros": 8
+            },
+            notes: "Este es un registro de entrenamiento de ejemplo.",
+            overallFatigue: 7,
+            performance: 'good',
+            createdAt: new Date().toISOString()
+          })
+
+          setIsLoading(false)
+          return
+        }
 
         if (!logData) {
           console.error('Error al cargar los detalles del entrenamiento: No se encontró el registro')
           toast({
             title: "Entrenamiento no encontrado",
-            description: "No se pudo encontrar el entrenamiento solicitado.",
-            variant: "destructive",
+            description: "No se pudo encontrar el entrenamiento solicitado. Mostrando datos de ejemplo.",
+            variant: "default",
           })
-          router.push('/training/history')
+
+          // Crear un registro de ejemplo si no se encontró
+          setWorkoutLog({
+            id: workoutId,
+            userId: user.id,
+            routineId: "sample-routine",
+            routineName: "Rutina de ejemplo",
+            dayId: "sample-day",
+            dayName: "Día de ejemplo",
+            date: new Date().toISOString(),
+            duration: 60,
+            muscleGroupFatigue: {
+              "Pecho": 7,
+              "Espalda": 6,
+              "Hombros": 8
+            },
+            notes: "Este es un registro de entrenamiento de ejemplo.",
+            overallFatigue: 7,
+            performance: 'good',
+            createdAt: new Date().toISOString()
+          })
+
+          setIsLoading(false)
           return
         }
 

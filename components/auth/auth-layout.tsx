@@ -5,7 +5,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { HelpCircle, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { motion } from "framer-motion"
+// Importar componentes de motion fallback
+import { MotionFadeIn, MotionSlideUp } from "@/components/ui/motion-fallback"
 
 interface AuthLayoutProps {
   children: ReactNode
@@ -26,34 +27,11 @@ export function AuthLayout({
 }: AuthLayoutProps) {
   const router = useRouter()
 
-  // Animation variants
-  const fadeIn = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.5 } }
-  }
-
-  const slideUp = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { duration: 0.5, delay: 0.2 } }
-  }
-
-  const staggerChildren = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  }
+  // Eliminamos las animaciones para evitar problemas con framer-motion
 
   return (
-    <motion.div
+    <div
       className="relative min-h-screen bg-[#FFF3E9] overflow-hidden flex flex-col items-center justify-center p-4"
-      initial="hidden"
-      animate="visible"
-      variants={fadeIn}
     >
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -68,9 +46,8 @@ export function AuthLayout({
       </div>
 
       {/* Header Icons */}
-      <motion.div
+      <div
         className="absolute top-8 left-0 right-0 flex justify-between px-4 z-20"
-        variants={fadeIn}
       >
         {showBackButton && (
           <Button
@@ -94,12 +71,11 @@ export function AuthLayout({
             <HelpCircle className="h-5 w-5 text-[#573353]" />
           </Button>
         )}
-      </motion.div>
+      </div>
 
       {/* Content Container */}
-      <motion.div
+      <div
         className="w-full max-w-md relative z-10"
-        variants={slideUp}
       >
         {/* Title */}
         <h1 className="text-2xl font-medium tracking-tight text-[#573353] mb-6 text-center">
@@ -108,38 +84,29 @@ export function AuthLayout({
 
         {/* Illustration */}
         {illustration && (
-          <motion.div
+          <div
             className="w-full flex items-center justify-center mb-6"
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.3 }}
           >
             {illustration}
-          </motion.div>
+          </div>
         )}
 
         {/* Card Content */}
-        <motion.div
+        <div
           className="bg-white rounded-3xl shadow-lg overflow-hidden"
-          variants={staggerChildren}
         >
           {children}
-        </motion.div>
+        </div>
 
         {/* Footer */}
         {footer && (
-          <motion.div
+          <div
             className="mt-6 text-center"
-            variants={fadeIn}
-            initial="hidden"
-            animate="visible"
-            transition={{ delay: 0.5 }}
           >
             {footer}
-          </motion.div>
+          </div>
         )}
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   )
 }

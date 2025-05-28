@@ -3,16 +3,16 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { RoutinizeLayout } from "@/components/routinize-layout"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { PulseLoader } from "@/components/ui/enhanced-skeletons"
 import { useToast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase-client"
-import { 
-  ArrowLeft, 
-  CheckCircle2, 
-  Calendar, 
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Calendar,
   MoreVertical,
   Trash2
 } from "lucide-react"
@@ -41,12 +41,12 @@ export default function CompletedTasksPage() {
   // Cargar tareas completadas
   useEffect(() => {
     if (authLoading) return
-    
+
     if (!user) {
       router.push("/welcome")
       return
     }
-    
+
     const fetchCompletedTasks = async () => {
       try {
         // Cargar tareas completadas
@@ -56,7 +56,7 @@ export default function CompletedTasksPage() {
           .eq('user_id', user.id)
           .eq('completed', true)
           .order('updated_at', { ascending: false })
-        
+
         if (tasksError) {
           console.error("Error al cargar tareas completadas:", tasksError)
           // Usar datos de ejemplo si hay error
@@ -72,7 +72,7 @@ export default function CompletedTasksPage() {
         setIsLoading(false)
       }
     }
-    
+
     fetchCompletedTasks()
   }, [user, authLoading, router])
 
@@ -80,18 +80,18 @@ export default function CompletedTasksPage() {
   const toggleTaskCompletion = async (taskId: string) => {
     const taskIndex = tasks.findIndex(t => t.id === taskId)
     if (taskIndex === -1) return
-    
+
     const updatedTask = {
       ...tasks[taskIndex],
       completed: false,
       updatedAt: new Date().toISOString()
     }
-    
+
     // Actualizar estado local
     const updatedTasks = [...tasks]
     updatedTasks.splice(taskIndex, 1) // Eliminar de la lista de completadas
     setTasks(updatedTasks)
-    
+
     try {
       // Actualizar en Supabase
       const { error } = await supabase
@@ -101,7 +101,7 @@ export default function CompletedTasksPage() {
           updated_at: updatedTask.updatedAt
         })
         .eq('id', taskId)
-      
+
       if (error) {
         console.error("Error al actualizar tarea:", error)
         toast({
@@ -109,7 +109,7 @@ export default function CompletedTasksPage() {
           description: "No se pudo actualizar la tarea",
           variant: "destructive"
         })
-        
+
         // Revertir cambio en caso de error
         updatedTasks.splice(taskIndex, 0, tasks[taskIndex])
         setTasks(updatedTasks)
@@ -128,19 +128,19 @@ export default function CompletedTasksPage() {
   const deleteTask = async (taskId: string) => {
     const taskIndex = tasks.findIndex(t => t.id === taskId)
     if (taskIndex === -1) return
-    
+
     // Actualizar estado local
     const updatedTasks = [...tasks]
     updatedTasks.splice(taskIndex, 1)
     setTasks(updatedTasks)
-    
+
     try {
       // Eliminar de Supabase
       const { error } = await supabase
         .from('tasks')
         .delete()
         .eq('id', taskId)
-      
+
       if (error) {
         console.error("Error al eliminar tarea:", error)
         toast({
@@ -148,7 +148,7 @@ export default function CompletedTasksPage() {
           description: "No se pudo eliminar la tarea",
           variant: "destructive"
         })
-        
+
         // Revertir cambio en caso de error
         updatedTasks.splice(taskIndex, 0, tasks[taskIndex])
         setTasks(updatedTasks)
@@ -177,9 +177,9 @@ export default function CompletedTasksPage() {
     <RoutinizeLayout activeTab="productivity" title="Tareas completadas">
       <div className="container mx-auto p-4 pb-20">
         <div className="flex items-center mb-6">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="mr-2"
             onClick={() => router.push("/productivity")}
           >
@@ -191,7 +191,7 @@ export default function CompletedTasksPage() {
         {tasks.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500 mb-4">No hay tareas completadas</p>
-            <Button 
+            <Button
               onClick={() => router.push('/productivity')}
               className="bg-blue-500 hover:bg-blue-600 text-white"
             >
@@ -203,18 +203,18 @@ export default function CompletedTasksPage() {
             {tasks.map(task => (
               <Card key={task.id} className="p-4 bg-gray-50 dark:bg-gray-700 shadow-sm rounded-xl">
                 <div className="flex items-start">
-                  <button 
+                  <button
                     className="mt-1 rounded-full bg-green-500 border-2 border-green-500 text-white p-1 mr-3"
                     onClick={() => toggleTaskCompletion(task.id)}
                   >
                     <CheckCircle2 className="h-4 w-4" />
                   </button>
-                  
+
                   <div className="flex-1">
                     <div className="flex justify-between">
                       <h3 className="font-medium line-through text-gray-500">{task.title}</h3>
                       <div className="flex space-x-1">
-                        <button 
+                        <button
                           className="text-gray-400 hover:text-red-500"
                           onClick={() => deleteTask(task.id)}
                         >
@@ -225,22 +225,22 @@ export default function CompletedTasksPage() {
                         </button>
                       </div>
                     </div>
-                    
+
                     {task.description && (
                       <p className="text-sm text-gray-400 mt-1 line-through">{task.description}</p>
                     )}
-                    
+
                     <div className="flex items-center mt-2 text-xs text-gray-400">
                       <div className="flex items-center mr-3">
                         <Calendar className="h-3 w-3 mr-1" />
                         <span>Completada: {new Date(task.updatedAt).toLocaleDateString()}</span>
                       </div>
-                      
+
                       <div className={`px-2 py-0.5 rounded-full text-white opacity-50 ${
-                        task.priority === 'high' 
-                          ? 'bg-red-500' 
-                          : task.priority === 'medium' 
-                            ? 'bg-yellow-500' 
+                        task.priority === 'high'
+                          ? 'bg-red-500'
+                          : task.priority === 'medium'
+                            ? 'bg-yellow-500'
                             : 'bg-blue-500'
                       }`}>
                         {task.priority}

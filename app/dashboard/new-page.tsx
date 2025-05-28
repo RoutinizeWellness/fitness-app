@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import HabitBuilderNavigation from "@/components/habit-builder-navigation"
 import HomepageTrackingHabits from "@/components/habit-tracker/HomepageTrackingHabits"
 
@@ -108,7 +108,7 @@ export default function DashboardPage() {
         <div className="mb-8 bg-white rounded-[24px] p-5 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-[#FDA758]/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute bottom-0 left-0 w-[150px] h-[150px] bg-[#8C80F8]/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-          
+
           <h2 className="text-xl font-bold text-[#573353] mb-2">WE FIRST MAKE OUR HABITS, AND THEN OUR HABITS MAKES US.</h2>
           <p className="text-[#573353]/70 text-sm">-ANONYMOUS</p>
         </div>
@@ -116,7 +116,7 @@ export default function DashboardPage() {
         {/* In Progress Habits */}
         <div className="mb-8">
           <h2 className="text-lg font-medium text-[#573353] mb-4">IN PROGRESS</h2>
-          
+
           <div className="space-y-4">
             {habits.map(habit => (
               <div key={habit.id} className="bg-white rounded-[24px] p-4 shadow-sm flex items-center justify-between">
@@ -150,10 +150,10 @@ export default function DashboardPage() {
         {/* Weekly Progress */}
         <div className="mb-8">
           <h2 className="text-lg font-medium text-[#573353] mb-4">Weekly Progress</h2>
-          
+
           {/* Enhanced Tracking Visualization */}
           <HomepageTrackingHabits />
-          
+
           <p className="text-center text-[#573353]/70 text-sm mt-3">
             Track your daily habits and build consistency
           </p>

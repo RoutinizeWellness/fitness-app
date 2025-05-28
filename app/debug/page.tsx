@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { checkSupabaseConnection, checkTablePolicies, checkRlsEnabled, checkUserPermissions } from "@/lib/debug-supabase"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { getUserProfile, updateUserProfile } from "@/lib/supabase-client"
 import { createClient } from '@supabase/supabase-js'
 import { supabase } from "@/lib/supabase-client"

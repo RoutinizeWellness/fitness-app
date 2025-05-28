@@ -19,7 +19,6 @@ import {
 import { SmartRecommendation } from "@/lib/learning-algorithm"
 import { supabase } from "@/lib/supabase-client"
 import { runMigrations } from "@/lib/supabase-migrations"
-import { insertDemoData } from "@/lib/demo-data"
 
 interface SmartRecommendationsProps {
   userId: string
@@ -30,7 +29,6 @@ export default function SmartRecommendations({ userId }: SmartRecommendationsPro
   const [isLoading, setIsLoading] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isMigrating, setIsMigrating] = useState(false)
-  const [isInsertingDemo, setIsInsertingDemo] = useState(false)
   const [feedbackInProgress, setFeedbackInProgress] = useState<string | null>(null)
   const [dbError, setDbError] = useState<string | null>(null)
 
@@ -207,43 +205,7 @@ export default function SmartRecommendations({ userId }: SmartRecommendationsPro
     }
   }
 
-  // Función para insertar datos de demostración
-  const insertDemoDataForUser = async () => {
-    try {
-      setIsInsertingDemo(true)
-      setDbError(null)
 
-      // Insertar datos de demostración
-      const { success, error } = await insertDemoData(userId)
-
-      if (!success || error) {
-        console.error("Error al insertar datos de demostración:", error)
-        toast({
-          title: "Error",
-          description: `No se pudieron insertar los datos de demostración: ${error?.message || 'Error desconocido'}`,
-          variant: "destructive",
-        })
-        return
-      }
-
-      toast({
-        title: "Datos insertados",
-        description: "Se han insertado datos de demostración para tu usuario.",
-      })
-
-      // Recargar recomendaciones
-      await loadRecommendations()
-    } catch (error) {
-      console.error("Error al insertar datos de demostración:", error)
-      toast({
-        title: "Error",
-        description: `Error inesperado: ${error instanceof Error ? error.message : 'Error desconocido'}`,
-        variant: "destructive",
-      })
-    } finally {
-      setIsInsertingDemo(false)
-    }
-  }
 
   // Función para ejecutar migraciones de la base de datos
   const executeMigrations = async () => {
@@ -431,21 +393,6 @@ export default function SmartRecommendations({ userId }: SmartRecommendationsPro
                   "Ejecutar migraciones"
                 )}
               </Button>
-
-              <Button
-                onClick={insertDemoDataForUser}
-                disabled={isInsertingDemo}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {isInsertingDemo ? (
-                  <>
-                    <Skeleton className="h-4 w-4 rounded-full animate-spin mr-2" />
-                    Insertando datos...
-                  </>
-                ) : (
-                  "Insertar datos de demostración"
-                )}
-              </Button>
             </div>
           </CardContent>
         </Card>
@@ -566,25 +513,7 @@ export default function SmartRecommendations({ userId }: SmartRecommendationsPro
                 {isAnalyzing ? "Analizando..." : "Intentar de nuevo"}
               </Button>
 
-              <Button
-                onClick={insertDemoDataForUser}
-                disabled={isInsertingDemo}
-                variant="outline"
-                className="mt-2"
-              >
-                {isInsertingDemo ? (
-                  <>
-                    <Skeleton className="h-4 w-4 rounded-full animate-spin mr-2" />
-                    Insertando datos...
-                  </>
-                ) : (
-                  "Insertar datos de demostración"
-                )}
-              </Button>
 
-              <p className="text-xs text-muted-foreground mt-2">
-                Si no tienes suficientes datos, puedes insertar datos de demostración para probar el algoritmo.
-              </p>
             </div>
           </CardContent>
         </Card>

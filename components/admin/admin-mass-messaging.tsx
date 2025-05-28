@@ -31,7 +31,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { sendMassMessage, MassMessage } from "@/lib/admin-dashboard-service"
 import { supabase } from "@/lib/supabase-client"
 
@@ -147,7 +147,7 @@ export function AdminMassMessaging() {
       setMessageTitle("")
       setMessageContent("")
       setTargetGroup('all')
-      
+
       // Cambiar a pestaña de mensajes enviados
       setActiveTab('sent')
       loadSentMessages()
@@ -168,7 +168,7 @@ export function AdminMassMessaging() {
     setIsRefreshing(true)
     await loadSentMessages()
     setIsRefreshing(false)
-    
+
     toast({
       title: "Mensajes actualizados",
       description: "La lista de mensajes enviados se ha actualizado",
@@ -222,7 +222,7 @@ export function AdminMassMessaging() {
             Mensajes enviados
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="compose" className="space-y-4">
           <Card3D>
             <Card3DHeader>
@@ -244,7 +244,7 @@ export function AdminMassMessaging() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-1">Título del mensaje</label>
                   <Input
@@ -253,7 +253,7 @@ export function AdminMassMessaging() {
                     onChange={(e) => setMessageTitle(e.target.value)}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-1">Contenido del mensaje</label>
                   <Textarea
@@ -263,7 +263,7 @@ export function AdminMassMessaging() {
                     className="min-h-[200px]"
                   />
                 </div>
-                
+
                 <div className="flex justify-end">
                   <Button3D
                     onClick={handleSendMessage}
@@ -285,7 +285,7 @@ export function AdminMassMessaging() {
               </div>
             </Card3DContent>
           </Card3D>
-          
+
           <Card3D>
             <Card3DHeader>
               <Card3DTitle>Consejos para mensajes efectivos</Card3DTitle>
@@ -320,7 +320,7 @@ export function AdminMassMessaging() {
             </Card3DContent>
           </Card3D>
         </TabsContent>
-        
+
         <TabsContent value="sent" className="space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="relative flex-1 max-w-sm">
@@ -332,7 +332,7 @@ export function AdminMassMessaging() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
+
             <Button3D variant="outline" onClick={handleRefresh} disabled={isRefreshing}>
               {isRefreshing ? (
                 <>
@@ -347,7 +347,7 @@ export function AdminMassMessaging() {
               )}
             </Button3D>
           </div>
-          
+
           <Card3D>
             <Card3DHeader>
               <div className="flex items-center justify-between">
@@ -379,7 +379,7 @@ export function AdminMassMessaging() {
                               </Badge>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center space-x-2">
                             <Button3D
                               variant="outline"
@@ -391,13 +391,13 @@ export function AdminMassMessaging() {
                             </Button3D>
                           </div>
                         </div>
-                        
+
                         <div className="mt-2">
                           <p className="text-sm text-gray-600 line-clamp-2">
                             {message.content}
                           </p>
                         </div>
-                        
+
                         <div className="mt-2 flex items-center justify-between">
                           <div className="flex items-center text-xs text-gray-500">
                             <Users className="h-3 w-3 mr-1" />
@@ -421,7 +421,7 @@ export function AdminMassMessaging() {
           </Card3D>
         </TabsContent>
       </Tabs>
-      
+
       {/* Diálogo de detalles del mensaje */}
       {showMessageDialog && selectedMessage && (
         <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
@@ -432,12 +432,12 @@ export function AdminMassMessaging() {
                 Enviado el {new Date(selectedMessage.sentAt).toLocaleDateString()} a {getTargetGroupText(selectedMessage.targetGroup)}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="whitespace-pre-line">{selectedMessage.content}</p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center">
@@ -448,7 +448,7 @@ export function AdminMassMessaging() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center">
                     <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
@@ -462,7 +462,7 @@ export function AdminMassMessaging() {
                 </div>
               </div>
             </div>
-            
+
             <DialogFooter>
               <DialogClose asChild>
                 <Button3D>

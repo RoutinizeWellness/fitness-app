@@ -5,10 +5,12 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import { useRouter, usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Bell, User } from "lucide-react"
+import { Bell, User, Search } from "lucide-react"
 import { Avatar } from "@/components/ui/avatar"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { HighContrastToggle } from "@/components/ui/high-contrast-toggle"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 
 interface CircularNavBarProps {
   activeTab: string
@@ -22,6 +24,8 @@ export function CircularNavBar({ activeTab, onTabChange, className }: CircularNa
   const { user, profile } = useAuth()
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
 
   // Navigation items with custom icons matching the image
   const navItems = [
@@ -103,21 +107,43 @@ export function CircularNavBar({ activeTab, onTabChange, className }: CircularNa
     setUnreadNotifications(Math.floor(Math.random() * 5))
   }, [])
 
+  // This navigation bar is only for demo purposes and should not be used in the main application
+  // Only render in specific demo routes
+  const isDemoRoute = pathname?.includes('/nav-demo') || pathname?.includes('/pixel-true') || false;
+
+  // If we're not in a demo route, don't render this navigation
+  if (!isDemoRoute) {
+    return null;
+  }
+
   return (
     <>
-      {/* Header minimalista */}
+      {/* Header minimalista - only shown in demo routes */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md shadow-sm">
         <div className="container max-w-md mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center">
-            <span className="text-xl font-bold gradient-text">Routinize</span>
+            <span className="text-xl font-bold gradient-text">Routinize (Demo)</span>
           </div>
 
           <div className="flex items-center space-x-3">
             <HighContrastToggle />
 
             <button
-              className="relative"
-              onClick={() => router.push("/notifications")}
+              className="relative focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#FDA758] rounded-full p-1"
+              onClick={() => setIsSearchOpen(true)}
+              aria-label="Buscar"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+
+            <button
+              className="relative focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#FDA758] rounded-full p-1"
+              onClick={() => {
+                // Verificar si ya estamos en la página de notificaciones para evitar recargas innecesarias
+                if (pathname !== "/notifications") {
+                  router.push("/notifications")
+                }
+              }}
               aria-label={`Notificaciones${unreadNotifications > 0 ? `, ${unreadNotifications} no leídas` : ''}`}
             >
               <Bell className="h-5 w-5" />
@@ -132,13 +158,23 @@ export function CircularNavBar({ activeTab, onTabChange, className }: CircularNa
             </button>
 
             <button
-              onClick={() => router.push("/profile")}
+              onClick={() => {
+                // Verificar si ya estamos en la página de perfil para evitar recargas innecesarias
+                if (pathname !== "/profile") {
+                  router.push("/profile")
+                }
+              }}
               aria-label="Perfil de usuario"
+              className="focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#FDA758] rounded-full"
             >
               <Avatar className="h-8 w-8">
                 <img
                   src={profile?.avatar_url || "/placeholder.svg"}
                   alt={`Foto de perfil de ${profile?.full_name || 'usuario'}`}
+                  onError={(e) => {
+                    // Fallback a una imagen por defecto si la URL de avatar falla
+                    e.currentTarget.src = "/placeholder.svg"
+                  }}
                 />
               </Avatar>
             </button>
@@ -146,10 +182,10 @@ export function CircularNavBar({ activeTab, onTabChange, className }: CircularNa
         </div>
       </header>
 
-      {/* Barra de navegación principal */}
+      {/* Barra de navegación principal - only shown in demo routes */}
       <div className={cn("fixed bottom-6 left-0 right-0 z-50 flex justify-center", className)}>
         <div className="relative">
-          {/* Main navigation bar - exact styling from the image */}
+          {/* Main navigation bar - DEMO ONLY */}
           <div className="flex items-center bg-white rounded-full h-14 px-6 shadow-md">
           {navItems.map((item, index) => {
             const isActive = activeTab === item.id
@@ -236,12 +272,12 @@ export function CircularNavBar({ activeTab, onTabChange, className }: CircularNa
                 <button
                   className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 transition-colors focus:outline-none focus:bg-gray-100 focus:ring-2 focus:ring-offset-1 focus:ring-[#FDA758]"
                   onClick={() => {
-                    router.push("/add-habit")
+                    router.push("/wellness/new-activity")
                     setIsAddMenuOpen(false)
                   }}
                   role="menuitem"
                 >
-                  Nuevo Hábito
+                  Nueva Actividad
                 </button>
                 <button
                   className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 transition-colors flex items-center focus:outline-none focus:bg-gray-100 focus:ring-2 focus:ring-offset-1 focus:ring-[#FDA758]"
@@ -256,12 +292,80 @@ export function CircularNavBar({ activeTab, onTabChange, className }: CircularNa
                   </svg>
                   IA Personalizada
                 </button>
+                <button
+                  className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 transition-colors flex items-center focus:outline-none focus:bg-gray-100 focus:ring-2 focus:ring-offset-1 focus:ring-[#FDA758]"
+                  onClick={() => {
+                    router.push("/ai/gemini")
+                    setIsAddMenuOpen(false)
+                  }}
+                  role="menuitem"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#FEA800" />
+                  </svg>
+                  Gemini AI
+                </button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
     </div>
+
+      {/* Diálogo de búsqueda */}
+      <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Buscar</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center space-x-2">
+              <Input
+                placeholder="Buscar entrenamientos, comidas, ejercicios..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && searchTerm.trim()) {
+                    router.push(`/search?q=${encodeURIComponent(searchTerm.trim())}`)
+                    setIsSearchOpen(false)
+                  }
+                }}
+              />
+              <button
+                className="px-4 py-2 bg-[#FDA758] text-white rounded-md hover:bg-[#FDA758]/90 transition-colors"
+                onClick={() => {
+                  if (searchTerm.trim()) {
+                    router.push(`/search?q=${encodeURIComponent(searchTerm.trim())}`)
+                    setIsSearchOpen(false)
+                  }
+                }}
+              >
+                Buscar
+              </button>
+            </div>
+            <div className="pt-2">
+              <h4 className="text-sm font-medium mb-2">Búsquedas populares:</h4>
+              <div className="flex flex-wrap gap-2">
+                {["Rutina de fuerza", "Recetas proteicas", "Ejercicios de espalda", "Plan de nutrición"].map((term) => (
+                  <button
+                    key={term}
+                    className="px-3 py-1 bg-gray-100 rounded-full text-sm hover:bg-gray-200 transition-colors"
+                    onClick={() => {
+                      setSearchTerm(term)
+                      router.push(`/search?q=${encodeURIComponent(term)}`)
+                      setIsSearchOpen(false)
+                    }}
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

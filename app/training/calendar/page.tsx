@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Calendar } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { format, addDays, subDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from "date-fns"
 import { es } from "date-fns/locale"
 import WorkoutCalendar from "@/components/training/workout-calendar"
@@ -23,7 +23,7 @@ export default function CalendarPage() {
     const timer = setTimeout(() => {
       setIsLoading(false)
     }, 500)
-    
+
     return () => clearTimeout(timer)
   }, [])
 
@@ -71,7 +71,7 @@ export default function CalendarPage() {
         <CardContent>
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Mayo 2025</h3>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {/* Lunes */}
               <Card className="overflow-hidden">
@@ -94,7 +94,7 @@ export default function CalendarPage() {
                   </Button>
                 </CardContent>
               </Card>
-              
+
               {/* Martes */}
               <Card className="overflow-hidden">
                 <CardHeader className="p-3 bg-primary/5">
@@ -116,7 +116,7 @@ export default function CalendarPage() {
                   </Button>
                 </CardContent>
               </Card>
-              
+
               {/* Miércoles */}
               <Card className="overflow-hidden">
                 <CardHeader className="p-3 bg-primary/5">
@@ -132,7 +132,7 @@ export default function CalendarPage() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               {/* Jueves */}
               <Card className="overflow-hidden">
                 <CardHeader className="p-3 bg-primary/5">
@@ -154,7 +154,7 @@ export default function CalendarPage() {
                   </Button>
                 </CardContent>
               </Card>
-              
+
               {/* Viernes */}
               <Card className="overflow-hidden">
                 <CardHeader className="p-3 bg-primary/5">
@@ -175,7 +175,7 @@ export default function CalendarPage() {
                   </Button>
                 </CardContent>
               </Card>
-              
+
               {/* Sábado */}
               <Card className="overflow-hidden">
                 <CardHeader className="p-3 bg-primary/5">
@@ -197,7 +197,7 @@ export default function CalendarPage() {
                   </Button>
                 </CardContent>
               </Card>
-              
+
               {/* Domingo */}
               <Card className="overflow-hidden">
                 <CardHeader className="p-3 bg-primary/5">

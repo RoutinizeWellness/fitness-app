@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, Save, Edit } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { WorkoutLogEditor } from "@/components/training/workout-log-editor"
 import { ExerciseItem } from "@/components/training/exercise-item"
 import { Exercise } from "@/lib/types/training"
@@ -163,15 +163,15 @@ export default function WorkoutLogPage({ params }: { params: { logId: string } }
       try {
         // En un entorno real, aquí cargaríamos los datos de Supabase
         // Para este ejemplo, usamos datos simulados
-        
+
         setWorkoutLog(mockWorkoutLog)
-        
+
         // Filtrar ejercicios para este registro
-        const logExercises = mockExercises.filter(ex => 
+        const logExercises = mockExercises.filter(ex =>
           mockWorkoutLog.exercises.includes(ex.id)
         )
         setExercises(logExercises)
-        
+
       } catch (error) {
         console.error("Error al cargar los datos del registro:", error)
         toast({
@@ -183,25 +183,25 @@ export default function WorkoutLogPage({ params }: { params: { logId: string } }
         setIsLoading(false)
       }
     }
-    
+
     loadWorkoutLogData()
   }, [params.logId, toast])
 
   // Manejar el cambio de ejercicio por una alternativa
   const handleChangeExercise = (oldExerciseId: string, newExerciseId: string) => {
     // Actualizar la lista de ejercicios
-    setExercises(prevExercises => 
-      prevExercises.map(ex => 
-        ex.id === oldExerciseId 
-          ? mockExercises.find(newEx => newEx.id === newExerciseId) || ex 
+    setExercises(prevExercises =>
+      prevExercises.map(ex =>
+        ex.id === oldExerciseId
+          ? mockExercises.find(newEx => newEx.id === newExerciseId) || ex
           : ex
       )
     )
-    
+
     // Actualizar el registro de entrenamiento
     setWorkoutLog(prev => ({
       ...prev,
-      exercises: prev.exercises.map((id: string) => 
+      exercises: prev.exercises.map((id: string) =>
         id === oldExerciseId ? newExerciseId : id
       )
     }))
@@ -212,7 +212,7 @@ export default function WorkoutLogPage({ params }: { params: { logId: string } }
     // En un entorno real, aquí enviaríamos los datos a Supabase
     setWorkoutLog(updatedLog)
     setIsEditing(false)
-    
+
     toast({
       title: "Registro guardado",
       description: "Los cambios han sido guardados correctamente",
@@ -270,7 +270,7 @@ export default function WorkoutLogPage({ params }: { params: { logId: string } }
             {isEditing ? "Cancelar edición" : "Editar ejercicios"}
           </Button>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {exercises.map((exercise, index) => (
             <ExerciseItem
@@ -282,7 +282,7 @@ export default function WorkoutLogPage({ params }: { params: { logId: string } }
             />
           ))}
         </div>
-        
+
         {isEditing && (
           <div className="flex justify-end mt-4">
             <Button onClick={() => {

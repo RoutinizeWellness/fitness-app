@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo decorativo -->
+  <circle cx="150" cy="150" r="120" fill="#DDDCFE" opacity="0.2"/>
+  
+  <!-- Plato principal -->
+  <circle cx="150" cy="150" r="100" fill="white" stroke="#573353" stroke-width="3"/>
+  
+  <!-- División del plato -->
+  <!-- 50% Vegetales (verde) -->
+  <path d="M150 50 A100 100 0 0 1 250 150 L150 150 Z" fill="#4CAF50" opacity="0.7"/>
+  <path d="M150 50 A100 100 0 0 0 50 150 L150 150 Z" fill="#4CAF50" opacity="0.7"/>
+  
+  <!-- 25% Proteínas (naranja) -->
+  <path d="M150 150 L250 150 A100 100 0 0 1 150 250 Z" fill="#FEA800" opacity="0.7"/>
+  
+  <!-- 25% Carbohidratos (azul) -->
+  <path d="M150 150 L50 150 A100 100 0 0 1 150 250 Z" fill="#1B237E" opacity="0.3"/>
+  
+  <!-- Iconos de alimentos -->
+  <!-- Vegetales -->
+  <circle cx="150" cy="100" r="15" fill="#8BC34A"/>
+  <path d="M145 95 L155 105" stroke="white" stroke-width="2"/>
+  <path d="M145 105 L155 95" stroke="white" stroke-width="2"/>
+  
+  <circle cx="120" cy="120" r="10" fill="#8BC34A"/>
+  <path d="M115 120 L125 120" stroke="white" stroke-width="2"/>
+  <path d="M120 115 L120 125" stroke="white" stroke-width="2"/>
+  
+  <circle cx="180" cy="120" r="10" fill="#8BC34A"/>
+  <path d="M175 120 L185 120" stroke="white" stroke-width="2"/>
+  <path d="M180 115 L180 125" stroke="white" stroke-width="2"/>
+  
+  <!-- Proteínas -->
+  <rect x="190" cy="180" width="20" height="15" rx="2" fill="#FF9800"/>
+  <path d="M195 180 L195 195" stroke="white" stroke-width="1"/>
+  <path d="M200 180 L200 195" stroke="white" stroke-width="1"/>
+  <path d="M205 180 L205 195" stroke="white" stroke-width="1"/>
+  
+  <!-- Carbohidratos -->
+  <circle cx="100" cy="180" r="15" fill="#3F51B5" opacity="0.7"/>
+  <path d="M95 180 L105 180" stroke="white" stroke-width="2"/>
+  
+  <!-- Etiquetas de secciones -->
+  <text x="150" y="85" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="white">Vegetales 50%</text>
+  <text x="200" y="200" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="white">Proteínas 25%</text>
+  <text x="100" y="200" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="white">Carbos 25%</text>
+  
+  <!-- Título -->
+  <text x="150" y="280" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#573353">Plato del Principiante</text>
+</svg>
