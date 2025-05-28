@@ -19,16 +19,7 @@ export function ProvidersWrapper({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer)
   }, [])
 
-  // Render a simplified version during initial mount
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-background">
-        {/* Render children without providers during initial mount */}
-        {children}
-      </div>
-    )
-  }
-
-  // Once mounted, render with all providers
-  return <Providers>{children}</Providers>
+  // Always render with providers to prevent AuthProvider errors
+  // The providers themselves will handle the mounting state
+  return <Providers mounted={mounted}>{children}</Providers>
 }

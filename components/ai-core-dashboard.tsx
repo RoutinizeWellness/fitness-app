@@ -8,14 +8,14 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
-import { 
-  Sparkles, 
-  Brain, 
-  Dumbbell, 
-  Utensils, 
-  Moon, 
-  Heart, 
-  Activity, 
+import {
+  Sparkles,
+  Brain,
+  Dumbbell,
+  Utensils,
+  Moon,
+  Heart,
+  Activity,
   RefreshCw,
   TrendingUp,
   AlertTriangle,
@@ -25,7 +25,7 @@ import {
   BarChart2
 } from "lucide-react"
 import { AICoreService } from "@/lib/ai-core-service"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 
 interface AICoreRecommendation {
   id: string
@@ -74,7 +74,7 @@ export default function AICoreDashboard() {
   useEffect(() => {
     const initializeAICore = async () => {
       if (!user) return
-      
+
       try {
         const aiCoreService = new AICoreService(user.id, {
           includeWearableData: true,
@@ -84,9 +84,9 @@ export default function AICoreDashboard() {
           adaptationSpeed: 'medium',
           personalizationLevel: 'high'
         })
-        
+
         const initialized = await aiCoreService.initialize()
-        
+
         if (initialized) {
           setAiCore(aiCoreService)
           setAiCoreInitialized(true)
@@ -106,7 +106,7 @@ export default function AICoreDashboard() {
         })
       }
     }
-    
+
     initializeAICore()
   }, [user, toast])
 
@@ -114,14 +114,14 @@ export default function AICoreDashboard() {
   useEffect(() => {
     const loadData = async () => {
       if (!aiCoreInitialized || !aiCore) return
-      
+
       setIsLoading(true)
-      
+
       try {
         // Load recommendations
         const recs = await aiCore.generateHyperpersonalizedRecommendations('all', 10)
         setRecommendations(recs)
-        
+
         // Generate wellness score (placeholder for now)
         generateWellnessScore()
       } catch (error) {
@@ -130,7 +130,7 @@ export default function AICoreDashboard() {
         setIsLoading(false)
       }
     }
-    
+
     if (aiCoreInitialized) {
       loadData()
     }
@@ -147,24 +147,24 @@ export default function AICoreDashboard() {
       readiness: Math.floor(Math.random() * 30) + 70,
       trend: ['up', 'down', 'stable'][Math.floor(Math.random() * 3)] as 'up' | 'down' | 'stable'
     }
-    
+
     setWellnessScore(score)
   }
 
   // Refresh data
   const handleRefresh = async () => {
     if (!aiCore) return
-    
+
     setIsRefreshing(true)
-    
+
     try {
       // Load recommendations
       const recs = await aiCore.generateHyperpersonalizedRecommendations('all', 10)
       setRecommendations(recs)
-      
+
       // Generate wellness score
       generateWellnessScore()
-      
+
       toast({
         title: "Actualizado",
         description: "Los datos se han actualizado correctamente.",
@@ -192,13 +192,13 @@ export default function AICoreDashboard() {
           </div>
           <Skeleton className="h-10 w-10 rounded-full" />
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Skeleton className="h-40" />
           <Skeleton className="h-40" />
           <Skeleton className="h-40" />
         </div>
-        
+
         <Skeleton className="h-64" />
       </div>
     )
@@ -207,7 +207,7 @@ export default function AICoreDashboard() {
   // Render wellness score card
   const renderWellnessScoreCard = () => {
     if (!wellnessScore) return null
-    
+
     return (
       <Card>
         <CardHeader className="pb-2">
@@ -247,7 +247,7 @@ export default function AICoreDashboard() {
                 />
               </svg>
             </div>
-            
+
             <div className="flex items-center space-x-1 mb-4">
               <span className="text-sm font-medium">Tendencia:</span>
               {wellnessScore.trend === 'up' && (
@@ -269,26 +269,26 @@ export default function AICoreDashboard() {
                 </span>
               )}
             </div>
-            
+
             <div className="w-full space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Físico</span>
                 <span>{wellnessScore.physical}%</span>
               </div>
               <Progress value={wellnessScore.physical} className="h-2" />
-              
+
               <div className="flex justify-between text-sm">
                 <span>Mental</span>
                 <span>{wellnessScore.mental}%</span>
               </div>
               <Progress value={wellnessScore.mental} className="h-2" />
-              
+
               <div className="flex justify-between text-sm">
                 <span>Recuperación</span>
                 <span>{wellnessScore.recovery}%</span>
               </div>
               <Progress value={wellnessScore.recovery} className="h-2" />
-              
+
               <div className="flex justify-between text-sm">
                 <span>Preparación</span>
                 <span>{wellnessScore.readiness}%</span>
@@ -318,7 +318,7 @@ export default function AICoreDashboard() {
           return <Sparkles className="h-5 w-5 text-primary" />
       }
     }
-    
+
     // Get urgency badge
     const getUrgencyBadge = () => {
       switch (recommendation.urgency) {
@@ -332,7 +332,7 @@ export default function AICoreDashboard() {
           return null
       }
     }
-    
+
     return (
       <Card key={recommendation.id}>
         <CardHeader className="pb-2">
@@ -353,7 +353,7 @@ export default function AICoreDashboard() {
             <span className="font-medium">{recommendation.confidence}%</span>
           </div>
           <Progress value={recommendation.confidence} className="h-1 mb-4" />
-          
+
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="flex items-center">
               <Zap className="h-3 w-3 mr-1 text-yellow-500" />
@@ -389,16 +389,16 @@ export default function AICoreDashboard() {
           <Sparkles className="h-5 w-5 text-primary" />
           <h2 className="text-2xl font-bold tracking-tight">IA Hiperpersonalizada</h2>
         </div>
-        <Button 
-          variant="outline" 
-          size="icon" 
+        <Button
+          variant="outline"
+          size="icon"
           onClick={handleRefresh}
           disabled={isRefreshing}
         >
           <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
         </Button>
       </div>
-      
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-4 mb-4">
           <TabsTrigger value="overview" className="flex items-center">
@@ -418,11 +418,11 @@ export default function AICoreDashboard() {
             Bienestar
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {renderWellnessScoreCard()}
-            
+
             <Card className="md:col-span-2">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center">
@@ -460,10 +460,10 @@ export default function AICoreDashboard() {
               </CardFooter>
             </Card>
           </div>
-          
+
           {/* Additional overview content will go here */}
         </TabsContent>
-        
+
         <TabsContent value="training" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {recommendations
@@ -471,7 +471,7 @@ export default function AICoreDashboard() {
               .map(recommendation => renderRecommendationCard(recommendation))}
           </div>
         </TabsContent>
-        
+
         <TabsContent value="nutrition" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {recommendations
@@ -479,7 +479,7 @@ export default function AICoreDashboard() {
               .map(recommendation => renderRecommendationCard(recommendation))}
           </div>
         </TabsContent>
-        
+
         <TabsContent value="wellness" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {recommendations

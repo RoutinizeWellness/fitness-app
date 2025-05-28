@@ -7,14 +7,14 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
-import { 
-  Brain, 
-  Dumbbell, 
-  Utensils, 
-  Moon, 
-  Zap, 
-  RefreshCw, 
-  ThumbsUp, 
+import {
+  Brain,
+  Dumbbell,
+  Utensils,
+  Moon,
+  Zap,
+  RefreshCw,
+  ThumbsUp,
   ThumbsDown,
   Loader2,
   Clock,
@@ -23,7 +23,7 @@ import {
   Lightbulb
 } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 
 // Tipos para las recomendaciones
 interface Recommendation {
@@ -46,11 +46,11 @@ export default function AIRecommendations() {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
-  
+
   // Cargar recomendaciones
   useEffect(() => {
     if (!user?.id) return
-    
+
     const loadRecommendations = async () => {
       setIsLoading(true)
       try {
@@ -60,14 +60,14 @@ export default function AIRecommendations() {
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-        
+
         if (error) {
           console.warn("Error al cargar recomendaciones:", error)
           // Usar datos de ejemplo si hay error
           generateSampleRecommendations()
           return
         }
-        
+
         if (data && data.length > 0) {
           setRecommendations(data)
         } else {
@@ -82,10 +82,10 @@ export default function AIRecommendations() {
         setIsLoading(false)
       }
     }
-    
+
     loadRecommendations()
   }, [user?.id])
-  
+
   // Generar recomendaciones de ejemplo
   const generateSampleRecommendations = () => {
     const sampleRecommendations: Recommendation[] = [
@@ -143,10 +143,10 @@ export default function AIRecommendations() {
         created_at: new Date().toISOString()
       }
     ]
-    
+
     setRecommendations(sampleRecommendations)
   }
-  
+
   // Refrescar recomendaciones
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -154,12 +154,12 @@ export default function AIRecommendations() {
       // Simular generación de nuevas recomendaciones
       setTimeout(() => {
         generateSampleRecommendations()
-        
+
         toast({
           title: "Recomendaciones actualizadas",
           description: "Se han generado nuevas recomendaciones personalizadas"
         })
-        
+
         setIsRefreshing(false)
       }, 2000)
     } catch (error) {
@@ -172,27 +172,27 @@ export default function AIRecommendations() {
       setIsRefreshing(false)
     }
   }
-  
+
   // Dar feedback a una recomendación
   const handleFeedback = async (id: string, feedback: 'positive' | 'negative') => {
     try {
       // Actualizar estado local
-      setRecommendations(prev => 
-        prev.map(rec => 
+      setRecommendations(prev =>
+        prev.map(rec =>
           rec.id === id ? { ...rec, feedback } : rec
         )
       )
-      
+
       // Intentar guardar en Supabase
       const { error } = await supabase
         .from('ai_recommendations')
         .update({ feedback })
         .eq('id', id)
-      
+
       if (error) {
         console.warn("Error al guardar feedback:", error)
       }
-      
+
       toast({
         title: "Feedback registrado",
         description: "Gracias por tu feedback. Nos ayudará a mejorar las recomendaciones."
@@ -201,12 +201,12 @@ export default function AIRecommendations() {
       console.error("Error al dar feedback:", error)
     }
   }
-  
+
   // Filtrar recomendaciones por tipo
-  const filteredRecommendations = activeTab === "all" 
-    ? recommendations 
+  const filteredRecommendations = activeTab === "all"
+    ? recommendations
     : recommendations.filter(rec => rec.type === activeTab)
-  
+
   // Renderizar icono según el tipo
   const renderIcon = (type: string) => {
     switch (type) {
@@ -224,7 +224,7 @@ export default function AIRecommendations() {
         return <Lightbulb className="h-5 w-5" />
     }
   }
-  
+
   // Obtener color según el tipo
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -242,7 +242,7 @@ export default function AIRecommendations() {
         return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
     }
   }
-  
+
   // Obtener color según la prioridad
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -256,7 +256,7 @@ export default function AIRecommendations() {
         return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
     }
   }
-  
+
   // Obtener texto según el tipo
   const getTypeText = (type: string) => {
     switch (type) {
@@ -274,7 +274,7 @@ export default function AIRecommendations() {
         return type
     }
   }
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -282,8 +282,8 @@ export default function AIRecommendations() {
           <h2 className="text-2xl font-bold tracking-tight">Recomendaciones IA</h2>
           <p className="text-muted-foreground">Sugerencias personalizadas basadas en tus datos y objetivos</p>
         </div>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="sm"
           onClick={handleRefresh}
           disabled={isRefreshing}
@@ -296,7 +296,7 @@ export default function AIRecommendations() {
           Actualizar Recomendaciones
         </Button>
       </div>
-      
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-3 md:grid-cols-6 mb-6">
           <TabsTrigger value="all" className="flex items-center gap-2">
@@ -324,7 +324,7 @@ export default function AIRecommendations() {
             <span>Bienestar</span>
           </TabsTrigger>
         </TabsList>
-        
+
         <div className="space-y-4">
           {isLoading ? (
             <Card>
@@ -351,7 +351,7 @@ export default function AIRecommendations() {
                             {getTypeText(recommendation.type)}
                           </Badge>
                           <Badge variant="outline" className={getPriorityColor(recommendation.priority)}>
-                            {recommendation.priority === 'high' ? 'Alta prioridad' : 
+                            {recommendation.priority === 'high' ? 'Alta prioridad' :
                              recommendation.priority === 'medium' ? 'Media prioridad' : 'Baja prioridad'}
                           </Badge>
                           {recommendation.timeToComplete && (
@@ -383,8 +383,8 @@ export default function AIRecommendations() {
                     Generado el {new Date(recommendation.created_at).toLocaleDateString()}
                   </div>
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       className={recommendation.feedback === 'positive' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' : ''}
                       onClick={() => handleFeedback(recommendation.id, 'positive')}
@@ -392,8 +392,8 @@ export default function AIRecommendations() {
                       <ThumbsUp className="h-4 w-4 mr-1" />
                       Útil
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       className={recommendation.feedback === 'negative' ? 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400' : ''}
                       onClick={() => handleFeedback(recommendation.id, 'negative')}

@@ -11,25 +11,25 @@ import { AnimatedCard } from "@/components/ui/animated-card"
 import { LoadingAnimation } from "@/components/ui/loading-animation"
 import { toast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/contexts/auth-context"
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import { useAuth } from "@/lib/contexts/auth-context"
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   BarChart,
   Bar,
   Legend
 } from "recharts"
-import { 
-  Calendar, 
-  Heart, 
-  Moon, 
-  Activity, 
-  Zap, 
+import {
+  Calendar,
+  Heart,
+  Moon,
+  Activity,
+  Zap,
   Save,
   RefreshCw,
   BarChart3,
@@ -54,7 +54,7 @@ export function WellnessScoreTracker() {
   const [isSaving, setIsSaving] = useState(false)
   const [chartType, setChartType] = useState<"line" | "bar">("line")
   const [historicalData, setHistoricalData] = useState<WellnessScore[]>([])
-  
+
   // Estado para el formulario de hoy
   const [todayScore, setTodayScore] = useState<Omit<WellnessScore, "user_id" | "recovery_score" | "recommendations">>({
     date: new Date().toISOString().split("T")[0],
@@ -63,26 +63,26 @@ export function WellnessScoreTracker() {
     stress_level: 4,
     hrv: 65
   })
-  
+
   // Estado para la puntuación calculada y recomendaciones
   const [calculatedScore, setCalculatedScore] = useState<{
     recovery_score: number
     recommendations: string
   } | null>(null)
-  
+
   // Cargar datos históricos
   useEffect(() => {
     if (user) {
       loadHistoricalData()
     }
   }, [user])
-  
+
   // Cargar datos históricos de Supabase
   const loadHistoricalData = async () => {
     if (!user) return
-    
+
     setIsLoading(true)
-    
+
     try {
       const { data, error } = await supabase
         .from("wellness_scores")
@@ -90,22 +90,22 @@ export function WellnessScoreTracker() {
         .eq("user_id", user.id)
         .order("date", { ascending: false })
         .limit(14)
-      
+
       if (error) {
         throw error
       }
-      
+
       // Ordenar por fecha ascendente para el gráfico
-      const sortedData = [...data].sort((a, b) => 
+      const sortedData = [...data].sort((a, b) =>
         new Date(a.date).getTime() - new Date(b.date).getTime()
       )
-      
+
       setHistoricalData(sortedData)
-      
+
       // Verificar si ya existe un registro para hoy
       const today = new Date().toISOString().split("T")[0]
       const todayRecord = data.find(record => record.date === today)
-      
+
       if (todayRecord) {
         setTodayScore({
           date: todayRecord.date,
@@ -114,7 +114,7 @@ export function WellnessScoreTracker() {
           stress_level: todayRecord.stress_level,
           hrv: todayRecord.hrv
         })
-        
+
         setCalculatedScore({
           recovery_score: todayRecord.recovery_score,
           recommendations: todayRecord.recommendations
@@ -131,40 +131,40 @@ export function WellnessScoreTracker() {
       setIsLoading(false)
     }
   }
-  
+
   // Calcular puntuación de recuperación y recomendaciones
   const calculateRecoveryScore = () => {
     // Algoritmo simple para calcular la puntuación de recuperación
     const moodFactor = todayScore.mood * 1.2 // Más peso al estado de ánimo
-    const sleepFactor = todayScore.sleep_hours < 7 
-      ? todayScore.sleep_hours * 0.8 
+    const sleepFactor = todayScore.sleep_hours < 7
+      ? todayScore.sleep_hours * 0.8
       : todayScore.sleep_hours * 1.2
     const stressFactor = (10 - todayScore.stress_level) * 1.1 // Invertir el nivel de estrés
     const hrvFactor = todayScore.hrv * 0.08
-    
+
     // Calcular puntuación total (máximo 100)
     let score = Math.round((moodFactor + sleepFactor + stressFactor + hrvFactor) * 2.5)
     score = Math.min(Math.max(score, 0), 100) // Limitar entre 0 y 100
-    
+
     // Generar recomendaciones basadas en los factores
     let recommendations = ""
-    
+
     if (todayScore.mood < 5) {
       recommendations += "• Considera realizar actividades que te gusten para mejorar tu estado de ánimo.\n"
     }
-    
+
     if (todayScore.sleep_hours < 7) {
       recommendations += "• Intenta dormir más horas para mejorar tu recuperación.\n"
     }
-    
+
     if (todayScore.stress_level > 6) {
       recommendations += "• Practica técnicas de respiración o meditación para reducir el estrés.\n"
     }
-    
+
     if (todayScore.hrv < 60) {
       recommendations += "• Tu variabilidad cardíaca es baja. Considera reducir la intensidad del entrenamiento hoy.\n"
     }
-    
+
     if (score < 50) {
       recommendations += "• Tu puntuación de recuperación es baja. Prioriza el descanso y la recuperación hoy.\n"
     } else if (score >= 80) {
@@ -172,24 +172,24 @@ export function WellnessScoreTracker() {
     } else {
       recommendations += "• Tu recuperación es moderada. Considera un entrenamiento de intensidad media.\n"
     }
-    
+
     return {
       recovery_score: score,
       recommendations: recommendations.trim()
     }
   }
-  
+
   // Guardar puntuación de bienestar
   const saveWellnessScore = async () => {
     if (!user) return
-    
+
     setIsSaving(true)
-    
+
     try {
       // Calcular puntuación de recuperación y recomendaciones
       const calculated = calculateRecoveryScore()
       setCalculatedScore(calculated)
-      
+
       // Preparar datos para guardar
       const wellnessData = {
         user_id: user.id,
@@ -197,7 +197,7 @@ export function WellnessScoreTracker() {
         recovery_score: calculated.recovery_score,
         recommendations: calculated.recommendations
       }
-      
+
       // Verificar si ya existe un registro para hoy
       const { data: existingData, error: checkError } = await supabase
         .from("wellness_scores")
@@ -205,13 +205,13 @@ export function WellnessScoreTracker() {
         .eq("user_id", user.id)
         .eq("date", todayScore.date)
         .maybeSingle()
-      
+
       if (checkError) {
         throw checkError
       }
-      
+
       let saveError
-      
+
       if (existingData) {
         // Actualizar registro existente
         const { error } = await supabase
@@ -219,24 +219,24 @@ export function WellnessScoreTracker() {
           .update(wellnessData)
           .eq("user_id", user.id)
           .eq("date", todayScore.date)
-        
+
         saveError = error
       } else {
         // Insertar nuevo registro
         const { error } = await supabase
           .from("wellness_scores")
           .insert(wellnessData)
-        
+
         saveError = error
       }
-      
+
       if (saveError) {
         throw saveError
       }
-      
+
       // Recargar datos históricos
       await loadHistoricalData()
-      
+
       toast({
         title: "Guardado",
         description: "Tu puntuación de bienestar ha sido guardada correctamente",
@@ -252,13 +252,13 @@ export function WellnessScoreTracker() {
       setIsSaving(false)
     }
   }
-  
+
   // Formatear fecha para mostrar
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })
   }
-  
+
   // Obtener color según la puntuación
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-500"
@@ -266,7 +266,7 @@ export function WellnessScoreTracker() {
     if (score >= 40) return "text-yellow-500"
     return "text-red-500"
   }
-  
+
   // Obtener clase de fondo según la puntuación
   const getScoreBackground = (score: number) => {
     if (score >= 80) return "bg-green-100 dark:bg-green-900/20"
@@ -274,7 +274,7 @@ export function WellnessScoreTracker() {
     if (score >= 40) return "bg-yellow-100 dark:bg-yellow-900/20"
     return "bg-red-100 dark:bg-red-900/20"
   }
-  
+
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -283,21 +283,21 @@ export function WellnessScoreTracker() {
             <TabsTrigger value="today">Hoy</TabsTrigger>
             <TabsTrigger value="history">Historial</TabsTrigger>
           </TabsList>
-          
+
           {activeTab === "history" && (
             <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setChartType(chartType === "line" ? "bar" : "line")}
               >
                 {chartType === "line" ? <BarChart3 className="h-4 w-4" /> : <LineChartIcon className="h-4 w-4" />}
               </Button>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={loadHistoricalData} 
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadHistoricalData}
                 disabled={isLoading}
               >
                 <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
@@ -305,7 +305,7 @@ export function WellnessScoreTracker() {
             </div>
           )}
         </div>
-        
+
         <TabsContent value="today">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Formulario de bienestar */}
@@ -339,7 +339,7 @@ export function WellnessScoreTracker() {
                       <span>Alto</span>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <Label htmlFor="sleep">Horas de sueño</Label>
@@ -361,7 +361,7 @@ export function WellnessScoreTracker() {
                       <span>12h</span>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <Label htmlFor="stress">Nivel de estrés</Label>
@@ -383,7 +383,7 @@ export function WellnessScoreTracker() {
                       <span>Alto</span>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <Label htmlFor="hrv">Variabilidad cardíaca (HRV)</Label>
@@ -408,8 +408,8 @@ export function WellnessScoreTracker() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   onClick={saveWellnessScore}
                   disabled={isSaving}
                 >
@@ -427,7 +427,7 @@ export function WellnessScoreTracker() {
                 </Button>
               </CardFooter>
             </Card>
-            
+
             {/* Puntuación y recomendaciones */}
             <AnimatedCard hoverEffect="lift">
               <CardHeader>
@@ -449,7 +449,7 @@ export function WellnessScoreTracker() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div>
                       <h4 className="font-medium mb-2">Recomendaciones:</h4>
                       <div className="bg-muted p-3 rounded-md text-sm">
@@ -458,14 +458,14 @@ export function WellnessScoreTracker() {
                         ))}
                       </div>
                     </div>
-                    
+
                     <div className="text-center text-sm text-muted-foreground">
                       <Calendar className="inline-block h-4 w-4 mr-1" />
-                      {new Date().toLocaleDateString('es-ES', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                      {new Date().toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
                       })}
                     </div>
                   </>
@@ -480,7 +480,7 @@ export function WellnessScoreTracker() {
             </AnimatedCard>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="history">
           <Card>
             <CardHeader>
@@ -503,15 +503,15 @@ export function WellnessScoreTracker() {
                         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="date" 
+                        <XAxis
+                          dataKey="date"
                           tickFormatter={formatDate}
                           angle={-45}
                           textAnchor="end"
                           height={60}
                         />
                         <YAxis />
-                        <Tooltip 
+                        <Tooltip
                           formatter={(value, name) => {
                             if (name === "recovery_score") return [`${value}`, "Recuperación"]
                             if (name === "mood") return [`${value}/10`, "Estado de ánimo"]
@@ -520,19 +520,19 @@ export function WellnessScoreTracker() {
                             if (name === "hrv") return [`${value} ms`, "HRV"]
                             return [value, name]
                           }}
-                          labelFormatter={(label) => new Date(label).toLocaleDateString('es-ES', { 
-                            weekday: 'short', 
-                            month: 'short', 
-                            day: 'numeric' 
+                          labelFormatter={(label) => new Date(label).toLocaleDateString('es-ES', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric'
                           })}
                         />
                         <Legend />
-                        <Line 
-                          type="monotone" 
-                          dataKey="recovery_score" 
+                        <Line
+                          type="monotone"
+                          dataKey="recovery_score"
                           name="Recuperación"
-                          stroke="#8884d8" 
-                          activeDot={{ r: 8 }} 
+                          stroke="#8884d8"
+                          activeDot={{ r: 8 }}
                         />
                         <Line type="monotone" dataKey="mood" name="Estado de ánimo" stroke="#ff7300" />
                         <Line type="monotone" dataKey="sleep_hours" name="Horas de sueño" stroke="#0088fe" />
@@ -545,15 +545,15 @@ export function WellnessScoreTracker() {
                         margin={{ top: 5, right: 30, left: 20, bottom: 60 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="date" 
+                        <XAxis
+                          dataKey="date"
                           tickFormatter={formatDate}
                           angle={-45}
                           textAnchor="end"
                           height={60}
                         />
                         <YAxis />
-                        <Tooltip 
+                        <Tooltip
                           formatter={(value, name) => {
                             if (name === "recovery_score") return [`${value}`, "Recuperación"]
                             if (name === "mood") return [`${value}/10`, "Estado de ánimo"]
@@ -562,10 +562,10 @@ export function WellnessScoreTracker() {
                             if (name === "hrv") return [`${value} ms`, "HRV"]
                             return [value, name]
                           }}
-                          labelFormatter={(label) => new Date(label).toLocaleDateString('es-ES', { 
-                            weekday: 'short', 
-                            month: 'short', 
-                            day: 'numeric' 
+                          labelFormatter={(label) => new Date(label).toLocaleDateString('es-ES', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric'
                           })}
                         />
                         <Legend />

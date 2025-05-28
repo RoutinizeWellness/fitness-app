@@ -39,7 +39,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { WorkoutRoutine, getWorkoutRoutineById } from "@/lib/workout-routines"
 import { getExerciseById, addWorkout } from "@/lib/supabase-queries"
 import { Exercise } from "@/lib/supabase"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 
 export default function WorkoutActivePage() {
   const router = useRouter()

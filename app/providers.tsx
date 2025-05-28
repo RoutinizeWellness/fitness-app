@@ -14,7 +14,7 @@ import ErrorBoundary from './error-boundary'
 
 import { AuthDiagnostics } from '@/components/auth/auth-diagnostics'
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children, mounted = true }: { children: React.ReactNode; mounted?: boolean }) {
   // Add a state to track if providers are ready
   const [providersReady, setProvidersReady] = useState(false)
 

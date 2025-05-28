@@ -10,13 +10,13 @@ import { AnimatedList } from "@/components/ui/animated-list"
 import { LoadingAnimation } from "@/components/ui/loading-animation"
 import { toast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/contexts/auth-context"
-import { 
-  Play, 
-  Pause, 
-  SkipForward, 
-  RotateCcw, 
-  Clock, 
+import { useAuth } from "@/lib/contexts/auth-context"
+import {
+  Play,
+  Pause,
+  SkipForward,
+  RotateCcw,
+  Clock,
   Calendar,
   CheckCircle2,
   Filter,
@@ -28,12 +28,12 @@ import {
 } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 
@@ -115,50 +115,50 @@ function SessionPlayer({ session, onComplete }: SessionPlayerProps) {
   const [currentTime, setCurrentTime] = useState(0)
   const [progress, setProgress] = useState(0)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  
+
   // Formatear tiempo en minutos:segundos
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`
   }
-  
+
   // Iniciar o pausar la sesión
   const togglePlay = () => {
     setIsPlaying(!isPlaying)
   }
-  
+
   // Reiniciar la sesión
   const resetSession = () => {
     setIsPlaying(false)
     setCurrentTime(0)
     setProgress(0)
-    
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
       intervalRef.current = null
     }
   }
-  
+
   // Completar la sesión
   const completeSession = () => {
     setIsPlaying(false)
     setCurrentTime(session.duration * 60)
     setProgress(100)
-    
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
       intervalRef.current = null
     }
-    
+
     onComplete()
-    
+
     toast({
       title: "¡Sesión completada!",
       description: `Has completado la sesión "${session.title}"`,
     })
   }
-  
+
   // Efecto para manejar el temporizador
   useEffect(() => {
     if (isPlaying) {
@@ -168,26 +168,26 @@ function SessionPlayer({ session, onComplete }: SessionPlayerProps) {
           const totalTime = session.duration * 60
           const newProgress = Math.min((newTime / totalTime) * 100, 100)
           setProgress(newProgress)
-          
+
           if (newTime >= totalTime) {
             completeSession()
             return totalTime
           }
-          
+
           return newTime
         })
       }, 1000)
     } else if (intervalRef.current) {
       clearInterval(intervalRef.current)
     }
-    
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
       }
     }
   }, [isPlaying, session.duration])
-  
+
   return (
     <Card>
       <CardHeader>
@@ -207,7 +207,7 @@ function SessionPlayer({ session, onComplete }: SessionPlayerProps) {
           >
             <RotateCcw className="h-4 w-4" />
           </Button>
-          
+
           <Button
             size="icon"
             className="h-12 w-12 rounded-full"
@@ -215,7 +215,7 @@ function SessionPlayer({ session, onComplete }: SessionPlayerProps) {
           >
             {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
           </Button>
-          
+
           <Button
             variant="outline"
             size="icon"
@@ -224,7 +224,7 @@ function SessionPlayer({ session, onComplete }: SessionPlayerProps) {
             <SkipForward className="h-4 w-4" />
           </Button>
         </div>
-        
+
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span>{formatTime(currentTime)}</span>
@@ -232,13 +232,13 @@ function SessionPlayer({ session, onComplete }: SessionPlayerProps) {
           </div>
           <Progress value={progress} />
         </div>
-        
+
         <div className="flex justify-center gap-4">
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <Clock className="h-4 w-4" />
             <span>{session.duration} min</span>
           </div>
-          
+
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <Badge variant="outline" className="capitalize">
               {session.level}
@@ -257,39 +257,39 @@ export function RecoverySessions() {
   const [completedSessions, setCompletedSessions] = useState<RecoverySession[]>([])
   const [selectedSession, setSelectedSession] = useState<typeof RECOVERY_SESSIONS[0] | null>(null)
   const [filterType, setFilterType] = useState<string>("all")
-  
+
   // Cargar sesiones completadas
   useEffect(() => {
     if (user) {
       loadCompletedSessions()
     }
   }, [user])
-  
+
   // Cargar sesiones completadas desde Supabase
   const loadCompletedSessions = async () => {
     if (!user) return
-    
+
     setIsLoading(true)
-    
+
     try {
       // Crear tabla si no existe
       const { error: createError } = await supabase.rpc('create_recovery_sessions_if_not_exists')
-      
+
       if (createError) {
         console.error("Error creating table:", createError)
       }
-      
+
       const { data, error } = await supabase
         .from("recovery_sessions")
         .select("*")
         .eq("user_id", user.id)
         .eq("completed", true)
         .order("created_at", { ascending: false })
-      
+
       if (error) {
         throw error
       }
-      
+
       setCompletedSessions(data || [])
     } catch (error) {
       console.error("Error loading completed sessions:", error)
@@ -302,11 +302,11 @@ export function RecoverySessions() {
       setIsLoading(false)
     }
   }
-  
+
   // Guardar sesión completada
   const saveCompletedSession = async (sessionId: string, type: string, duration: number) => {
     if (!user) return
-    
+
     try {
       const sessionData = {
         user_id: user.id,
@@ -315,13 +315,13 @@ export function RecoverySessions() {
         duration,
         completed: true
       }
-      
+
       const { error } = await supabase
         .from("recovery_sessions")
         .insert(sessionData)
-      
+
       if (error) throw error
-      
+
       // Recargar sesiones completadas
       await loadCompletedSessions()
     } catch (error) {
@@ -333,13 +333,13 @@ export function RecoverySessions() {
       })
     }
   }
-  
+
   // Manejar la selección de una sesión
   const handleSelectSession = (session: typeof RECOVERY_SESSIONS[0]) => {
     setSelectedSession(session)
     setActiveTab("player")
   }
-  
+
   // Manejar la finalización de una sesión
   const handleSessionComplete = () => {
     if (selectedSession) {
@@ -350,17 +350,17 @@ export function RecoverySessions() {
       )
     }
   }
-  
+
   // Filtrar sesiones por tipo
-  const filteredSessions = RECOVERY_SESSIONS.filter(session => 
+  const filteredSessions = RECOVERY_SESSIONS.filter(session =>
     filterType === "all" || session.type === filterType
   )
-  
+
   // Formatear fecha para mostrar
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), "d 'de' MMMM, yyyy - HH:mm", { locale: es })
   }
-  
+
   // Obtener icono según el tipo de sesión
   const getSessionIcon = (type: string) => {
     switch (type) {
@@ -376,7 +376,7 @@ export function RecoverySessions() {
         return <Wind className="h-5 w-5 text-gray-500" />
     }
   }
-  
+
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -388,7 +388,7 @@ export function RecoverySessions() {
               <TabsTrigger value="player">Reproductor</TabsTrigger>
             )}
           </TabsList>
-          
+
           {activeTab === "sessions" && (
             <div className="flex items-center gap-2">
               <Select
@@ -408,25 +408,25 @@ export function RecoverySessions() {
               </Select>
             </div>
           )}
-          
+
           {activeTab === "history" && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={loadCompletedSessions} 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadCompletedSessions}
               disabled={isLoading}
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             </Button>
           )}
         </div>
-        
+
         <TabsContent value="sessions">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredSessions.map((session) => (
-              <AnimatedCard 
-                key={session.id} 
-                className="cursor-pointer" 
+              <AnimatedCard
+                key={session.id}
+                className="cursor-pointer"
                 hoverEffect="lift"
                 onClick={() => handleSelectSession(session)}
               >
@@ -460,7 +460,7 @@ export function RecoverySessions() {
             ))}
           </div>
         </TabsContent>
-        
+
         <TabsContent value="history">
           <Card>
             <CardHeader>
@@ -479,7 +479,7 @@ export function RecoverySessions() {
                   items={completedSessions.map((session) => {
                     // Encontrar detalles de la sesión
                     const sessionDetails = RECOVERY_SESSIONS.find(s => s.id === session.session_id)
-                    
+
                     return (
                       <div key={session.id} className="flex items-center gap-4 p-4 border-b last:border-0">
                         <div className="flex-shrink-0">
@@ -529,12 +529,12 @@ export function RecoverySessions() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="player">
           {selectedSession && (
-            <SessionPlayer 
-              session={selectedSession} 
-              onComplete={handleSessionComplete} 
+            <SessionPlayer
+              session={selectedSession}
+              onComplete={handleSessionComplete}
             />
           )}
         </TabsContent>

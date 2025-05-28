@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { toast } from "@/components/ui/use-toast"
 import { Button3D } from "@/components/ui/button-3d"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -426,7 +426,7 @@ export function AdminLayout({ children, title = "Panel de Administración" }: Ad
             </Button3D>
           </div>
         </header>
-        
+
         {/* Page content */}
         <main className="flex-1 p-6 pt-20 md:pt-6 overflow-y-auto">
           {children}

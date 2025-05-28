@@ -114,8 +114,7 @@ export type Exercise = {
   tags?: string[] | null;
 };
 
-// Exportar funcionalidades de autenticación desde el cliente unificado
-export { supabase } from './supabase-unified';
+// Funcionalidades de autenticación ya exportadas desde supabase-client
 
 // Exportar funcionalidades de queries
 export {

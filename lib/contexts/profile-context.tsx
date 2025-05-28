@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase-unified'
 import { useToast } from '@/components/ui/use-toast'
 import { ToastAction } from '@/components/ui/toast'
-import { useAuth } from '@/lib/auth/auth-context'
+import { AuthContext } from '@/lib/auth/auth-context'
 
 export type UserProfile = {
   id: string
@@ -33,8 +33,12 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const { user, session } = useAuth()
   const { toast } = useToast()
+
+  // Get auth context safely
+  const authContext = React.useContext(AuthContext)
+  const user = authContext?.user || null
+  const session = authContext?.session || null
 
   // Helper function to transform Supabase profile data to our app's format
   const transformProfileData = (profileData: any): UserProfile => {

@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import { BluetoothService } from "@/lib/bluetooth-service"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 // Tipos para los datos de actividad

@@ -7,11 +7,11 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
-import { 
-  AlertTriangle, 
-  Activity, 
-  TrendingDown, 
-  TrendingUp, 
+import {
+  AlertTriangle,
+  Activity,
+  TrendingDown,
+  TrendingUp,
   RefreshCw,
   Battery,
   BatteryCharging,
@@ -31,7 +31,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 import { getUserFatigue } from "@/lib/adaptive-learning-service"
 import { isReadyToTrain } from "@/lib/wearable-integration"
 
@@ -65,31 +65,31 @@ export default function FatigueInjuryPrediction() {
   const [injuryRiskData, setInjuryRiskData] = useState<InjuryRiskData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  
+
   // Load fatigue and injury risk data
   useEffect(() => {
     const loadData = async () => {
       if (!user) return
-      
+
       setIsLoading(true)
-      
+
       try {
         // Load fatigue data from the API
         const { data: fatigueResponse, error: fatigueError } = await getUserFatigue(user.id)
-        
+
         if (fatigueError) {
           console.error("Error loading fatigue data:", fatigueError)
           throw fatigueError
         }
-        
+
         // Load ready to train data
         const { data: readyToTrainData, error: readyError } = await isReadyToTrain(user.id)
-        
+
         if (readyError) {
           console.error("Error loading ready to train data:", readyError)
           throw readyError
         }
-        
+
         // Process fatigue data
         if (fatigueResponse) {
           const fatigue: FatigueData = {
@@ -108,9 +108,9 @@ export default function FatigueInjuryPrediction() {
             recoveryScore: readyToTrainData?.recovery_score || 0,
             recommendations: readyToTrainData?.recommendations || []
           }
-          
+
           setFatigueData(fatigue)
-          
+
           // Generate injury risk data based on fatigue
           generateInjuryRiskData(fatigue)
         } else {
@@ -125,10 +125,10 @@ export default function FatigueInjuryPrediction() {
         setIsLoading(false)
       }
     }
-    
+
     loadData()
   }, [user])
-  
+
   // Get fatigue level based on fatigue value
   const getFatigueLevel = (fatigue: number): 'low' | 'moderate' | 'high' | 'extreme' => {
     if (fatigue < 30) return 'low'
@@ -136,36 +136,36 @@ export default function FatigueInjuryPrediction() {
     if (fatigue < 85) return 'high'
     return 'extreme'
   }
-  
+
   // Generate injury risk data based on fatigue
   const generateInjuryRiskData = (fatigue: FatigueData) => {
     // Calculate overall risk based on fatigue and other factors
     const baseRisk = fatigue.currentFatigue * 0.7 // 70% contribution from fatigue
     const randomFactor = Math.random() * 20 // Random factor for variation
     const overallRisk = Math.min(100, Math.max(0, baseRisk + randomFactor - 10))
-    
+
     // Determine risk level
     let riskLevel: 'low' | 'moderate' | 'high' | 'extreme'
     if (overallRisk < 30) riskLevel = 'low'
     else if (overallRisk < 60) riskLevel = 'moderate'
     else if (overallRisk < 85) riskLevel = 'high'
     else riskLevel = 'extreme'
-    
+
     // Generate risk factors
     const riskFactors = []
-    
+
     // Add fatigue as a risk factor
     riskFactors.push({
       factor: "Fatiga acumulada",
       contribution: fatigue.currentFatigue,
       description: "La fatiga acumulada aumenta el riesgo de lesiones debido a la disminución de la coordinación y la fuerza."
     })
-    
+
     // Add muscle imbalance as a risk factor if there's high variation in muscle group fatigue
     const muscleValues = Object.values(fatigue.muscleGroupFatigue)
     const maxFatigue = Math.max(...muscleValues)
     const minFatigue = Math.min(...muscleValues)
-    
+
     if (maxFatigue - minFatigue > 30) {
       riskFactors.push({
         factor: "Desequilibrio muscular",
@@ -173,7 +173,7 @@ export default function FatigueInjuryPrediction() {
         description: "Grandes diferencias en la fatiga entre grupos musculares pueden llevar a compensaciones y aumentar el riesgo de lesiones."
       })
     }
-    
+
     // Add recovery as a risk factor if recovery score is low
     if (fatigue.recoveryScore < 70) {
       riskFactors.push({
@@ -182,7 +182,7 @@ export default function FatigueInjuryPrediction() {
         description: "Una recuperación inadecuada entre sesiones de entrenamiento aumenta significativamente el riesgo de lesiones."
       })
     }
-    
+
     // Add random risk factors
     const possibleFactors = [
       {
@@ -202,55 +202,55 @@ export default function FatigueInjuryPrediction() {
         description: "Niveles elevados de estrés pueden contribuir a lesiones por tensión muscular y falta de concentración."
       }
     ]
-    
+
     // Add 1-2 random factors
     const numRandomFactors = Math.floor(Math.random() * 2) + 1
     for (let i = 0; i < numRandomFactors; i++) {
       const randomIndex = Math.floor(Math.random() * possibleFactors.length)
       const factor = possibleFactors[randomIndex]
-      
+
       riskFactors.push({
         factor: factor.factor,
         contribution: Math.floor(Math.random() * 50) + 30, // 30-80
         description: factor.description
       })
-      
+
       // Remove the factor to avoid duplicates
       possibleFactors.splice(randomIndex, 1)
-      
+
       if (possibleFactors.length === 0) break
     }
-    
+
     // Generate recommendations based on risk level
     const recommendations = []
-    
+
     if (riskLevel === 'high' || riskLevel === 'extreme') {
       recommendations.push("Considera tomar 1-2 días de descanso completo para recuperarte.")
       recommendations.push("Reduce la intensidad de tus entrenamientos en un 40-50% durante la próxima semana.")
     }
-    
+
     if (riskLevel === 'moderate') {
       recommendations.push("Reduce la intensidad de tus entrenamientos en un 20-30% durante los próximos días.")
       recommendations.push("Enfócate en ejercicios de movilidad y recuperación activa.")
     }
-    
+
     recommendations.push("Prioriza el sueño y la nutrición para optimizar la recuperación.")
-    
+
     // Add specific recommendations based on risk factors
     for (const factor of riskFactors) {
       if (factor.factor === "Desequilibrio muscular") {
         recommendations.push("Trabaja en equilibrar tu entrenamiento entre grupos musculares antagonistas.")
       }
-      
+
       if (factor.factor === "Técnica de ejercicio") {
         recommendations.push("Considera una sesión con un entrenador para revisar tu técnica en ejercicios clave.")
       }
-      
+
       if (factor.factor === "Estrés psicológico") {
         recommendations.push("Incorpora técnicas de reducción de estrés como meditación o respiración profunda.")
       }
     }
-    
+
     setInjuryRiskData({
       overallRisk,
       riskLevel,
@@ -258,7 +258,7 @@ export default function FatigueInjuryPrediction() {
       recommendations
     })
   }
-  
+
   // Generate sample data for development/testing
   const generateSampleData = () => {
     // Generate sample fatigue data
@@ -282,26 +282,26 @@ export default function FatigueInjuryPrediction() {
         "Asegúrate de dormir al menos 8 horas esta noche"
       ]
     }
-    
+
     fatigue.fatigueLevel = getFatigueLevel(fatigue.currentFatigue)
-    
+
     setFatigueData(fatigue)
-    
+
     // Generate injury risk data based on fatigue
     generateInjuryRiskData(fatigue)
   }
-  
+
   // Refresh data
   const handleRefresh = async () => {
     if (!user) return
-    
+
     setIsRefreshing(true)
-    
+
     try {
       // In a real implementation, this would call the API again
       // For now, we'll just generate new sample data
       generateSampleData()
-      
+
       toast({
         title: "Datos actualizados",
         description: "Los datos de fatiga y riesgo de lesión se han actualizado.",
@@ -317,7 +317,7 @@ export default function FatigueInjuryPrediction() {
       setIsRefreshing(false)
     }
   }
-  
+
   // Render loading state
   if (isLoading) {
     return (
@@ -326,7 +326,7 @@ export default function FatigueInjuryPrediction() {
           <h2 className="text-2xl font-bold tracking-tight">Predicción de Fatiga y Riesgo de Lesión</h2>
           <Skeleton className="h-10 w-10 rounded-full" />
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Skeleton className="h-64" />
           <Skeleton className="h-64" />
@@ -334,21 +334,21 @@ export default function FatigueInjuryPrediction() {
       </div>
     )
   }
-  
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Predicción de Fatiga y Riesgo de Lesión</h2>
-        <Button 
-          variant="outline" 
-          size="icon" 
+        <Button
+          variant="outline"
+          size="icon"
           onClick={handleRefresh}
           disabled={isRefreshing}
         >
           <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
         </Button>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Fatigue Card */}
         <Card>
@@ -363,7 +363,7 @@ export default function FatigueInjuryPrediction() {
                   Análisis de tu nivel actual de fatiga y recuperación
                 </CardDescription>
               </div>
-              
+
               {fatigueData && (
                 <Badge variant={
                   fatigueData.readyToTrain ? "success" : "destructive"
@@ -403,8 +403,8 @@ export default function FatigueInjuryPrediction() {
                       )}
                     </div>
                   </div>
-                  <Progress 
-                    value={fatigueData.currentFatigue} 
+                  <Progress
+                    value={fatigueData.currentFatigue}
                     className="h-2"
                     indicatorClassName={
                       fatigueData.fatigueLevel === 'low' ? "bg-green-500" :
@@ -414,19 +414,19 @@ export default function FatigueInjuryPrediction() {
                     }
                   />
                 </div>
-                
+
                 <div className="mb-4">
                   <div className="flex justify-between items-center mb-1">
                     <span className="font-medium">Puntuación de Recuperación</span>
                     <span className="font-medium">{fatigueData.recoveryScore}%</span>
                   </div>
-                  <Progress 
-                    value={fatigueData.recoveryScore} 
+                  <Progress
+                    value={fatigueData.recoveryScore}
                     className="h-2"
                     indicatorClassName="bg-blue-500"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <h4 className="font-medium">Fatiga por Grupo Muscular</h4>
                   <div className="grid grid-cols-2 gap-2">
@@ -436,8 +436,8 @@ export default function FatigueInjuryPrediction() {
                           <span className="capitalize">{muscle}</span>
                           <span>{Math.round(value)}%</span>
                         </div>
-                        <Progress 
-                          value={value} 
+                        <Progress
+                          value={value}
                           className="h-1"
                           indicatorClassName={
                             value < 30 ? "bg-green-500" :
@@ -459,7 +459,7 @@ export default function FatigueInjuryPrediction() {
             </Button>
           </CardFooter>
         </Card>
-        
+
         {/* Injury Risk Card */}
         <Card>
           <CardHeader className="pb-2">
@@ -473,7 +473,7 @@ export default function FatigueInjuryPrediction() {
                   Análisis predictivo de tu riesgo actual de lesión
                 </CardDescription>
               </div>
-              
+
               {injuryRiskData && (
                 <Badge variant={
                   injuryRiskData.riskLevel === 'low' ? "outline" :
@@ -499,8 +499,8 @@ export default function FatigueInjuryPrediction() {
                     <span className="font-medium">Riesgo General</span>
                     <span className="font-medium">{Math.round(injuryRiskData.overallRisk)}%</span>
                   </div>
-                  <Progress 
-                    value={injuryRiskData.overallRisk} 
+                  <Progress
+                    value={injuryRiskData.overallRisk}
                     className="h-2"
                     indicatorClassName={
                       injuryRiskData.riskLevel === 'low' ? "bg-green-500" :
@@ -510,7 +510,7 @@ export default function FatigueInjuryPrediction() {
                     }
                   />
                 </div>
-                
+
                 <div className="space-y-2 mb-4">
                   <h4 className="font-medium">Factores de Riesgo Principales</h4>
                   <div className="space-y-3">
@@ -520,8 +520,8 @@ export default function FatigueInjuryPrediction() {
                           <span>{factor.factor}</span>
                           <span>{Math.round(factor.contribution)}%</span>
                         </div>
-                        <Progress 
-                          value={factor.contribution} 
+                        <Progress
+                          value={factor.contribution}
                           className="h-1"
                           indicatorClassName={
                             factor.contribution < 30 ? "bg-green-500" :
@@ -535,7 +535,7 @@ export default function FatigueInjuryPrediction() {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <h4 className="font-medium">Recomendaciones</h4>
                   <ul className="text-sm space-y-1">

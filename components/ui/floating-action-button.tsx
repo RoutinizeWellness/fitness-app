@@ -201,9 +201,6 @@ const FloatingActionButton = React.forwardRef<HTMLButtonElement, FloatingActionB
       </>
     );
 
-    // Check if we're in a browser environment
-    const isBrowser = typeof window !== 'undefined';
-
     // Always use NonDynamicButton during SSR
     if (!isBrowser) {
       return (

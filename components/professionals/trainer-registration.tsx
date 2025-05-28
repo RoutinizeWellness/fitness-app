@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "@/components/ui/use-toast"
 import { createTrainerProfile } from "@/lib/professional-service"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 
 // Esquema de validación para el formulario
 const trainerFormSchema = z.object({
@@ -117,7 +117,7 @@ export function TrainerRegistration() {
   // Función para añadir certificación
   const addCertification = () => {
     if (!newCertification.trim()) return;
-    
+
     const currentCertifications = form.getValues("certifications") || [];
     form.setValue("certifications", [...currentCertifications, newCertification]);
     setNewCertification("");
@@ -132,7 +132,7 @@ export function TrainerRegistration() {
   // Función para añadir deporte
   const addSport = () => {
     if (!newSport.trim()) return;
-    
+
     const currentSports = form.getValues("specializations.sports") || [];
     form.setValue("specializations.sports", [...currentSports, newSport]);
     setNewSport("");
@@ -147,7 +147,7 @@ export function TrainerRegistration() {
   // Función para añadir otra especialización
   const addOtherSpecialization = () => {
     if (!newOtherSpecialization.trim()) return;
-    
+
     const currentOther = form.getValues("specializations.other") || [];
     form.setValue("specializations.other", [...currentOther, newOtherSpecialization]);
     setNewOtherSpecialization("");

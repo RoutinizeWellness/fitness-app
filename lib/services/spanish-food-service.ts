@@ -1,9 +1,14 @@
 import { supabase } from '@/lib/supabase-client'
-import { handleSupabaseError } from '@/lib/supabase-client-enhanced'
 import { spanishFoodDatabase, SpanishFoodItem } from '@/data/spanish-food-database'
 import { isEmptyErrorObject, logErrorWithContext } from '@/lib/error-utils'
 
 const FOOD_DATABASE_TABLE = 'food_database'
+
+// Helper function to handle Supabase errors
+const handleSupabaseError = (error: any, context: string) => {
+  console.error(`${context}:`, error)
+  return error
+}
 
 /**
  * Inicializa la base de datos de alimentos españoles en Supabase

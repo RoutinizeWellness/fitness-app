@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "@/components/ui/use-toast"
 import { createNutritionistProfile } from "@/lib/professional-service"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/contexts/auth-context"
 
 // Esquema de validación para el formulario
 const nutritionistFormSchema = z.object({
@@ -116,7 +116,7 @@ export function NutritionistRegistration() {
   // Función para añadir certificación
   const addCertification = () => {
     if (!newCertification.trim()) return;
-    
+
     const currentCertifications = form.getValues("certifications") || [];
     form.setValue("certifications", [...currentCertifications, newCertification]);
     setNewCertification("");
@@ -131,7 +131,7 @@ export function NutritionistRegistration() {
   // Función para añadir otra especialización
   const addOtherSpecialization = () => {
     if (!newOtherSpecialization.trim()) return;
-    
+
     const currentOther = form.getValues("specializations.other") || [];
     form.setValue("specializations.other", [...currentOther, newOtherSpecialization]);
     setNewOtherSpecialization("");

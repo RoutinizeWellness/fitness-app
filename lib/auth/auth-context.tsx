@@ -42,7 +42,7 @@ type AuthContextType = {
 };
 
 // Crear el contexto
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /**
  * Proveedor de autenticación

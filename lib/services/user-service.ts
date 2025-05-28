@@ -1,6 +1,6 @@
 /**
  * User Service
- * 
+ *
  * This service handles user-related operations with Supabase.
  * It provides methods for:
  * - Managing user profiles
@@ -8,9 +8,15 @@
  * - Managing user experience levels
  */
 
-import { supabaseService, QueryResponse } from "@/lib/supabase-service"
-import { TABLES } from "@/lib/config/supabase-config"
+import { supabase } from "@/lib/supabase-client"
 import { v4 as uuidv4 } from "uuid"
+
+// Define QueryResponse type locally
+export interface QueryResponse<T> {
+  data: T | null
+  error: any
+  status?: number
+}
 
 // Types for user module
 export interface UserProfile {
@@ -67,12 +73,13 @@ export class UserService {
       return { data: null, error: { message: 'User ID is required' }, status: 400 }
     }
 
-    const response = await supabaseService.query<any>(TABLES.PROFILES, {
-      select: '*',
-      eq: { user_id: userId },
-      single: true,
-      useCache: true
-    })
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    const response = { data, error, status: error ? 500 : 200 }
 
     // Transform database data to interface format
     if (response.data) {
@@ -112,17 +119,17 @@ export class UserService {
     }
 
     // Get existing profile
-    const existingResponse = await supabaseService.query<any>(TABLES.PROFILES, {
-      select: 'id',
-      eq: { user_id: profile.userId },
-      single: true
-    })
+    const { data: existingData, error: existingError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', profile.userId)
+      .single()
 
-    if (!existingResponse.data) {
+    if (existingError || !existingData) {
       return { data: null, error: { message: 'User profile not found' }, status: 404 }
     }
 
-    const profileId = existingResponse.data.id
+    const profileId = existingData.id
 
     // Prepare data for update
     const updateData = {
@@ -148,16 +155,19 @@ export class UserService {
     })
 
     // Update profile
-    const response = await supabaseService.update<any>(
-      TABLES.PROFILES,
-      updateData,
-      { eq: { id: profileId } }
-    )
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updateData)
+      .eq('id', profileId)
+      .select()
+      .single()
+
+    const response = { data, error, status: error ? 500 : 200 }
 
     // Transform database data to interface format
     if (response.data) {
       const data = Array.isArray(response.data) ? response.data[0] : response.data
-      
+
       const updatedProfile: UserProfile = {
         id: data.id,
         userId: data.user_id,
@@ -193,12 +203,13 @@ export class UserService {
       return { data: null, error: { message: 'User ID is required' }, status: 400 }
     }
 
-    const response = await supabaseService.query<any>(TABLES.USER_INTERFACE_PREFERENCES, {
-      select: '*',
-      eq: { user_id: userId },
-      single: true,
-      useCache: true
-    })
+    const { data, error } = await supabase
+      .from('user_interface_preferences')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    const response = { data, error, status: error ? 500 : 200 }
 
     // Transform database data to interface format
     if (response.data) {
@@ -237,11 +248,11 @@ export class UserService {
     }
 
     // Get existing preferences
-    const existingResponse = await supabaseService.query<any>(TABLES.USER_INTERFACE_PREFERENCES, {
-      select: 'id',
-      eq: { user_id: preferences.userId },
-      single: true
-    })
+    const { data: existingData, error: existingError } = await supabase
+      .from('user_interface_preferences')
+      .select('id')
+      .eq('user_id', preferences.userId)
+      .single()
 
     // Prepare data for update
     const updateData = {
@@ -267,28 +278,34 @@ export class UserService {
 
     let response
 
-    if (!existingResponse.data) {
+    if (existingError || !existingData) {
       // If preferences don't exist, create them
       updateData.id = uuidv4()
       updateData.created_at = updateData.updated_at
-      
-      response = await supabaseService.insert<any>(
-        TABLES.USER_INTERFACE_PREFERENCES,
-        updateData
-      )
+
+      const { data, error } = await supabase
+        .from('user_interface_preferences')
+        .insert(updateData)
+        .select()
+        .single()
+
+      response = { data, error, status: error ? 500 : 200 }
     } else {
       // If preferences exist, update them
-      response = await supabaseService.update<any>(
-        TABLES.USER_INTERFACE_PREFERENCES,
-        updateData,
-        { eq: { id: existingResponse.data.id } }
-      )
+      const { data, error } = await supabase
+        .from('user_interface_preferences')
+        .update(updateData)
+        .eq('id', existingData.id)
+        .select()
+        .single()
+
+      response = { data, error, status: error ? 500 : 200 }
     }
 
     // Transform database data to interface format
     if (response.data) {
       const data = Array.isArray(response.data) ? response.data[0] : response.data
-      
+
       const updatedPreferences: UserInterfacePreferences = {
         id: data.id,
         userId: data.user_id,

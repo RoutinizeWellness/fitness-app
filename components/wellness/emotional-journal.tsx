@@ -6,25 +6,25 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select"
 import { AnimatedCard } from "@/components/ui/animated-card"
 import { AnimatedList } from "@/components/ui/animated-list"
 import { LoadingAnimation } from "@/components/ui/loading-animation"
 import { toast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/contexts/auth-context"
-import { 
-  Calendar, 
-  Edit, 
-  Save, 
-  Trash2, 
-  Plus, 
+import { useAuth } from "@/lib/contexts/auth-context"
+import {
+  Calendar,
+  Edit,
+  Save,
+  Trash2,
+  Plus,
   Search,
   SortAsc,
   SortDesc,
@@ -67,7 +67,7 @@ export function EmotionalJournal() {
   const [entries, setEntries] = useState<JournalEntry[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
-  
+
   // Estado para el formulario de entrada
   const [currentEntry, setCurrentEntry] = useState<Omit<JournalEntry, "user_id">>({
     date: format(new Date(), "yyyy-MM-dd"),
@@ -75,40 +75,40 @@ export function EmotionalJournal() {
     content: "",
     emotion: "neutral"
   })
-  
+
   const [editingId, setEditingId] = useState<string | null>(null)
-  
+
   // Cargar entradas del diario
   useEffect(() => {
     if (user) {
       loadJournalEntries()
     }
   }, [user])
-  
+
   // Cargar entradas del diario desde Supabase
   const loadJournalEntries = async () => {
     if (!user) return
-    
+
     setIsLoading(true)
-    
+
     try {
       // Crear tabla si no existe
       const { error: createError } = await supabase.rpc('create_emotional_journal_if_not_exists')
-      
+
       if (createError) {
         console.error("Error creating table:", createError)
       }
-      
+
       const { data, error } = await supabase
         .from("emotional_journal")
         .select("*")
         .eq("user_id", user.id)
         .order("date", { ascending: sortOrder === "asc" })
-      
+
       if (error) {
         throw error
       }
-      
+
       setEntries(data || [])
     } catch (error) {
       console.error("Error loading journal entries:", error)
@@ -121,11 +121,11 @@ export function EmotionalJournal() {
       setIsLoading(false)
     }
   }
-  
+
   // Guardar entrada del diario
   const saveJournalEntry = async () => {
     if (!user) return
-    
+
     if (!currentEntry.title.trim() || !currentEntry.content.trim()) {
       toast({
         title: "Error",
@@ -134,17 +134,17 @@ export function EmotionalJournal() {
       })
       return
     }
-    
+
     setIsSaving(true)
-    
+
     try {
       const entryData = {
         user_id: user.id,
         ...currentEntry
       }
-      
+
       let result
-      
+
       if (editingId) {
         // Actualizar entrada existente
         result = await supabase
@@ -152,9 +152,9 @@ export function EmotionalJournal() {
           .update(entryData)
           .eq("id", editingId)
           .eq("user_id", user.id)
-        
+
         if (result.error) throw result.error
-        
+
         toast({
           title: "Actualizado",
           description: "Tu entrada del diario ha sido actualizada correctamente",
@@ -164,15 +164,15 @@ export function EmotionalJournal() {
         result = await supabase
           .from("emotional_journal")
           .insert(entryData)
-        
+
         if (result.error) throw result.error
-        
+
         toast({
           title: "Guardado",
           description: "Tu entrada del diario ha sido guardada correctamente",
         })
       }
-      
+
       // Recargar entradas y resetear formulario
       await loadJournalEntries()
       resetForm()
@@ -187,7 +187,7 @@ export function EmotionalJournal() {
       setIsSaving(false)
     }
   }
-  
+
   // Editar entrada existente
   const editEntry = (entry: JournalEntry) => {
     setCurrentEntry({
@@ -197,36 +197,36 @@ export function EmotionalJournal() {
       emotion: entry.emotion
     })
     setEditingId(entry.id)
-    
+
     // Scroll al formulario
     document.getElementById("journal-form")?.scrollIntoView({ behavior: "smooth" })
   }
-  
+
   // Eliminar entrada
   const deleteEntry = async (id: string) => {
     if (!user) return
-    
+
     if (!confirm("¿Estás seguro de que deseas eliminar esta entrada?")) {
       return
     }
-    
+
     try {
       const { error } = await supabase
         .from("emotional_journal")
         .delete()
         .eq("id", id)
         .eq("user_id", user.id)
-      
+
       if (error) throw error
-      
+
       // Recargar entradas
       await loadJournalEntries()
-      
+
       // Si estábamos editando esta entrada, resetear el formulario
       if (editingId === id) {
         resetForm()
       }
-      
+
       toast({
         title: "Eliminado",
         description: "La entrada del diario ha sido eliminada correctamente",
@@ -240,7 +240,7 @@ export function EmotionalJournal() {
       })
     }
   }
-  
+
   // Resetear formulario
   const resetForm = () => {
     setCurrentEntry({
@@ -251,24 +251,24 @@ export function EmotionalJournal() {
     })
     setEditingId(null)
   }
-  
+
   // Filtrar entradas según término de búsqueda
-  const filteredEntries = entries.filter(entry => 
+  const filteredEntries = entries.filter(entry =>
     entry.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     entry.content.toLowerCase().includes(searchTerm.toLowerCase())
   )
-  
+
   // Obtener icono de emoción
   const getEmotionIcon = (emotion: string) => {
     const found = EMOTIONS.find(e => e.value === emotion)
     return found ? found.icon : <Meh className="h-4 w-4 text-gray-500" />
   }
-  
+
   // Formatear fecha para mostrar
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), "d 'de' MMMM, yyyy", { locale: es })
   }
-  
+
   return (
     <div className="space-y-6">
       {/* Formulario de entrada del diario */}
@@ -290,7 +290,7 @@ export function EmotionalJournal() {
                 onChange={(e) => setCurrentEntry({...currentEntry, date: e.target.value})}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="entry-emotion">¿Cómo te sientes?</Label>
               <Select
@@ -313,7 +313,7 @@ export function EmotionalJournal() {
               </Select>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="entry-title">Título</Label>
             <Input
@@ -323,7 +323,7 @@ export function EmotionalJournal() {
               onChange={(e) => setCurrentEntry({...currentEntry, title: e.target.value})}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="entry-content">Contenido</Label>
             <Textarea
@@ -339,7 +339,7 @@ export function EmotionalJournal() {
           <Button variant="outline" onClick={resetForm}>
             {editingId ? "Cancelar" : "Limpiar"}
           </Button>
-          
+
           <Button onClick={saveJournalEntry} disabled={isSaving}>
             {isSaving ? (
               <>
@@ -355,13 +355,13 @@ export function EmotionalJournal() {
           </Button>
         </CardFooter>
       </Card>
-      
+
       {/* Lista de entradas del diario */}
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <CardTitle>Mis entradas</CardTitle>
-            
+
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:flex-initial">
                 <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -372,19 +372,19 @@ export function EmotionalJournal() {
                   className="pl-8 h-9 w-full sm:w-[200px]"
                 />
               </div>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
+
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
               >
                 {sortOrder === "asc" ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
               </Button>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={loadJournalEntries} 
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadJournalEntries}
                 disabled={isLoading}
               >
                 <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
@@ -408,17 +408,17 @@ export function EmotionalJournal() {
                         <CardTitle className="text-lg">{entry.title}</CardTitle>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => editEntry(entry)}
                           aria-label="Editar entrada"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => deleteEntry(entry.id!)}
                           aria-label="Eliminar entrada"
                         >

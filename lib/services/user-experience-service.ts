@@ -1,5 +1,4 @@
-import { supabaseService, QueryResponse } from "@/lib/supabase-service";
-import { TABLES } from "@/lib/config/supabase-config";
+import { supabase } from "@/lib/supabase-client";
 
 export type ExperienceLevel = 'amateur_zero' | 'beginner' | 'intermediate' | 'advanced' | 'expert';
 export type InterfaceMode = 'beginner' | 'advanced';
@@ -41,37 +40,33 @@ export async function getUserExperienceLevel(userId: string): Promise<{
   }
 
   try {
-    const response = await supabaseService.query<any>(
-      TABLES.PROFILES,
-      {
-        select: 'experience_level, interface_mode, experience_details, advanced_features_enabled, onboarding_completed',
-        eq: { user_id: userId },
-        single: true,
-        useCache: true
-      }
-    );
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('experience_level, interface_mode, experience_details, advanced_features_enabled, onboarding_completed')
+      .eq('user_id', userId)
+      .single();
 
-    if (response.error) {
-      console.error('Error getting user experience level:', response.error);
+    if (error) {
+      console.error('Error getting user experience level:', error);
       return null;
     }
 
-    if (!response.data) {
+    if (!data) {
       console.error('No user profile found');
       return null;
     }
 
     return {
-      level: (response.data.experience_level || 'intermediate') as ExperienceLevel,
-      interfaceMode: (response.data.interface_mode || 'beginner') as InterfaceMode,
-      experienceDetails: response.data.experience_details || {
+      level: (data.experience_level || 'intermediate') as ExperienceLevel,
+      interfaceMode: (data.interface_mode || 'beginner') as InterfaceMode,
+      experienceDetails: data.experience_details || {
         yearsOfTraining: 0,
         consistencyLevel: 'moderate',
         technicalProficiency: 'novice',
         knowledgeLevel: 'basic'
       },
-      advancedFeaturesEnabled: response.data.advanced_features_enabled || false,
-      onboardingCompleted: response.data.onboarding_completed || false
+      advancedFeaturesEnabled: data.advanced_features_enabled || false,
+      onboardingCompleted: data.onboarding_completed || false
     };
   } catch (error) {
     console.error('Error processing user experience level:', error);
@@ -96,36 +91,34 @@ export async function updateUserExperienceLevel(
 
   try {
     // Update user profile
-    const profileResponse = await supabaseService.update<any>(
-      TABLES.PROFILES,
-      {
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
         experience_level: level,
         updated_at: new Date().toISOString()
-      },
-      { eq: { user_id: userId } }
-    );
+      })
+      .eq('user_id', userId);
 
-    if (profileResponse.error) {
-      console.error('Error updating user experience level:', profileResponse.error);
+    if (profileError) {
+      console.error('Error updating user experience level:', profileError);
       return false;
     }
 
     // If there's a previous level, record the progression
     if (previousLevel && previousLevel !== level) {
-      const progressionResponse = await supabaseService.insert<any>(
-        'user_experience_progression',
-        {
+      const { error: progressionError } = await supabase
+        .from('user_experience_progression')
+        .insert({
           user_id: userId,
           previous_level: previousLevel,
           new_level: level,
           progression_reason: reason || 'Manual update',
           assessment_score: assessmentScore,
           created_at: new Date().toISOString()
-        }
-      );
+        });
 
-      if (progressionResponse.error) {
-        console.error('Error recording experience progression:', progressionResponse.error);
+      if (progressionError) {
+        console.error('Error recording experience progression:', progressionError);
         // We don't return false here because the main update was successful
       }
     }
@@ -151,17 +144,16 @@ export async function updateUserInterfaceMode(
 
   try {
     // Update user profile
-    const response = await supabaseService.update<any>(
-      TABLES.PROFILES,
-      {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
         interface_mode: interfaceMode,
         updated_at: new Date().toISOString()
-      },
-      { eq: { user_id: userId } }
-    );
+      })
+      .eq('user_id', userId);
 
-    if (response.error) {
-      console.error('Error updating user interface mode:', response.error);
+    if (error) {
+      console.error('Error updating user interface mode:', error);
       return false;
     }
 
@@ -182,26 +174,22 @@ export async function getUserInterfacePreferences(userId: string): Promise<UserI
   }
 
   try {
-    const response = await supabaseService.query<UserInterfacePreferences>(
-      'user_interface_preferences',
-      {
-        select: '*',
-        eq: { user_id: userId },
-        single: true,
-        useCache: true
-      }
-    );
+    const { data, error } = await supabase
+      .from('user_interface_preferences')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
 
-    if (response.error) {
+    if (error) {
       // If no preferences found, create default ones
-      if (response.status === 404 || response.error.message?.includes('No rows found')) {
+      if (error.code === 'PGRST116' || error.message?.includes('No rows found')) {
         return createDefaultInterfacePreferences(userId);
       }
-      console.error('Error getting user interface preferences:', response.error);
+      console.error('Error getting user interface preferences:', error);
       return null;
     }
 
-    return response.data;
+    return data;
   } catch (error) {
     console.error('Error processing user interface preferences:', error);
     return null;
@@ -229,17 +217,18 @@ async function createDefaultInterfacePreferences(userId: string): Promise<UserIn
   };
 
   try {
-    const response = await supabaseService.insert<UserInterfacePreferences>(
-      'user_interface_preferences',
-      defaultPreferences
-    );
+    const { data, error } = await supabase
+      .from('user_interface_preferences')
+      .insert(defaultPreferences)
+      .select()
+      .single();
 
-    if (response.error) {
-      console.error('Error creating default interface preferences:', response.error);
+    if (error) {
+      console.error('Error creating default interface preferences:', error);
       return null;
     }
 
-    return Array.isArray(response.data) ? response.data[0] : response.data;
+    return data;
   } catch (error) {
     console.error('Error creating default interface preferences:', error);
     return null;
@@ -258,21 +247,21 @@ export async function updateUserInterfacePreferences(
   }
 
   try {
-    const response = await supabaseService.insert<UserInterfacePreferences>(
-      'user_interface_preferences',
-      {
+    const { data, error } = await supabase
+      .from('user_interface_preferences')
+      .upsert({
         ...preferences,
         updated_at: new Date().toISOString()
-      },
-      { upsert: true }
-    );
+      })
+      .select()
+      .single();
 
-    if (response.error) {
-      console.error('Error updating interface preferences:', response.error);
+    if (error) {
+      console.error('Error updating interface preferences:', error);
       return null;
     }
 
-    return Array.isArray(response.data) ? response.data[0] : response.data;
+    return data;
   } catch (error) {
     console.error('Error updating interface preferences:', error);
     return null;
