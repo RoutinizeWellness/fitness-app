@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useProfile } from "@/lib/contexts/profile-context"
 import { supabase } from "@/lib/supabase-unified"
 import { Button } from "@/components/ui/button"

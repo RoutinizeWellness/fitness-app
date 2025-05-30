@@ -8,12 +8,21 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChevronLeft, ChevronRight, Calendar, Dumbbell } from "lucide-react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { getActiveWorkoutPlan } from "@/lib/workout-plan-service"
 import { WorkoutPlan, WorkoutDay } from "@/lib/workout-plan-generator"
 
 export default function WorkoutCalendar() {
-  const { user } = useAuth()
+  // Safely get auth context
+  let user = null
+  try {
+    const authContext = useAuth()
+    user = authContext?.user || null
+  } catch (error) {
+    console.warn('WorkoutCalendar: AuthContext not available yet')
+    user = null
+  }
+
   const [currentDate, setCurrentDate] = useState(new Date())
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutPlan | null>(null)
   const [loading, setLoading] = useState(true)

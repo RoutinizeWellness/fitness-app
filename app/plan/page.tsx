@@ -22,7 +22,7 @@ import {
   Trash2, 
   Utensils 
 } from "lucide-react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 
 // Tipo para el plan de entrenamiento
 interface WorkoutPlan {

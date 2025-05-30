@@ -18,7 +18,7 @@ import {
   HelpCircle
 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { AnimatedFade, AnimatedSlide } from "@/components/animations/animated-transitions"
 import Image from "next/image"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"

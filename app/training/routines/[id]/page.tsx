@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -77,7 +77,10 @@ interface Exercise {
   };
 }
 
-export default function RoutineDetailPage({ params }: { params: { id: string } }) {
+export default function RoutineDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  // ✅ NEXT.JS 15: Unwrap async params using React.use()
+  const { id } = use(params)
+
   const router = useRouter()
   const { toast } = useToast()
   const [routine, setRoutine] = useState<WorkoutRoutine | null>(null)
@@ -96,7 +99,7 @@ export default function RoutineDetailPage({ params }: { params: { id: string } }
           const { data: routineData, error: routineError } = await supabase
             .from('training_routines')
             .select('*')
-            .eq('id', params.id)
+            .eq('id', id)
             .single()
 
           if (routineError) {
@@ -116,7 +119,7 @@ export default function RoutineDetailPage({ params }: { params: { id: string } }
           const { data: daysData, error: daysError } = await supabase
             .from('training_days')
             .select('*')
-            .eq('routine_id', params.id)
+            .eq('routine_id', id)
             .order('day_number', { ascending: true })
 
           if (daysError) {

@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { WorkoutPlanVerification } from "@/components/training/workout-plan-verification"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 
 // Datos simulados para los días de entrenamiento
 const workoutDays = [
@@ -68,7 +68,17 @@ interface ExecuteWorkoutProps {
 export function ExecuteWorkout({ userId, setActiveTab }: ExecuteWorkoutProps) {
   const router = useRouter()
   const { toast } = useToast()
-  const { user } = useAuth()
+
+  // Safely get auth context
+  let user = null
+  try {
+    const authContext = useAuth()
+    user = authContext?.user || null
+  } catch (error) {
+    console.warn('ExecuteWorkout: AuthContext not available yet')
+    user = null
+  }
+
   const [isLoading, setIsLoading] = useState(true)
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [showVerification, setShowVerification] = useState(true)

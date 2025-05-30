@@ -12,7 +12,7 @@ import { Search, Filter, MapPin, ShoppingCart, Utensils, Loader2, Heart, Plus } 
 import { searchSpanishFoods, getSpanishFoodCategories, getSpanishFoodRegions, initializeSpanishFoodDatabase } from "@/lib/services/spanish-food-service"
 import { spanishFoodDatabase } from "@/data/spanish-food-database"
 import { useNutrition } from "@/contexts/nutrition-context"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { toggleFavoriteFood } from "@/lib/favorite-foods-service"
 import { FavoriteFoods } from "@/components/nutrition/favorite-foods"
 

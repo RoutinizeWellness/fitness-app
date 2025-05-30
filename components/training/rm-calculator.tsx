@@ -14,7 +14,7 @@ import { AnimatedFade } from "@/components/animations/animated-transitions"
 import { useToast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase-client"
 import { processSupabaseResponse } from "@/lib/supabase-utils"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 
 // RM calculation formulas
 const RM_FORMULAS = {

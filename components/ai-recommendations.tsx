@@ -23,7 +23,7 @@ import {
   Lightbulb
 } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 
 // Tipos para las recomendaciones
 interface Recommendation {

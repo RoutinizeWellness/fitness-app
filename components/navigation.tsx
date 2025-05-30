@@ -7,7 +7,7 @@ import { Home, Dumbbell, BarChart3, User, Menu, Plus, Apple, Calendar, Users, Ta
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface NavigationProps {

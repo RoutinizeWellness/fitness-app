@@ -8,7 +8,7 @@ import { SafeClientButton } from "@/components/ui/safe-client-button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useNutrition } from "@/contexts/nutrition-context"
 import { createClient } from "@/lib/supabase/client"
 import { 

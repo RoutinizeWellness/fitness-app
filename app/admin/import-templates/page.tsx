@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { importAllPplTemplatesToSupabase } from '@/lib/supabase-training-templates';
-import { Button } from '@/components/ui/button';
+import { SafeClientButton as Button } from '@/components/ui/safe-client-button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';

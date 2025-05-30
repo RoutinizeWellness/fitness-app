@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Search, Clock, Utensils, ChevronRight, Heart, MapPin, RefreshCw } from "lucide-react"
 import spanishRecipes, { Recipe } from "@/lib/data/spanish-recipes-database"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 
 // Tipos de datos ya importados desde spanish-recipes-database.ts
 
@@ -331,12 +331,21 @@ export default function HealthyRecipes() {
 
     // Filtrar por término de búsqueda
     if (term.trim() !== "") {
-      filtered = filtered.filter(recipe =>
-        recipe.title.toLowerCase().includes(term.toLowerCase()) ||
-        recipe.description.toLowerCase().includes(term.toLowerCase()) ||
-        recipe.category.some(cat => cat.toLowerCase().includes(term.toLowerCase())) ||
-        (recipe.region && recipe.region.toLowerCase().includes(term.toLowerCase()))
-      )
+      filtered = filtered.filter(recipe => {
+        const titleMatch = recipe.title.toLowerCase().includes(term.toLowerCase())
+        const descriptionMatch = recipe.description.toLowerCase().includes(term.toLowerCase())
+        const regionMatch = recipe.region && recipe.region.toLowerCase().includes(term.toLowerCase())
+
+        // Manejar category como array o string
+        let categoryMatch = false
+        if (Array.isArray(recipe.category)) {
+          categoryMatch = recipe.category.some(cat => cat.toLowerCase().includes(term.toLowerCase()))
+        } else if (typeof recipe.category === 'string') {
+          categoryMatch = recipe.category.toLowerCase().includes(term.toLowerCase())
+        }
+
+        return titleMatch || descriptionMatch || categoryMatch || regionMatch
+      })
     }
 
     // Filtrar por categoría
@@ -346,9 +355,14 @@ export default function HealthyRecipes() {
       } else if (category === "spanish") {
         filtered = filtered.filter(recipe => recipe.isSpanish)
       } else {
-        filtered = filtered.filter(recipe =>
-          recipe.category.some(cat => cat.toLowerCase() === category.toLowerCase())
-        )
+        filtered = filtered.filter(recipe => {
+          if (Array.isArray(recipe.category)) {
+            return recipe.category.some(cat => cat.toLowerCase() === category.toLowerCase())
+          } else if (typeof recipe.category === 'string') {
+            return recipe.category.toLowerCase() === category.toLowerCase()
+          }
+          return false
+        })
       }
     }
 
@@ -532,11 +546,17 @@ export default function HealthyRecipes() {
                         <p className="text-sm text-gray-600 line-clamp-2">{recipe.description}</p>
 
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {recipe.category.slice(0, 2).map((cat, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">{cat}</Badge>
-                          ))}
-                          {recipe.category.length > 2 && (
-                            <Badge variant="outline" className="text-xs">+{recipe.category.length - 2}</Badge>
+                          {Array.isArray(recipe.category) ? (
+                            <>
+                              {recipe.category.slice(0, 2).map((cat, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">{cat}</Badge>
+                              ))}
+                              {recipe.category.length > 2 && (
+                                <Badge variant="outline" className="text-xs">+{recipe.category.length - 2}</Badge>
+                              )}
+                            </>
+                          ) : (
+                            <Badge variant="outline" className="text-xs">{recipe.category}</Badge>
                           )}
                         </div>
                       </div>

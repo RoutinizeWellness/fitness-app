@@ -21,6 +21,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { BreathingExercise } from "@/components/wellness/breathing-exercise"
+import EnhancedMeditationModule from "@/components/wellness/enhanced-meditation-module"
 import { supabase } from "@/lib/supabase-client"
 import { UserProfile } from "@/lib/types/user"
 
@@ -83,27 +84,7 @@ export function WellnessModule({
         </TabsContent>
         
         <TabsContent value="meditation" className="space-y-4">
-          <Card3D>
-            <Card3DHeader>
-              <div className="flex justify-between items-center">
-                <Card3DTitle>Meditación guiada</Card3DTitle>
-                
-                <Button3D size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nueva sesión
-                </Button3D>
-              </div>
-            </Card3DHeader>
-            <Card3DContent>
-              <div className="text-center py-8">
-                <Brain className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Próximamente</h3>
-                <p className="text-sm text-gray-500">
-                  El módulo de meditación guiada estará disponible próximamente.
-                </p>
-              </div>
-            </Card3DContent>
-          </Card3D>
+          <EnhancedMeditationModule />
         </TabsContent>
         
         <TabsContent value="mood" className="space-y-4">

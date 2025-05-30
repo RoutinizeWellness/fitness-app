@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { SafeClientButton as Button } from '@/components/ui/safe-client-button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/use-toast';
-import { supabaseAuth } from '@/lib/auth/supabase-auth';
+import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth/auth-context';
+
+// ✅ SECURE: Initialize Supabase client for secure authentication
+const supabase = createClient();
 
 /**
  * Componente de diagnóstico para la autenticación
@@ -33,15 +36,26 @@ export function AuthDiagnostics() {
     setIsLoading(true);
 
     try {
-      // Obtener datos de sesión
-      const { data, error } = await supabaseAuth.getSession();
+      console.log('🔐 Auth Diagnostics: Verificando usuario de forma segura...');
 
-      if (error) {
-        console.error('Error al obtener sesión:', error);
-        setSessionData({ error: error.message });
+      // ✅ SECURE: Obtener usuario verificado por el servidor
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+      if (userError) {
+        console.error('❌ Error al obtener usuario verificado:', userError);
+        setSessionData({ error: userError.message });
+        setUserData(null);
+      } else if (user) {
+        console.log('✅ Usuario verificado por el servidor:', user.id);
+        setUserData(user);
+
+        // Obtener sesión local solo para información adicional
+        const { data: sessionData } = await supabase.auth.getSession();
+        setSessionData(sessionData.session);
       } else {
-        setSessionData(data?.session || null);
-        setUserData(data?.user || null);
+        console.log('ℹ️ No hay usuario autenticado');
+        setUserData(null);
+        setSessionData(null);
       }
 
       // Obtener datos de localStorage
@@ -97,14 +111,18 @@ export function AuthDiagnostics() {
     }
   };
 
-  // Refrescar sesión
+  // Refrescar sesión usando el contexto de autenticación
+  const { refreshSession } = useAuth();
+
   const handleRefreshSession = async () => {
     setIsRefreshing(true);
 
     try {
-      const { success, error } = await refreshSession(true);
+      console.log('🔄 Auth Diagnostics: Refrescando sesión...');
+      const success = await refreshSession();
 
       if (success) {
+        console.log('✅ Auth Diagnostics: Sesión refrescada exitosamente');
         toast({
           title: 'Sesión refrescada',
           description: 'La sesión se ha refrescado correctamente.',
@@ -114,7 +132,7 @@ export function AuthDiagnostics() {
         // Recargar datos
         await loadData();
       } else {
-        console.error('Error al refrescar sesión:', error);
+        console.error('❌ Auth Diagnostics: Error al refrescar sesión');
         toast({
           title: 'Error al refrescar sesión',
           description: 'No se pudo refrescar la sesión.',
@@ -122,7 +140,7 @@ export function AuthDiagnostics() {
         });
       }
     } catch (error) {
-      console.error('Error inesperado al refrescar sesión:', error);
+      console.error('💥 Auth Diagnostics: Error inesperado al refrescar sesión:', error);
       toast({
         title: 'Error inesperado',
         description: 'Ocurrió un error inesperado al refrescar la sesión.',
@@ -134,12 +152,56 @@ export function AuthDiagnostics() {
   };
 
   // Limpiar datos de sesión
-  const handleClearSessionData = () => {
+  const handleClearSessionData = async () => {
     setIsClearing(true);
 
     try {
-      clearSessionData();
+      console.log('🧹 Auth Diagnostics: Limpiando datos de sesión...');
 
+      // Limpiar localStorage
+      if (typeof window !== 'undefined') {
+        const authKeys = [
+          'session_expiry',
+          'session_refreshed',
+          'session_refresh_time',
+          'login_success',
+          'login_time',
+          'auth_return_url',
+          'session_auto_refresh',
+          'session_persistent',
+          'session_persistence_updated',
+          'session_last_refresh',
+          'session_refresh_interval_id',
+          'supabase.auth.token',
+          'auth_event',
+          'auth_event_time',
+          'login_attempt',
+          'login_return_url',
+          'token_debug_info',
+          'user_id',
+          'auth_success',
+          'auth_success_time',
+          'auth_user_id',
+          'supabase_session_backup'
+        ];
+
+        authKeys.forEach(key => {
+          localStorage.removeItem(key);
+        });
+
+        // También limpiar cualquier clave que contenga 'supabase' o 'auth'
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i);
+          if (key && (key.includes('supabase') || key.includes('auth'))) {
+            localStorage.removeItem(key);
+          }
+        }
+      }
+
+      // Cerrar sesión en Supabase
+      await supabase.auth.signOut();
+
+      console.log('✅ Auth Diagnostics: Datos limpiados exitosamente');
       toast({
         title: 'Datos limpiados',
         description: 'Los datos de sesión se han limpiado correctamente.',
@@ -147,9 +209,9 @@ export function AuthDiagnostics() {
       });
 
       // Recargar datos
-      loadData();
+      await loadData();
     } catch (error) {
-      console.error('Error al limpiar datos de sesión:', error);
+      console.error('💥 Auth Diagnostics: Error al limpiar datos de sesión:', error);
       toast({
         title: 'Error al limpiar datos',
         description: 'Ocurrió un error al limpiar los datos de sesión.',

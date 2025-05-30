@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { AuthProvider } from '@/lib/contexts/auth-context'
+import { AuthProvider } from '@/lib/auth/auth-context'
 import { ProfileProvider } from '@/lib/contexts/profile-context'
 import { TrainingProvider } from '@/lib/contexts/training-context'
 import { NutritionProvider } from '@/lib/contexts/nutrition-context'

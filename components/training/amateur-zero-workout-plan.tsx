@@ -8,15 +8,15 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { 
-  Calendar, 
-  Clock, 
-  ChevronRight, 
-  Play, 
-  CheckCircle, 
+import {
+  Calendar,
+  Clock,
+  ChevronRight,
+  Play,
+  CheckCircle,
   Info,
   Award,
   Dumbbell,
@@ -156,7 +156,7 @@ export function AmateurZeroWorkoutPlan() {
         const completedDayIds = completedData.map(session => session.day_id)
         setCompletedWorkouts(completedDayIds)
 
-        const firstIncompleteDay = daysWithExercises.find(day => 
+        const firstIncompleteDay = daysWithExercises.find(day =>
           !day.is_rest_day && !completedDayIds.includes(day.id)
         )
 
@@ -319,7 +319,7 @@ export function AmateurZeroWorkoutPlan() {
   // Iniciar entrenamiento
   const handleStartWorkout = () => {
     if (!selectedDay || !workoutPlan) return
-    
+
     router.push(`/training/workout/${workoutPlan.id}/${selectedDay.id}`)
   }
 
@@ -331,10 +331,10 @@ export function AmateurZeroWorkoutPlan() {
   // Calcular progreso del plan
   const calculateProgress = () => {
     if (!workoutPlan || !workoutPlan.days) return 0
-    
+
     const totalWorkoutDays = workoutPlan.days.filter(day => !day.is_rest_day).length
     const completedCount = completedWorkouts.length
-    
+
     return Math.round((completedCount / totalWorkoutDays) * 100)
   }
 
@@ -388,7 +388,7 @@ export function AmateurZeroWorkoutPlan() {
           </Badge>
         </div>
         <CardDescription>{workoutPlan.description}</CardDescription>
-        
+
         <div className="mt-4">
           <div className="flex justify-between items-center mb-1 text-sm">
             <span>Progreso del plan</span>
@@ -397,7 +397,7 @@ export function AmateurZeroWorkoutPlan() {
           <Progress value={calculateProgress()} className="h-2" />
         </div>
       </CardHeader>
-      
+
       <CardContent>
         <Tabs defaultValue="plan" className="w-full">
           <TabsList className="grid grid-cols-2 mb-4">
@@ -410,7 +410,7 @@ export function AmateurZeroWorkoutPlan() {
               <span>Entrenamiento de Hoy</span>
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="plan" className="space-y-4">
             <div className="grid gap-2">
               {workoutPlan.days.map((day) => (
@@ -448,21 +448,21 @@ export function AmateurZeroWorkoutPlan() {
                 </div>
               ))}
             </div>
-            
+
             <div className="bg-blue-50 rounded-md p-4 text-sm">
               <div className="flex">
                 <Info className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-blue-800">Consejo para principiantes</p>
                   <p className="text-blue-700 mt-1">
-                    Comienza con 2-3 días de entrenamiento por semana, permitiendo al menos un día de descanso entre sesiones. 
+                    Comienza con 2-3 días de entrenamiento por semana, permitiendo al menos un día de descanso entre sesiones.
                     La consistencia es más importante que la intensidad al principio.
                   </p>
                 </div>
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="today" className="space-y-4">
             {selectedDay?.is_rest_day ? (
               <div className="text-center py-6 space-y-4">
@@ -471,7 +471,7 @@ export function AmateurZeroWorkoutPlan() {
                 </div>
                 <h3 className="text-lg font-medium">Día de Descanso</h3>
                 <p className="text-muted-foreground max-w-md mx-auto">
-                  El descanso es parte esencial del progreso. Aprovecha para recuperarte, 
+                  El descanso es parte esencial del progreso. Aprovecha para recuperarte,
                   mantenerte hidratado y prepararte para tu próximo entrenamiento.
                 </p>
                 <div className="bg-blue-50 rounded-md p-4 text-sm text-left max-w-md mx-auto">
@@ -493,11 +493,11 @@ export function AmateurZeroWorkoutPlan() {
                     <span>~30-45 min</span>
                   </div>
                 </div>
-                
+
                 {selectedDay.description && (
                   <p className="text-sm text-muted-foreground">{selectedDay.description}</p>
                 )}
-                
+
                 <div className="space-y-3">
                   {selectedDay.exercises.map((exercise, index) => (
                     <div key={exercise.id} className="border rounded-md overflow-hidden">
@@ -529,21 +529,21 @@ export function AmateurZeroWorkoutPlan() {
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="bg-blue-50 rounded-md p-4 text-sm">
                   <div className="flex">
                     <Award className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
                     <div>
                       <p className="font-medium text-blue-800">Objetivo de hoy</p>
                       <p className="text-blue-700 mt-1">
-                        Enfócate en aprender la técnica correcta de cada ejercicio. 
+                        Enfócate en aprender la técnica correcta de cada ejercicio.
                         La calidad del movimiento es más importante que el peso o las repeticiones.
                       </p>
                     </div>
                   </div>
                 </div>
-                
-                <Button 
+
+                <Button
                   className="w-full"
                   onClick={handleStartWorkout}
                   disabled={completedWorkouts.includes(selectedDay.id)}
@@ -566,7 +566,7 @@ export function AmateurZeroWorkoutPlan() {
           </TabsContent>
         </Tabs>
       </CardContent>
-      
+
       <CardFooter className="flex justify-between">
         <Button variant="outline" onClick={() => router.push('/training/exercises/amateur-zero')}>
           Ver Biblioteca de Ejercicios

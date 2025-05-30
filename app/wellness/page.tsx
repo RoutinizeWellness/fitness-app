@@ -25,7 +25,7 @@ import { MoodEntry, WellnessActivity, getWellnessActivities, getMoodEntries } fr
 import { v4 as uuidv4 } from "uuid"
 import { useToast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { SiestaTimer } from "@/components/wellness/siesta-timer"
 import { MindfulnessExercises } from "@/components/wellness/mindfulness-exercises"
 import EnhancedMindfulness from "@/components/wellness/enhanced-mindfulness"

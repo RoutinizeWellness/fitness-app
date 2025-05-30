@@ -21,7 +21,7 @@ import {
   Plus,
   FileText
 } from "lucide-react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { TrainingCyclesVisualization } from "@/components/training/training-cycles-visualization"
 import { PeriodizationVisualization } from "@/components/training/periodization-visualization"
 import { getWorkoutLogs } from "@/lib/supabase-training"

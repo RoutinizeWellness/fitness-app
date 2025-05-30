@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { getUserDashboards, createDashboard, updateDashboard, DashboardWidget, UserDashboard } from '@/lib/custom-dashboard-service'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { SafeClientButton as Button } from '@/components/ui/safe-client-button'
 import { Input } from '@/components/ui/input'
-import { useAuth } from '@/lib/contexts/auth-context'
+import { useAuth } from '@/lib/auth/auth-context'
 import { useToast } from '@/components/ui/use-toast'
 import { Plus, Settings, BarChart, LineChart, PieChart, Calendar, Table, Gauge, Edit, Trash2, Move, Save } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -43,7 +43,7 @@ export function CustomDashboard() {
         setLoading(true)
         const userDashboards = await getUserDashboards(user.id)
         setDashboards(userDashboards)
-        
+
         if (userDashboards.length > 0) {
           setActiveDashboard(userDashboards[0])
         }
@@ -67,12 +67,12 @@ export function CustomDashboard() {
 
     try {
       const newDashboard = await createDashboard(user.id, newDashboardName)
-      
+
       if (newDashboard) {
         setDashboards(prev => [...prev, newDashboard])
         setActiveDashboard(newDashboard)
         setNewDashboardName('')
-        
+
         toast({
           title: 'Dashboard creado',
           description: `Se ha creado el dashboard "${newDashboardName}"`,
@@ -100,8 +100,8 @@ export function CustomDashboard() {
         size: newWidgetConfig.size || 'medium',
         position: {
           x: 0,
-          y: activeDashboard.widgets.length > 0 ? 
-              Math.max(...activeDashboard.widgets.map(w => w.position.y)) + 1 : 
+          y: activeDashboard.widgets.length > 0 ?
+              Math.max(...activeDashboard.widgets.map(w => w.position.y)) + 1 :
               0
         },
         config: newWidgetConfig.config || {
@@ -120,13 +120,13 @@ export function CustomDashboard() {
       }
 
       const success = await updateDashboard(user.id, activeDashboard.id, updatedDashboard)
-      
+
       if (success) {
         setActiveDashboard(updatedDashboard)
-        setDashboards(prev => 
+        setDashboards(prev =>
           prev.map(d => d.id === activeDashboard.id ? updatedDashboard : d)
         )
-        
+
         toast({
           title: 'Widget añadido',
           description: `Se ha añadido el widget "${newWidget.title}"`,
@@ -153,13 +153,13 @@ export function CustomDashboard() {
       }
 
       const success = await updateDashboard(user.id, activeDashboard.id, updatedDashboard)
-      
+
       if (success) {
         setActiveDashboard(updatedDashboard)
-        setDashboards(prev => 
+        setDashboards(prev =>
           prev.map(d => d.id === activeDashboard.id ? updatedDashboard : d)
         )
-        
+
         toast({
           title: 'Widget eliminado',
           description: 'Se ha eliminado el widget',
@@ -178,7 +178,7 @@ export function CustomDashboard() {
   const renderWidgetContent = (widget: DashboardWidget) => {
     // This is a placeholder for actual widget rendering
     // In a real implementation, this would render different visualizations based on widget type and config
-    
+
     switch (widget.config.visualization) {
       case 'bar':
         return (
@@ -258,7 +258,7 @@ export function CustomDashboard() {
                 onChange={(e) => setNewDashboardName(e.target.value)}
                 className="w-64"
               />
-              <Button 
+              <Button
                 onClick={handleCreateDashboard}
                 disabled={!newDashboardName.trim()}
               >
@@ -296,7 +296,7 @@ export function CustomDashboard() {
                     Configura un nuevo widget para tu dashboard.
                   </DialogDescription>
                 </DialogHeader>
-                
+
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
                     <label className="text-right text-sm">Título</label>
@@ -310,7 +310,7 @@ export function CustomDashboard() {
                       }))}
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-4 items-center gap-4">
                     <label className="text-right text-sm">Tipo</label>
                     <Select
@@ -335,7 +335,7 @@ export function CustomDashboard() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="grid grid-cols-4 items-center gap-4">
                     <label className="text-right text-sm">Tamaño</label>
                     <Select
@@ -355,7 +355,7 @@ export function CustomDashboard() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="grid grid-cols-4 items-center gap-4">
                     <label className="text-right text-sm">Visualización</label>
                     <Select
@@ -383,7 +383,7 @@ export function CustomDashboard() {
                     </Select>
                   </div>
                 </div>
-                
+
                 <DialogFooter>
                   <Button onClick={handleAddWidget}>
                     Añadir Widget
@@ -391,9 +391,9 @@ export function CustomDashboard() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-            
-            <Button 
-              variant="outline" 
+
+            <Button
+              variant="outline"
               size="icon"
               onClick={() => setIsEditing(!isEditing)}
             >
@@ -402,14 +402,14 @@ export function CustomDashboard() {
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="pt-4">
         <div className="grid grid-cols-2 gap-4">
           {activeDashboard.widgets.map(widget => (
-            <div 
+            <div
               key={widget.id}
               className={`
-                ${widget.size === 'small' ? 'col-span-1' : 
+                ${widget.size === 'small' ? 'col-span-1' :
                   widget.size === 'large' ? 'col-span-2' : 'col-span-1'}
                 ${isEditing ? 'border-2 border-dashed border-[#FDA758]/50' : ''}
               `}
@@ -426,9 +426,9 @@ export function CustomDashboard() {
                         <Button variant="ghost" size="icon" className="h-6 w-6">
                           <Edit className="h-3 w-3" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-6 w-6 text-red-500"
                           onClick={() => handleRemoveWidget(widget.id)}
                         >
@@ -440,7 +440,7 @@ export function CustomDashboard() {
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
                   <div className={`
-                    ${widget.size === 'small' ? 'h-24' : 
+                    ${widget.size === 'small' ? 'h-24' :
                       widget.size === 'large' ? 'h-48' : 'h-32'}
                   `}>
                     {renderWidgetContent(widget)}
@@ -449,7 +449,7 @@ export function CustomDashboard() {
               </Card>
             </div>
           ))}
-          
+
           {activeDashboard.widgets.length === 0 && (
             <div className="col-span-2 h-48 flex items-center justify-center bg-[#F9F9F9] rounded-lg">
               <div className="text-center">

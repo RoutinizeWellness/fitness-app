@@ -12,7 +12,7 @@ import {
   ArrowLeft,
   Loader2
 } from "lucide-react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import TrainingInitialAssessment from "@/components/training/initial-assessment"
 import { getTrainingProfile } from "@/lib/training-personalization-service"
 import { generateWorkoutPlan } from "@/lib/workout-plan-generator"

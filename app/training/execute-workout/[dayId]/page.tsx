@@ -32,7 +32,7 @@ import {
   Minus
 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { advancedTrainingSystem, WorkoutSession, ExerciseSet, AITrainingRecommendation } from "@/lib/training/advanced-training-system"
 import { computerVisionSystem, ExerciseAnalysis } from "@/lib/admin/computer-vision-system"
 import { supabase } from "@/lib/supabase-client"
@@ -112,7 +112,10 @@ const mockExercises: Exercise[] = [
   }
 ]
 
-export default function EnhancedWorkoutExecutionPage({ params }: { params: { dayId: string } }) {
+export default function EnhancedWorkoutExecutionPage({ params }: { params: Promise<{ dayId: string }> }) {
+  // ✅ NEXT.JS 15: Unwrap async params using React.use()
+  const { dayId } = use(params)
+
   const router = useRouter()
   const { user } = useAuth()
   const { toast } = useToast()
@@ -196,7 +199,7 @@ export default function EnhancedWorkoutExecutionPage({ params }: { params: { day
 
       const session = await advancedTrainingSystem.startWorkoutSession(
         user.id,
-        `routine_${params.dayId}`
+        `routine_${dayId}`
       )
 
       setCurrentSession(session)
@@ -370,7 +373,7 @@ export default function EnhancedWorkoutExecutionPage({ params }: { params: { day
           </button>
           <div className="text-center">
             <h1 className="text-lg font-bold text-[#573353]">Entrenamiento</h1>
-            <p className="text-sm text-gray-600">Día {params.dayId}</p>
+            <p className="text-sm text-gray-600">Día {dayId}</p>
           </div>
           <div className="w-10 h-10 flex items-center justify-center">
             {isWorkoutActive && (

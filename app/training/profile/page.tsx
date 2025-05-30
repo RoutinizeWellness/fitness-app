@@ -7,20 +7,20 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { 
-  ChevronLeft, 
-  Edit, 
-  User, 
-  Dumbbell, 
-  Calendar, 
-  Clock, 
-  Ruler, 
-  Scale, 
-  Heart, 
-  AlertTriangle 
+import {
+  ChevronLeft,
+  Edit,
+  User,
+  Dumbbell,
+  Calendar,
+  Clock,
+  Ruler,
+  Scale,
+  Heart,
+  AlertTriangle
 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { supabase } from "@/lib/supabase-client"
 import { processSupabaseResponse } from "@/lib/supabase-utils"
 import { AnimatedFade, AnimatedSlide } from "@/components/animations/animated-transitions"
@@ -31,11 +31,11 @@ export default function TrainingProfilePage() {
   const [profileData, setProfileData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
-  
+
   const router = useRouter()
   const { user } = useAuth()
   const { toast } = useToast()
-  
+
   // Load profile data when component mounts
   useEffect(() => {
     if (user) {
@@ -45,13 +45,13 @@ export default function TrainingProfilePage() {
       router.push("/login")
     }
   }, [user, router])
-  
+
   // Load profile data from Supabase
   const loadProfileData = async () => {
     if (!user) return
-    
+
     setIsLoading(true)
-    
+
     try {
       const { data, error, usingFallback } = processSupabaseResponse(
         await supabase
@@ -62,7 +62,7 @@ export default function TrainingProfilePage() {
         null,
         "Carga de perfil de entrenamiento"
       )
-      
+
       if (error) {
         console.error("Error loading profile data:", error)
         toast({
@@ -72,7 +72,7 @@ export default function TrainingProfilePage() {
         })
         return
       }
-      
+
       if (data) {
         setProfileData(data)
       } else {
@@ -81,7 +81,7 @@ export default function TrainingProfilePage() {
           title: "Perfil no encontrado",
           description: "No se encontró tu perfil de entrenamiento. Serás redirigido al proceso de onboarding.",
         })
-        
+
         setTimeout(() => {
           router.push("/training/onboarding")
         }, 2000)
@@ -92,17 +92,17 @@ export default function TrainingProfilePage() {
       setIsLoading(false)
     }
   }
-  
+
   // Handle back button
   const handleBack = () => {
     router.push("/training")
   }
-  
+
   // Handle edit profile
   const handleEditProfile = () => {
     router.push("/training/onboarding")
   }
-  
+
   // Render loading state
   if (isLoading) {
     return (
@@ -113,7 +113,7 @@ export default function TrainingProfilePage() {
           </Button>
           <h1 className="text-2xl font-bold">Perfil de Entrenamiento</h1>
         </div>
-        
+
         <Card>
           <CardHeader>
             <Skeleton className="h-8 w-3/4" />
@@ -128,7 +128,7 @@ export default function TrainingProfilePage() {
       </div>
     )
   }
-  
+
   // Render profile not found
   if (!profileData) {
     return (
@@ -139,7 +139,7 @@ export default function TrainingProfilePage() {
           </Button>
           <h1 className="text-2xl font-bold">Perfil de Entrenamiento</h1>
         </div>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Perfil no encontrado</CardTitle>
@@ -156,7 +156,7 @@ export default function TrainingProfilePage() {
       </div>
     )
   }
-  
+
   return (
     <div className="container max-w-4xl mx-auto p-4 pt-20 pb-24">
       <div className="flex items-center mb-6">
@@ -165,13 +165,13 @@ export default function TrainingProfilePage() {
         </Button>
         <h1 className="text-2xl font-bold">Perfil de Entrenamiento</h1>
       </div>
-      
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2 mb-8">
           <TabsTrigger value="overview">Resumen</TabsTrigger>
           <TabsTrigger value="details">Detalles</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="overview">
           <AnimatedFade>
             <Card>
@@ -206,9 +206,9 @@ export default function TrainingProfilePage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-2">
                     <div className="flex items-center">
@@ -224,7 +224,7 @@ export default function TrainingProfilePage() {
                       {profileData.primary_goal === "health" && "Salud"}
                     </p>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex items-center">
                       <Calendar className="h-5 w-5 mr-2 text-primary" />
@@ -232,7 +232,7 @@ export default function TrainingProfilePage() {
                     </div>
                     <p>{profileData.days_per_week} días por semana</p>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex items-center">
                       <Clock className="h-5 w-5 mr-2 text-primary" />
@@ -241,9 +241,9 @@ export default function TrainingProfilePage() {
                     <p>{profileData.time_per_session} minutos por sesión</p>
                   </div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="space-y-4">
                   <h3 className="font-medium">Objetivos de entrenamiento</h3>
                   <div className="flex flex-wrap gap-2">
@@ -259,7 +259,7 @@ export default function TrainingProfilePage() {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <h3 className="font-medium">Equipo disponible</h3>
                   <div className="flex flex-wrap gap-2">
@@ -275,14 +275,14 @@ export default function TrainingProfilePage() {
                     ))}
                   </div>
                 </div>
-                
+
                 {(profileData.medical_conditions?.length > 0 || profileData.injuries?.length > 0) && (
                   <div className="space-y-4">
                     <div className="flex items-center">
                       <AlertTriangle className="h-5 w-5 mr-2 text-amber-500" />
                       <h3 className="font-medium">Consideraciones médicas</h3>
                     </div>
-                    
+
                     {profileData.medical_conditions?.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {profileData.medical_conditions.map((condition: string) => (
@@ -297,7 +297,7 @@ export default function TrainingProfilePage() {
                         ))}
                       </div>
                     )}
-                    
+
                     {profileData.injuries?.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {profileData.injuries.map((injury: string) => (
@@ -328,7 +328,7 @@ export default function TrainingProfilePage() {
             </Card>
           </AnimatedFade>
         </TabsContent>
-        
+
         <TabsContent value="details">
           <AnimatedSlide>
             <Card>
@@ -351,7 +351,7 @@ export default function TrainingProfilePage() {
                         <p className="font-medium">{profileData.height_cm} cm</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
                         <Scale className="h-5 w-5 text-green-600" />
@@ -361,7 +361,7 @@ export default function TrainingProfilePage() {
                         <p className="font-medium">{profileData.weight_kg} kg</p>
                       </div>
                     </div>
-                    
+
                     {profileData.body_fat_percentage !== null && (
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
@@ -375,12 +375,12 @@ export default function TrainingProfilePage() {
                     )}
                   </div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="space-y-4">
                   <h3 className="font-medium">Preferencias de ejercicios</h3>
-                  
+
                   {profileData.preferred_exercises?.length > 0 && (
                     <div className="space-y-2">
                       <p className="text-sm text-muted-foreground">Ejercicios preferidos:</p>
@@ -398,7 +398,7 @@ export default function TrainingProfilePage() {
                       </div>
                     </div>
                   )}
-                  
+
                   {profileData.disliked_exercises?.length > 0 && (
                     <div className="space-y-2">
                       <p className="text-sm text-muted-foreground">Ejercicios que prefieres evitar:</p>
@@ -417,12 +417,12 @@ export default function TrainingProfilePage() {
                     </div>
                   )}
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="space-y-4">
                   <h3 className="font-medium">Disponibilidad</h3>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Días por semana:</p>
@@ -433,7 +433,7 @@ export default function TrainingProfilePage() {
                       <p className="font-medium">{profileData.time_per_session} minutos</p>
                     </div>
                   </div>
-                  
+
                   {profileData.preferred_days && profileData.preferred_days.length > 0 && (
                     <div>
                       <p className="text-sm text-muted-foreground">Días preferidos:</p>

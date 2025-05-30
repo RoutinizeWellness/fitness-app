@@ -28,10 +28,21 @@ export async function middleware(request: NextRequest) {
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         getAll() {
-          return request.cookies.getAll()
+          const cookies = request.cookies.getAll()
+          console.log(`Middleware - Cookies disponibles: ${cookies.length}`)
+          cookies.forEach(cookie => {
+            if (cookie.name.includes('supabase') || cookie.name.includes('sb-')) {
+              console.log(`Middleware - Cookie Supabase: ${cookie.name} = ${cookie.value ? 'exists' : 'empty'}`)
+            }
+          })
+          return cookies
         },
         setAll(cookiesToSet) {
+          console.log(`Middleware - Estableciendo ${cookiesToSet.length} cookies`)
           cookiesToSet.forEach(({ name, value, options }) => {
+            if (name.includes('supabase') || name.includes('sb-')) {
+              console.log(`Middleware - Estableciendo cookie Supabase: ${name}`)
+            }
             request.cookies.set(name, value)
             response.cookies.set(name, value, options)
           })
@@ -39,48 +50,72 @@ export async function middleware(request: NextRequest) {
       },
     })
 
-    // Obtener la sesión del usuario con manejo de errores
-    let session = null
-    try {
-      // Obtener la sesión actual
-      const { data, error } = await supabase.auth.getSession()
+    // Intentar obtener sesión desde localStorage como respaldo
+    let sessionFromStorage = null
+    const authHeader = request.headers.get('authorization')
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      console.log('Middleware - Token de autorización encontrado en headers')
+    }
 
-      if (error) {
-        console.error("Error al obtener sesión en middleware:", error)
-        response.headers.set('x-middleware-session-error', error.message)
+    // ✅ SECURE: Obtener usuario verificado por el servidor
+    let user = null
+    let session = null
+
+    try {
+      console.log('🔐 Middleware: Verificando usuario con el servidor...')
+
+      // ✅ SECURE: Usar getUser() para verificar con el servidor
+      const { data: userData, error: userError } = await supabase.auth.getUser()
+
+      if (userError) {
+        console.error("❌ Middleware: Error al obtener usuario verificado:", userError)
+        response.headers.set('x-middleware-user-error', userError.message)
 
         // Manejar específicamente el error AuthSessionMissingError
-        if (error.message?.includes('Auth session missing')) {
-          console.warn('AuthSessionMissingError en middleware - limpiando estado de sesión')
+        if (userError.message?.includes('Auth session missing')) {
+          console.warn('⚠️ Middleware: AuthSessionMissingError - limpiando estado de sesión')
           response.headers.set('x-middleware-auth-session-missing', 'true')
 
           // Intentar cerrar sesión para limpiar cualquier estado inválido
           try {
             await supabase.auth.signOut({ scope: 'local' })
-            console.log("Sesión cerrada localmente con éxito en middleware")
+            console.log("✅ Middleware: Sesión cerrada localmente con éxito")
           } catch (signOutError) {
-            console.error("Error al cerrar sesión en middleware:", signOutError)
+            console.error("❌ Middleware: Error al cerrar sesión:", signOutError)
           }
         }
+      } else if (userData.user) {
+        console.log('✅ Middleware: Usuario verificado por el servidor:', userData.user.id)
+        user = userData.user
+
+        // Obtener la sesión local solo para información adicional (no para autenticación)
+        try {
+          const { data: sessionData } = await supabase.auth.getSession()
+          session = sessionData.session
+          console.log('ℹ️ Middleware: Sesión local obtenida para información adicional')
+        } catch (sessionError) {
+          console.warn('⚠️ Middleware: Error al obtener sesión local (no crítico):', sessionError)
+          // No es crítico si no podemos obtener la sesión local
+        }
       } else {
-        session = data.session
+        console.log('ℹ️ Middleware: No hay usuario autenticado')
       }
-    } catch (sessionError) {
-      console.error("Excepción al obtener sesión en middleware:", sessionError)
-      response.headers.set('x-middleware-session-error',
-        sessionError instanceof Error ? sessionError.message : 'Error desconocido')
+    } catch (authError) {
+      console.error("💥 Middleware: Excepción al verificar usuario:", authError)
+      response.headers.set('x-middleware-auth-error',
+        authError instanceof Error ? authError.message : 'Error desconocido')
 
       // Manejar específicamente el error AuthSessionMissingError como excepción
-      if (sessionError instanceof Error && sessionError.message?.includes('Auth session missing')) {
-        console.warn('Excepción AuthSessionMissingError en middleware - limpiando estado de sesión')
+      if (authError instanceof Error && authError.message?.includes('Auth session missing')) {
+        console.warn('⚠️ Middleware: Excepción AuthSessionMissingError - limpiando estado de sesión')
         response.headers.set('x-middleware-auth-session-missing-exception', 'true')
 
         // Intentar cerrar sesión para limpiar cualquier estado inválido
         try {
           await supabase.auth.signOut({ scope: 'local' })
-          console.log("Sesión cerrada localmente con éxito después de excepción en middleware")
+          console.log("✅ Middleware: Sesión cerrada localmente con éxito después de excepción")
         } catch (signOutError) {
-          console.error("Error al cerrar sesión después de excepción en middleware:", signOutError)
+          console.error("❌ Middleware: Error al cerrar sesión después de excepción:", signOutError)
         }
       }
     }
@@ -179,10 +214,11 @@ export async function middleware(request: NextRequest) {
     }
 
     // Añadir información de depuración a las cabeceras
+    response.headers.set('x-middleware-has-user', user ? 'true' : 'false')
     response.headers.set('x-middleware-has-session', session ? 'true' : 'false')
 
-    console.log("Middleware - URL:", url.pathname)
-    console.log("Middleware - Session:", session ? `Existe (${session.user.id})` : "No existe")
+    console.log("🔍 Middleware - URL:", url.pathname)
+    console.log("🔍 Middleware - User:", user ? `Verificado (${user.id})` : "No autenticado")
 
     // Definir rutas protegidas
     const isProtectedRoute = url.pathname.startsWith('/dashboard') ||
@@ -191,6 +227,7 @@ export async function middleware(request: NextRequest) {
                             url.pathname.startsWith('/sleep') ||
                             url.pathname.startsWith('/productivity') ||
                             url.pathname.startsWith('/wellness') ||
+                            url.pathname.startsWith('/activity') ||
                             url.pathname.startsWith('/onboarding');
 
     // Definir rutas de autenticación
@@ -202,9 +239,9 @@ export async function middleware(request: NextRequest) {
 
     // 2. Manejar rutas protegidas
     if (isProtectedRoute) {
-      // Si no está autenticado, redirigir a login con URL de retorno
-      if (!session) {
-        console.log("Usuario no autenticado intentando acceder a ruta protegida, redirigiendo a login");
+      // ✅ SECURE: Verificar usuario autenticado (no sesión)
+      if (!user) {
+        console.log("🚫 Usuario no autenticado intentando acceder a ruta protegida, redirigiendo a login");
         const loginUrl = new URL('/auth/login', request.url);
         loginUrl.searchParams.set('returnUrl', request.nextUrl.pathname);
         return NextResponse.redirect(loginUrl);
@@ -214,10 +251,12 @@ export async function middleware(request: NextRequest) {
       try {
         // Solo verificar el onboarding para rutas que no sean de onboarding
         if (!url.pathname.startsWith('/onboarding')) {
+          console.log('🔍 Middleware: Verificando perfil para usuario:', user.id);
+
           const { data: profile, error } = await supabase
             .from('profiles')
             .select('onboarding_completed, id')
-            .eq('user_id', session.user.id)
+            .eq('user_id', user.id)
             .single();
 
           // Añadir información del perfil a las cabeceras para depuración
@@ -231,21 +270,21 @@ export async function middleware(request: NextRequest) {
 
             // Si el onboarding no está completado, redirigir a onboarding
             if (profile.onboarding_completed === false) {
-              console.log("Usuario no ha completado onboarding, redirigiendo a onboarding");
+              console.log("📝 Usuario no ha completado onboarding, redirigiendo a onboarding");
               return NextResponse.redirect(new URL('/onboarding/beginner', request.url));
             }
           } else if (error) {
-            console.error("Error al obtener perfil en middleware:", error);
+            console.error("❌ Error al obtener perfil en middleware:", error);
             response.headers.set('x-middleware-profile-error', error.message);
 
             // Si hay un error de permisos o perfil no encontrado, no redirigir a onboarding
             if (error.code === '42501' || error.code === 'PGRST116') {
-              console.log("Error de permisos o perfil no encontrado, no redirigir a onboarding");
+              console.log("⚠️ Error de permisos o perfil no encontrado, no redirigir a onboarding");
             }
           }
         }
       } catch (error) {
-        console.error("Error inesperado al verificar perfil en middleware:", error);
+        console.error("💥 Error inesperado al verificar perfil en middleware:", error);
         response.headers.set('x-middleware-profile-error',
           error instanceof Error ? error.message : 'Error desconocido');
       }
@@ -263,6 +302,7 @@ export async function middleware(request: NextRequest) {
                             url.pathname.startsWith('/sleep') ||
                             url.pathname.startsWith('/productivity') ||
                             url.pathname.startsWith('/wellness') ||
+                            url.pathname.startsWith('/activity') ||
                             url.pathname.startsWith('/onboarding');
 
     // Para rutas de autenticación, permitir acceso incluso si el middleware falla
@@ -292,12 +332,20 @@ export async function middleware(request: NextRequest) {
  */
 export const config = {
   matcher: [
+    '/dashboard',
     '/dashboard/:path*',
+    '/training',
     '/training/:path*',
+    '/nutrition',
     '/nutrition/:path*',
+    '/sleep',
     '/sleep/:path*',
+    '/productivity',
     '/productivity/:path*',
+    '/wellness',
     '/wellness/:path*',
+    '/activity',
+    '/activity/:path*',
     '/onboarding/:path*',
     '/api/:path*'
   ],

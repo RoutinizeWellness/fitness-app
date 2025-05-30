@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react"
 import { AmateurZeroWorkoutExecution } from "@/components/training/amateur-zero-workout-execution"
 import { ExecuteWorkout } from "@/components/training/execute-workout"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase-client"
 
-export default function WorkoutExecutionPage({ 
-  params 
-}: { 
-  params: { id: string; dayId: string } 
+export default function WorkoutExecutionPage({
+  params
+}: {
+  params: { id: string; dayId: string }
 }) {
   const { user } = useAuth()
   const router = useRouter()
@@ -57,14 +57,14 @@ export default function WorkoutExecutionPage({
   return (
     <div className="container mx-auto py-6">
       {userLevel === 'amateur_zero' ? (
-        <AmateurZeroWorkoutExecution 
-          planId={params.id} 
-          dayId={params.dayId} 
+        <AmateurZeroWorkoutExecution
+          planId={params.id}
+          dayId={params.dayId}
         />
       ) : (
-        <ExecuteWorkout 
-          planId={params.id} 
-          dayId={params.dayId} 
+        <ExecuteWorkout
+          planId={params.id}
+          dayId={params.dayId}
         />
       )}
     </div>

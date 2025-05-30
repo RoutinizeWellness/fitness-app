@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import EnhancedNavigation from "@/components/enhanced-navigation"
 import CoachBranding from "@/components/coach-branding"
 

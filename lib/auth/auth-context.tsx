@@ -31,6 +31,7 @@ type AuthContextType = {
   session: Session | null;
   profile: UserProfile | null;
   isLoading: boolean;
+  isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ data: any, error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
@@ -58,30 +59,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Efecto para obtener la sesión inicial y configurar el listener de cambios de autenticación
   useEffect(() => {
-    // Obtener la sesión inicial
+    // Obtener la sesión inicial de forma SEGURA
     const getInitialSession = async () => {
       try {
         setIsLoading(true);
-        const { data, error } = await supabaseAuth.getSession();
+        console.log('🔐 Obteniendo sesión inicial de forma segura...');
+
+        // ✅ SECURE: Usar getUser() para verificar con el servidor
+        const { data: { user }, error } = await supabase.auth.getUser();
 
         if (error) {
-          console.error('Error al obtener sesión inicial:', error);
-          toast({
-            title: 'Error',
-            description: 'Error al obtener sesión. Por favor, intenta de nuevo.',
-            variant: 'destructive'
-          });
-        }
+          console.error('❌ Error al obtener usuario verificado:', error);
+          // Si hay error, limpiar estado
+          setUser(null);
+          setSession(null);
+          setProfile(null);
 
-        setSession(data?.session || null);
-        setUser(data?.user || null);
+          // Solo mostrar toast si no es un error de sesión faltante
+          if (!error.message?.includes('Auth session missing')) {
+            toast({
+              title: 'Error de autenticación',
+              description: 'Error al verificar sesión. Por favor, inicia sesión de nuevo.',
+              variant: 'destructive'
+            });
+          }
+        } else if (user) {
+          console.log('✅ Usuario verificado por el servidor:', user.id);
 
-        // Cargar el perfil del usuario si hay un usuario
-        if (data?.user) {
+          // Obtener la sesión local solo para información adicional
+          const { data: sessionData } = await supabase.auth.getSession();
+
+          setUser(user);
+          setSession(sessionData.session);
+
+          // Cargar el perfil del usuario verificado
           await refreshProfile();
+        } else {
+          console.log('ℹ️ No hay usuario autenticado');
+          setUser(null);
+          setSession(null);
+          setProfile(null);
         }
       } catch (error) {
-        console.error('Error inesperado al obtener sesión inicial:', error);
+        console.error('💥 Error inesperado al obtener sesión inicial:', error);
+        // En caso de error, limpiar todo el estado
+        setUser(null);
+        setSession(null);
+        setProfile(null);
       } finally {
         setIsLoading(false);
       }
@@ -89,20 +113,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     getInitialSession();
 
-    // Configurar listener para cambios de autenticación usando el cliente optimizado
+    // Configurar listener para cambios de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔔 Auth state change:', event, session?.user?.id);
+        console.log('🔔 Auth state change:', event);
 
         switch (event) {
           case 'SIGNED_IN':
-            console.log('✅ Usuario ha iniciado sesión:', session?.user?.id);
-            setUser(session?.user || null);
-            setSession(session);
+            console.log('✅ Usuario ha iniciado sesión');
 
-            // Cargar el perfil del usuario
-            if (session?.user) {
-              await refreshProfile();
+            // ✅ SECURE: Verificar usuario con el servidor después del login
+            try {
+              const { data: { user }, error } = await supabase.auth.getUser();
+
+              if (error || !user) {
+                console.error('❌ Error al verificar usuario después del login:', error);
+                setUser(null);
+                setSession(null);
+                setProfile(null);
+              } else {
+                console.log('✅ Usuario verificado después del login:', user.id);
+                setUser(user);
+                setSession(session);
+                await refreshProfile();
+              }
+            } catch (verifyError) {
+              console.error('💥 Error al verificar usuario:', verifyError);
+              setUser(null);
+              setSession(null);
+              setProfile(null);
             }
 
             setIsLoading(false);
@@ -117,26 +156,76 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             break;
 
           case 'TOKEN_REFRESHED':
-            console.log('🔄 Token refrescado para usuario:', session?.user?.id);
-            setUser(session?.user || null);
-            setSession(session);
+            console.log('🔄 Token refrescado');
+
+            // ✅ SECURE: Verificar usuario después del refresh
+            try {
+              const { data: { user }, error } = await supabase.auth.getUser();
+
+              if (error || !user) {
+                console.error('❌ Error al verificar usuario después del refresh:', error);
+                setUser(null);
+                setSession(null);
+                setProfile(null);
+              } else {
+                console.log('✅ Usuario verificado después del refresh:', user.id);
+                setUser(user);
+                setSession(session);
+              }
+            } catch (verifyError) {
+              console.error('💥 Error al verificar usuario después del refresh:', verifyError);
+              setUser(null);
+              setSession(null);
+              setProfile(null);
+            }
             break;
 
           case 'USER_UPDATED':
-            console.log('👤 Usuario actualizado:', session?.user?.id);
-            setUser(session?.user || null);
-            setSession(session);
+            console.log('👤 Usuario actualizado');
+
+            // ✅ SECURE: Verificar usuario actualizado
+            try {
+              const { data: { user }, error } = await supabase.auth.getUser();
+
+              if (error || !user) {
+                console.error('❌ Error al verificar usuario actualizado:', error);
+                setUser(null);
+                setSession(null);
+                setProfile(null);
+              } else {
+                console.log('✅ Usuario actualizado verificado:', user.id);
+                setUser(user);
+                setSession(session);
+                await refreshProfile();
+              }
+            } catch (verifyError) {
+              console.error('💥 Error al verificar usuario actualizado:', verifyError);
+              setUser(null);
+              setSession(null);
+              setProfile(null);
+            }
             break;
 
           default:
             console.log('🔔 Evento de auth:', event);
-            setSession(session);
-            setUser(session?.user || null);
 
-            // Cargar el perfil del usuario si hay un usuario
-            if (session?.user) {
-              await refreshProfile();
-            } else {
+            // Para otros eventos, verificar siempre con el servidor
+            try {
+              const { data: { user }, error } = await supabase.auth.getUser();
+
+              if (error || !user) {
+                setUser(null);
+                setSession(null);
+                setProfile(null);
+              } else {
+                setUser(user);
+                setSession(session);
+                await refreshProfile();
+              }
+            } catch (verifyError) {
+              console.error('💥 Error al verificar usuario en evento:', event, verifyError);
+              setUser(null);
+              setSession(null);
               setProfile(null);
             }
 
@@ -286,14 +375,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data?.session) {
         console.log('✅ Sesión válida establecida, expires_at:', new Date(data.session.expires_at * 1000).toISOString());
 
-        // Almacenar información de depuración
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('auth_success', 'true');
-          localStorage.setItem('auth_success_time', new Date().toISOString());
-          localStorage.setItem('auth_user_id', data.user.id);
+        // Forzar persistencia de la sesión
+        try {
+          // Almacenar información de depuración
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('auth_success', 'true');
+            localStorage.setItem('auth_success_time', new Date().toISOString());
+            localStorage.setItem('auth_user_id', data.user.id);
+
+            // Almacenar backup de la sesión
+            localStorage.setItem('supabase_session_backup', JSON.stringify({
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token,
+              user_id: data.user.id,
+              expires_at: data.session.expires_at,
+              timestamp: Date.now()
+            }));
+          }
+
+          // Forzar actualización del cliente de Supabase
+          await supabase.auth.setSession({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token
+          });
+
+          console.log('✅ Sesión forzada y persistida correctamente');
+        } catch (sessionError) {
+          console.error('⚠️ Error al forzar persistencia de sesión:', sessionError);
         }
       } else {
         console.warn('⚠️ Login exitoso pero no se estableció sesión');
+      }
+
+      // ✅ ENHANCED: Load user profile and determine redirect path
+      let redirectPath = '/dashboard';
+
+      try {
+        // Refresh profile to get latest user data
+        const userProfile = await refreshProfile();
+
+        if (userProfile) {
+          // Check if user has completed onboarding
+          if (userProfile.onboarding_completed === false) {
+            redirectPath = '/onboarding/beginner';
+            console.log('🎯 Usuario necesita completar onboarding, redirigiendo a:', redirectPath);
+          } else if (userProfile.experience_level === 'beginner') {
+            redirectPath = '/training/beginner';
+            console.log('🎯 Usuario principiante detectado, redirigiendo a:', redirectPath);
+          } else {
+            redirectPath = '/dashboard';
+            console.log('🎯 Usuario experimentado, redirigiendo a dashboard');
+          }
+        }
+      } catch (profileError) {
+        console.warn('⚠️ Error al cargar perfil, usando redirección por defecto:', profileError);
+      }
+
+      // Store redirect path for post-login handling
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('post_login_redirect', redirectPath);
+        localStorage.setItem('login_success_time', new Date().toISOString());
       }
 
       // Mostrar toast de éxito
@@ -301,6 +442,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: 'Inicio de sesión exitoso',
         description: 'Has iniciado sesión correctamente',
       });
+
+      // ✅ ENHANCED: Trigger redirect after a short delay to ensure state is updated
+      setTimeout(() => {
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/auth/login')) {
+          console.log('🔄 Redirigiendo después del login a:', redirectPath);
+          router.push(redirectPath);
+        }
+      }, 500);
 
       return { data, error: null };
     } catch (error) {
@@ -486,12 +636,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Calcular si el usuario es administrador
+  const isAdmin = Boolean(
+    user &&
+    (user.email === 'admin@routinize.com' || profile?.is_admin === true)
+  );
+
   // Valor del contexto
   const value = {
     user,
     session,
     profile,
     isLoading,
+    isAdmin,
     signIn,
     signUp,
     signOut,

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useSupabase } from "@/contexts/supabase-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,18 +26,18 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
+
   // Servicio de perfil
   const profileService = new ProfileService(supabase)
-  
+
   // Cargar datos del perfil
   useEffect(() => {
     if (!user) return
-    
+
     const loadProfile = async () => {
       try {
         const userProfile = await profileService.getUserProfile(user.id)
-        
+
         if (userProfile) {
           setProfile(userProfile)
           setFullName(userProfile.full_name || "")
@@ -51,7 +51,7 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
             full_name: user.user_metadata?.full_name || "",
             avatar_url: user.user_metadata?.avatar_url || null
           }
-          
+
           setProfile(defaultProfile)
           setFullName(defaultProfile.full_name || "")
           setAvatarUrl(defaultProfile.avatar_url || null)
@@ -67,19 +67,19 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
         setIsLoading(false)
       }
     }
-    
+
     loadProfile()
   }, [user, supabase])
-  
+
   // Manejar cambio de avatar
   const handleAvatarClick = () => {
     fileInputRef.current?.click()
   }
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    
+
     // Validar tipo de archivo
     if (!file.type.startsWith("image/")) {
       toast({
@@ -89,7 +89,7 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
       })
       return
     }
-    
+
     // Validar tamaño (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
@@ -99,31 +99,31 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
       })
       return
     }
-    
+
     // Crear URL para previsualización
     const objectUrl = URL.createObjectURL(file)
     setAvatarUrl(objectUrl)
     setAvatarFile(file)
   }
-  
+
   // Guardar cambios
   const handleSave = async () => {
     if (!user || !profile) return
-    
+
     setIsSaving(true)
-    
+
     try {
       // Primero, subir el avatar si hay uno nuevo
       let newAvatarUrl = avatarUrl
-      
+
       if (avatarFile) {
         newAvatarUrl = await profileService.uploadAvatar(user.id, avatarFile)
-        
+
         if (!newAvatarUrl) {
           throw new Error("Failed to upload avatar")
         }
       }
-      
+
       // Actualizar el perfil
       const updatedProfile: UserProfile = {
         ...profile,
@@ -131,19 +131,19 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
         bio: bio,
         avatar_url: newAvatarUrl
       }
-      
+
       const result = await profileService.updateUserProfile(updatedProfile)
-      
+
       if (result) {
         toast({
           title: "Success",
           description: "Profile updated successfully.",
         })
-        
+
         // Actualizar estado local
         setProfile(result)
         setAvatarFile(null)
-        
+
         // Cerrar el editor si hay una función de cierre
         if (onClose) {
           onClose()
@@ -162,7 +162,7 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
       setIsSaving(false)
     }
   }
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -170,14 +170,14 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
       </div>
     )
   }
-  
+
   return (
     <div className="p-6 bg-white rounded-3xl">
       <h2 className="text-[#573353] text-xl font-medium mb-6">Edit Profile</h2>
-      
+
       {/* Avatar */}
       <div className="flex flex-col items-center mb-6">
-        <div 
+        <div
           className="relative w-24 h-24 rounded-full overflow-hidden bg-[#FDA758]/20 mb-3 cursor-pointer"
           onClick={handleAvatarClick}
         >
@@ -193,12 +193,12 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
               <User className="h-12 w-12 text-[#573353]" />
             </div>
           )}
-          
+
           <div className="absolute bottom-0 right-0 w-8 h-8 bg-[#FDA758] rounded-full flex items-center justify-center">
             <Camera className="h-4 w-4 text-white" />
           </div>
         </div>
-        
+
         <input
           type="file"
           ref={fileInputRef}
@@ -206,10 +206,10 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
           accept="image/*"
           className="hidden"
         />
-        
+
         <p className="text-[#573353] text-sm">Tap to change profile photo</p>
       </div>
-      
+
       {/* Form */}
       <div className="space-y-4">
         <div>
@@ -224,7 +224,7 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
             placeholder="Your full name"
           />
         </div>
-        
+
         <div>
           <label htmlFor="bio" className="block text-[#573353] text-sm font-medium mb-1">
             Bio
@@ -239,7 +239,7 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
           />
         </div>
       </div>
-      
+
       {/* Buttons */}
       <div className="flex space-x-3 mt-6">
         <Button
@@ -250,7 +250,7 @@ export function ProfileEditor({ onClose }: ProfileEditorProps) {
         >
           Cancel
         </Button>
-        
+
         <Button
           onClick={handleSave}
           className="flex-1 bg-[#FDA758] hover:bg-[#FDA758]/90 text-white"

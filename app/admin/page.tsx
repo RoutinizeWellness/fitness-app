@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { AdminLayout } from "@/components/admin/admin-layout"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -83,24 +83,35 @@ export default function AdminDashboardPage() {
   const loadBasicStats = async () => {
     setIsLoadingStats(true);
     try {
-      // Obtener conteo de usuarios
-      const { data: userData, error: userError } = await supabase
+      // Obtener conteo de usuarios con manejo seguro de null
+      const { count: userCount, error: userError } = await supabase
         .from('profiles')
-        .select('id', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true });
 
-      if (userError) throw userError;
-      setUserCount(userData.count || 0);
+      if (userError) {
+        console.warn("Error al obtener conteo de usuarios:", userError);
+        setUserCount(0);
+      } else {
+        setUserCount(userCount || 0);
+      }
 
-      // Obtener conteo de rutinas
-      const { data: routineData, error: routineError } = await supabase
+      // Obtener conteo de rutinas con manejo seguro de null
+      const { count: routineCount, error: routineError } = await supabase
         .from('workout_routines')
-        .select('id', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true });
 
-      if (routineError) throw routineError;
-      setRoutineCount(routineData.count || 0);
+      if (routineError) {
+        console.warn("Error al obtener conteo de rutinas:", routineError);
+        setRoutineCount(0);
+      } else {
+        setRoutineCount(routineCount || 0);
+      }
 
     } catch (error) {
       console.error("Error al cargar estadísticas básicas:", error);
+      // Set fallback values in case of unexpected errors
+      setUserCount(0);
+      setRoutineCount(0);
     } finally {
       setIsLoadingStats(false);
     }

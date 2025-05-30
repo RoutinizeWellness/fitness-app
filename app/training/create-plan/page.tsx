@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/contexts/auth-context';
+import { useAuth } from '@/lib/auth/auth-context';
 import { createPeriodizedPplPlan } from '@/lib/periodized-training-service';
 import { PplFrequency, PplVariant } from '@/lib/templates/ppl-templates-fixed';
 import { TrainingLevel, TrainingGoal } from '@/lib/types/periodization';

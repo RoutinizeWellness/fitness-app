@@ -28,7 +28,7 @@ import {
   Sparkles
 } from "lucide-react"
 import { AnimatedFade, AnimatedSlide } from "@/components/animations/animated-transitions"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { supabase } from "@/lib/supabase-client"
 import { processSupabaseResponse } from "@/lib/supabase-utils"
 

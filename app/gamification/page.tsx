@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Trophy, LayoutDashboard } from 'lucide-react'
 import { User3D } from '@/components/icons/user-3d'
-import { useAuth } from '@/lib/contexts/auth-context'
+import { useAuth } from '@/lib/auth/auth-context'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 

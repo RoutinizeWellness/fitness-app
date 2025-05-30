@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react'
 import { AlertCircle, RefreshCw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { SafeClientButton as Button } from '@/components/ui/safe-client-button'
 
 interface ErrorBoundaryProps {
   children: React.ReactNode
@@ -86,6 +86,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 }
 
+// ✅ NEXT.JS 15: ErrorFallback needs to be a Client Component for onClick handlers
 function ErrorFallback({ error, reset }: { error: Error | null, reset: () => void }) {
   useEffect(() => {
     // Log the error

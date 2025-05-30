@@ -11,8 +11,16 @@ import { Calendar } from "@/components/ui/calendar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import { NutritionEntry, FoodItem, MEAL_TYPES } from "@/lib/types/nutrition"
-import { getNutritionEntries, addNutritionEntry, updateNutritionEntry, deleteNutritionEntry } from "@/lib/nutrition-service"
-import { searchFoodDatabase, searchFoodApi } from "@/lib/food-database-api"
+import {
+  getNutritionEntriesByDate,
+  addNutritionEntry,
+  updateNutritionEntry,
+  deleteNutritionEntry,
+  searchSpanishFoods,
+  getSpanishFoodById,
+  calculateNutritionForQuantity
+} from "@/lib/services/unified-nutrition-service"
+import { SpanishFood } from "@/lib/data/expanded-spanish-food-database"
 import DailyNutritionSummary from "./daily-nutrition-summary"
 import MealSection from "./meal-section"
 import FoodEntryDialog from "./food-entry-dialog"
@@ -36,15 +44,8 @@ export default function ImprovedFoodDiary({ userId }: ImprovedFoodDiaryProps) {
     const loadNutritionEntries = async () => {
       setIsLoading(true)
       try {
-        const { data, error } = await getNutritionEntries(userId, { date: selectedDate })
-
-        if (error) {
-          throw error
-        }
-
-        if (data) {
-          setNutritionLog(data)
-        }
+        const data = await getNutritionEntriesByDate(userId, selectedDate)
+        setNutritionLog(data)
       } catch (error) {
         console.error("Error al cargar entradas de nutrición:", error)
         toast({
@@ -93,30 +94,11 @@ export default function ImprovedFoodDiary({ userId }: ImprovedFoodDiaryProps) {
     setDialogOpen(true)
   }
 
-  // Buscar alimentos
-  const handleSearchFood = async (term: string): Promise<FoodItem[]> => {
+  // Buscar alimentos en la base de datos española
+  const handleSearchFood = async (term: string): Promise<SpanishFood[]> => {
     try {
-      // Primero buscar en la base de datos local
-      const { data: localResults, error: localError } = await searchFoodDatabase(term)
-
-      if (localError) {
-        console.error("Error al buscar en la base de datos local:", localError)
-      }
-
-      // Luego buscar en la API externa
-      const { data: apiResults, error: apiError } = await searchFoodApi({ query: term })
-
-      if (apiError) {
-        console.error("Error al buscar en la API externa:", apiError)
-      }
-
-      // Combinar resultados eliminando duplicados por nombre
-      const combinedResults = [...(localResults || []), ...(apiResults || [])]
-      const uniqueResults = combinedResults.filter((food, index, self) =>
-        index === self.findIndex((f) => f.name === food.name)
-      )
-
-      return uniqueResults
+      const results = searchSpanishFoods(term)
+      return results
     } catch (error) {
       console.error("Error al buscar alimentos:", error)
       toast({
@@ -131,47 +113,41 @@ export default function ImprovedFoodDiary({ userId }: ImprovedFoodDiaryProps) {
   // Guardar entrada de alimento
   const handleSaveFood = async (formData: Partial<NutritionEntry>) => {
     try {
-      if (editingEntry) {
+      if (editingEntry && editingEntry.id) {
         // Actualizar entrada existente
-        const { data, error } = await updateNutritionEntry(editingEntry.id, {
+        const success = await updateNutritionEntry(editingEntry.id, {
           ...formData,
           user_id: userId
         })
 
-        if (error) {
-          throw error
-        }
+        if (success) {
+          toast({
+            title: "Actualización exitosa",
+            description: "El alimento ha sido actualizado correctamente",
+          })
 
-        toast({
-          title: "Actualización exitosa",
-          description: "El alimento ha sido actualizado correctamente",
-        })
-
-        // Actualizar la lista de entradas
-        if (data) {
-          setNutritionLog(nutritionLog.map(entry => 
-            entry.id === editingEntry.id ? data : entry
-          ))
+          // Recargar entradas
+          const updatedEntries = await getNutritionEntriesByDate(userId, selectedDate)
+          setNutritionLog(updatedEntries)
         }
       } else {
         // Añadir nueva entrada
-        const { data, error } = await addNutritionEntry({
+        const data = await addNutritionEntry({
           ...formData,
-          user_id: userId
-        })
+          user_id: userId,
+          date: formData.date || selectedDate
+        } as Omit<NutritionEntry, 'id' | 'created_at'>)
 
-        if (error) {
-          throw error
-        }
+        if (data) {
+          toast({
+            title: "Registro exitoso",
+            description: "El alimento ha sido registrado correctamente",
+          })
 
-        toast({
-          title: "Registro exitoso",
-          description: "El alimento ha sido registrado correctamente",
-        })
-
-        // Actualizar la lista de entradas
-        if (data && formData.date === selectedDate) {
-          setNutritionLog([...nutritionLog, data])
+          // Actualizar la lista de entradas
+          if (formData.date === selectedDate) {
+            setNutritionLog([...nutritionLog, data])
+          }
         }
       }
     } catch (error) {
@@ -188,19 +164,17 @@ export default function ImprovedFoodDiary({ userId }: ImprovedFoodDiaryProps) {
   // Eliminar entrada de alimento
   const handleDeleteFood = async (id: string) => {
     try {
-      const { error } = await deleteNutritionEntry(id)
+      const success = await deleteNutritionEntry(id)
 
-      if (error) {
-        throw error
+      if (success) {
+        toast({
+          title: "Eliminación exitosa",
+          description: "El alimento ha sido eliminado correctamente",
+        })
+
+        // Actualizar la lista de entradas
+        setNutritionLog(nutritionLog.filter((entry) => entry.id !== id))
       }
-
-      toast({
-        title: "Eliminación exitosa",
-        description: "El alimento ha sido eliminado correctamente",
-      })
-
-      // Actualizar la lista de entradas
-      setNutritionLog(nutritionLog.filter((entry) => entry.id !== id))
     } catch (error) {
       console.error("Error al eliminar alimento:", error)
       toast({

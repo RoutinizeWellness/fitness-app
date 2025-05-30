@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import { BluetoothService } from "@/lib/bluetooth-service"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 // Tipos para los datos de actividad
@@ -55,7 +55,16 @@ interface Device {
 }
 
 export default function WearableDashboard() {
-  const { user } = useAuth()
+  // Safely get auth context
+  let user = null
+  try {
+    const authContext = useAuth()
+    user = authContext?.user || null
+  } catch (error) {
+    console.warn('WearableDashboard: AuthContext not available yet')
+    user = null
+  }
+
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState("overview")
   const [isLoading, setIsLoading] = useState(true)
@@ -472,7 +481,7 @@ export default function WearableDashboard() {
                     </div>
                   </div>
                 </div>
-                <Progress value={(activityData.caloriesBurned / 500) * 100} className="mt-3 bg-orange-100 dark:bg-orange-900/20" indicatorColor="bg-orange-500" />
+                <Progress value={(activityData.caloriesBurned / 500) * 100} className="mt-3 bg-orange-100 dark:bg-orange-900/20 [&>div]:bg-orange-500" />
               </CardContent>
             </Card>
 
@@ -493,7 +502,7 @@ export default function WearableDashboard() {
                     </div>
                   </div>
                 </div>
-                <Progress value={(activityData.activeMinutes / 60) * 100} className="mt-3 bg-green-100 dark:bg-green-900/20" indicatorColor="bg-green-500" />
+                <Progress value={(activityData.activeMinutes / 60) * 100} className="mt-3 bg-green-100 dark:bg-green-900/20 [&>div]:bg-green-500" />
               </CardContent>
             </Card>
 
@@ -549,7 +558,7 @@ export default function WearableDashboard() {
                       </div>
                     </div>
                   </div>
-                  <Progress value={(activityData.sleep.duration / 8) * 100} className="mb-2 bg-indigo-100 dark:bg-indigo-900/20" indicatorColor="bg-indigo-500" />
+                  <Progress value={(activityData.sleep.duration / 8) * 100} className="mb-2 bg-indigo-100 dark:bg-indigo-900/20 [&>div]:bg-indigo-500" />
                   <div className="grid grid-cols-4 gap-1 mt-4">
                     <div className="text-center">
                       <div className="text-xs text-muted-foreground">Profundo</div>
@@ -586,19 +595,19 @@ export default function WearableDashboard() {
                       <span>Tiempo para dormir</span>
                       <span>15 min</span>
                     </div>
-                    <Progress value={75} className="bg-indigo-100 dark:bg-indigo-900/20" indicatorColor="bg-indigo-500" />
+                    <Progress value={75} className="bg-indigo-100 dark:bg-indigo-900/20 [&>div]:bg-indigo-500" />
 
                     <div className="flex justify-between text-xs">
                       <span>Consistencia</span>
                       <span>85%</span>
                     </div>
-                    <Progress value={85} className="bg-indigo-100 dark:bg-indigo-900/20" indicatorColor="bg-indigo-500" />
+                    <Progress value={85} className="bg-indigo-100 dark:bg-indigo-900/20 [&>div]:bg-indigo-500" />
 
                     <div className="flex justify-between text-xs">
                       <span>Interrupciones</span>
                       <span>2</span>
                     </div>
-                    <Progress value={90} className="bg-indigo-100 dark:bg-indigo-900/20" indicatorColor="bg-indigo-500" />
+                    <Progress value={90} className="bg-indigo-100 dark:bg-indigo-900/20 [&>div]:bg-indigo-500" />
                   </div>
                 </div>
               </div>

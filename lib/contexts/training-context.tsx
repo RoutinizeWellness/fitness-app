@@ -62,7 +62,17 @@ export const TrainingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [routinesPage, setRoutinesPage] = useState(INITIAL_PAGE)
   const [logsPage, setLogsPage] = useState(INITIAL_PAGE)
   const [exercisesPage, setExercisesPage] = useState(INITIAL_PAGE)
-  const { user } = useAuth()
+
+  // Safely get auth context
+  let user = null
+  try {
+    const authContext = useAuth()
+    user = authContext?.user || null
+  } catch (error) {
+    console.warn('TrainingProvider: AuthContext not available yet')
+    user = null
+  }
+
   const { toast } = useToast()
 
   const refreshRoutines = useCallback(async (pagination?: PaginationParams) => {

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dumbbell, Timer, ArrowLeft, CheckCircle, XCircle, Play, Pause, RotateCcw } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { Progress } from "@/components/ui/progress"
 
 export default function StartWorkoutPage() {

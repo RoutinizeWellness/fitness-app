@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { RoutinizeLayout } from "@/components/routinize-layout"
 import { WorkoutQuestionnaire, WorkoutPreferences } from "@/components/training/workout-questionnaire"
 import { WorkoutGenerator, GeneratedWorkout } from "@/components/training/workout-generator"

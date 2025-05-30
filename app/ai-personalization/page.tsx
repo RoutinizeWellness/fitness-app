@@ -28,7 +28,7 @@ import HolisticWellnessScore from "@/components/holistic-wellness-score"
 import ExerciseFormAnalyzer from "@/components/exercise-form-analyzer"
 import AIAssessmentWizard from "@/components/ai-assessment-wizard"
 import ExerciseLibrary from "@/components/exercise-library"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { supabase } from "@/lib/supabase-client"
 
 export default function AIPersonalizationPage() {

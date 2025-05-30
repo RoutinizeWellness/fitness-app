@@ -7,15 +7,15 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { 
-  Play, 
-  Pause, 
-  SkipForward, 
-  RotateCcw, 
-  CheckCircle, 
+import {
+  Play,
+  Pause,
+  SkipForward,
+  RotateCcw,
+  CheckCircle,
   Clock,
   Info,
   AlertTriangle,
@@ -200,11 +200,11 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
     setExerciseProgress(prev => {
       const updated = [...prev]
       const exerciseProgressIndex = updated.findIndex(p => p.exerciseId === currentExercise.id)
-      
+
       if (exerciseProgressIndex !== -1) {
         updated[exerciseProgressIndex].completedSets += 1
       }
-      
+
       return updated
     })
 
@@ -262,7 +262,7 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
       if (error) throw error
 
       setWorkoutCompleted(true)
-      
+
       toast({
         title: "¡Entrenamiento completado!",
         description: `Has completado tu entrenamiento en ${durationMinutes} minutos.`,
@@ -280,10 +280,10 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
   // Calcular progreso total del entrenamiento
   const calculateTotalProgress = () => {
     if (!exerciseProgress.length) return 0
-    
+
     const totalSets = exerciseProgress.reduce((sum, ex) => sum + ex.totalSets, 0)
     const completedSets = exerciseProgress.reduce((sum, ex) => sum + ex.completedSets, 0)
-    
+
     return Math.round((completedSets / totalSets) * 100)
   }
 
@@ -340,22 +340,22 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
             <div className="bg-green-50 rounded-full h-24 w-24 flex items-center justify-center mx-auto">
               <CheckCircle className="h-12 w-12 text-green-500" />
             </div>
-            
+
             <div>
               <h3 className="text-lg font-medium mb-1">{workout.dayName}</h3>
               <p className="text-muted-foreground">
                 {workout.exercises.length} ejercicios • {exerciseProgress.reduce((sum, ex) => sum + ex.totalSets, 0)} series totales
               </p>
             </div>
-            
+
             <div className="bg-blue-50 rounded-md p-4 text-sm text-left max-w-md mx-auto">
               <p className="font-medium text-blue-800">¡Excelente trabajo!</p>
               <p className="text-blue-700 mt-1">
-                Cada entrenamiento te acerca más a tus objetivos. Recuerda mantenerte hidratado y 
+                Cada entrenamiento te acerca más a tus objetivos. Recuerda mantenerte hidratado y
                 descansar adecuadamente para una óptima recuperación.
               </p>
             </div>
-            
+
             <div className="flex flex-col space-y-3">
               <Button onClick={() => router.push('/training/plan/amateur-zero')}>
                 Volver al Plan de Entrenamiento
@@ -371,7 +371,7 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
   }
 
   const currentExercise = getCurrentExercise()
-  
+
   // Tutorial para principiantes
   if (showTutorial) {
     return (
@@ -397,7 +397,7 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start">
                 <div className="bg-primary/10 rounded-full h-8 w-8 flex items-center justify-center mr-3 mt-0.5">
                   <span className="font-medium">2</span>
@@ -410,7 +410,7 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start">
                 <div className="bg-primary/10 rounded-full h-8 w-8 flex items-center justify-center mr-3 mt-0.5">
                   <span className="font-medium">3</span>
@@ -423,7 +423,7 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start">
                 <div className="bg-primary/10 rounded-full h-8 w-8 flex items-center justify-center mr-3 mt-0.5">
                   <span className="font-medium">4</span>
@@ -437,7 +437,7 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-amber-50 rounded-md p-4 text-sm">
               <div className="flex">
                 <AlertTriangle className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />
@@ -450,8 +450,8 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
                 </div>
               </div>
             </div>
-            
-            <Button 
+
+            <Button
               className="w-full"
               onClick={() => setShowTutorial(false)}
             >
@@ -467,9 +467,9 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="gap-1"
             onClick={() => router.push('/training/plan/amateur-zero')}
           >
@@ -484,7 +484,7 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
         <CardDescription className="text-center">
           {workout.dayDescription || "Entrenamiento para principiantes"}
         </CardDescription>
-        
+
         <div className="mt-4">
           <div className="flex justify-between items-center mb-1 text-sm">
             <span>Progreso total</span>
@@ -493,7 +493,7 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
           <Progress value={calculateTotalProgress()} className="h-2" />
         </div>
       </CardHeader>
-      
+
       <CardContent>
         {currentExercise ? (
           <div className="space-y-6">
@@ -520,7 +520,7 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
                     <Badge variant="outline">{currentExercise.reps} repeticiones</Badge>
                   </div>
                 </div>
-                
+
                 <div className="relative h-64 w-full rounded-lg overflow-hidden">
                   <Image
                     src={currentExercise.exercise_details?.image_url || "/images/exercise-placeholder.jpg"}
@@ -529,7 +529,7 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
                     className="object-cover"
                   />
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
                     <h4 className="text-sm font-medium mb-2">Instrucciones:</h4>
@@ -539,7 +539,7 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
                       ))}
                     </ol>
                   </div>
-                  
+
                   {currentExercise.notes && (
                     <div className="bg-blue-50 rounded-md p-3 text-sm">
                       <Info className="h-4 w-4 inline-block mr-1 text-blue-500" />
@@ -547,10 +547,10 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
                     </div>
                   )}
                 </div>
-                
+
                 <div className="flex space-x-3">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="flex-1"
                     onClick={() => {
                       if (currentExerciseIndex > 0) {
@@ -563,15 +563,15 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Anterior
                   </Button>
-                  <Button 
+                  <Button
                     className="flex-1"
                     onClick={completeSet}
                   >
                     <CheckCircle className="h-4 w-4 mr-1" />
                     Completar Serie
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="flex-1"
                     onClick={() => {
                       if (currentExerciseIndex < workout.exercises.length - 1) {
@@ -594,17 +594,17 @@ export function AmateurZeroWorkoutExecution({ planId, dayId }: { planId: string,
           </div>
         )}
       </CardContent>
-      
+
       <CardFooter className="flex justify-between">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={() => router.push('/training/plan/amateur-zero')}
         >
           <X className="h-4 w-4 mr-1" />
           Cancelar
         </Button>
-        <Button 
-          variant="destructive" 
+        <Button
+          variant="destructive"
           onClick={completeWorkout}
         >
           Finalizar Entrenamiento

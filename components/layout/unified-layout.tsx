@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Bell, Search } from "lucide-react"
 import { UnifiedBottomNav } from "@/components/navigation/unified-bottom-nav"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { NotificationProvider } from "@/lib/contexts/notification-context"
 import { Avatar } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -30,7 +30,20 @@ export function UnifiedLayout({
 }: UnifiedLayoutProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const { user, profile } = useAuth()
+
+  // Safely get auth context
+  let user = null
+  let profile = null
+  try {
+    const authContext = useAuth()
+    user = authContext?.user || null
+    profile = authContext?.profile || null
+  } catch (error) {
+    console.warn('UnifiedLayout: AuthContext not available yet')
+    user = null
+    profile = null
+  }
+
   const [currentTab, setCurrentTab] = useState(activeTab)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")

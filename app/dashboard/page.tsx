@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth/auth-context"
-import { useRequireAuth } from "@/lib/hooks/use-auth-redirect"
+// import { useRequireAuth } from "@/lib/hooks/use-auth-redirect"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -20,14 +20,36 @@ import { MobileNav } from "@/components/ui/mobile-nav"
 import { FeatureCard } from "@/components/ui/feature-card"
 import { StatCard } from "@/components/ui/stat-card"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import { AuthProfileDebug } from "@/components/debug/auth-profile-debug"
+// import { AuthProfileDebug } from "@/components/debug/auth-profile-debug"
 
 export default function DashboardPage() {
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, signOut, isLoading } = useAuth()
   const router = useRouter()
+  const [userExperienceLevel, setUserExperienceLevel] = useState<'beginner' | 'intermediate' | 'advanced' | null>(null)
 
-  // Hook para requerir autenticación (maneja redirección automáticamente)
-  const { isAuthenticated, isLoading } = useRequireAuth()
+  // ✅ ENHANCED: Detect user experience level and handle routing
+  useEffect(() => {
+    if (!isLoading && !user) {
+      console.log("Dashboard: Usuario no autenticado, redirigiendo a login")
+      router.push("/auth/login?returnUrl=/dashboard")
+      return
+    }
+
+    if (profile) {
+      // Determine user experience level
+      const experienceLevel = profile.experience_level || 'beginner'
+      setUserExperienceLevel(experienceLevel)
+
+      console.log('🎯 Dashboard: Nivel de experiencia detectado:', experienceLevel)
+
+      // Check if user needs onboarding
+      if (profile.onboarding_completed === false) {
+        console.log('🎯 Dashboard: Usuario necesita completar onboarding')
+        router.push('/onboarding/beginner')
+        return
+      }
+    }
+  }, [user, profile, isLoading, router])
 
   // Mostrar pantalla de carga mientras se verifica la autenticación
   if (isLoading) {
@@ -38,9 +60,13 @@ export default function DashboardPage() {
     )
   }
 
-  // No mostrar nada si no está autenticado (el hook maneja la redirección)
-  if (!isAuthenticated) {
-    return null
+  // No mostrar nada si no está autenticado
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner size="lg" message="Verificando autenticación..." />
+      </div>
+    )
   }
 
   return (
@@ -62,7 +88,16 @@ export default function DashboardPage() {
           title="Entrenamiento"
           iconColor="text-blue-600"
           iconBgColor="bg-blue-100"
-          onClick={() => router.push('/training')}
+          onClick={() => {
+            // ✅ ENHANCED: Route based on user experience level
+            if (userExperienceLevel === 'beginner') {
+              router.push('/training/beginner')
+            } else if (userExperienceLevel === 'advanced') {
+              router.push('/training/advanced')
+            } else {
+              router.push('/training')
+            }
+          }}
         />
 
         <FeatureCard
@@ -100,7 +135,16 @@ export default function DashboardPage() {
                 <p className="text-sm text-muted-foreground">45 min • 6 ejercicios</p>
               </div>
               <Button
-                onClick={() => router.push('/training')}
+                onClick={() => {
+                  // ✅ ENHANCED: Route based on user experience level
+                  if (userExperienceLevel === 'beginner') {
+                    router.push('/training/beginner')
+                  } else if (userExperienceLevel === 'advanced') {
+                    router.push('/training/advanced')
+                  } else {
+                    router.push('/training')
+                  }
+                }}
                 className="bg-primary hover:bg-primary/90 text-white font-medium shadow-md hover:shadow-lg"
               >
                 Iniciar
@@ -149,9 +193,16 @@ export default function DashboardPage() {
         </Button>
       </Card>
 
-      {/* Debug component - remove in production */}
+      {/* Debug component - temporarily disabled */}
       <div className="mt-8">
-        <AuthProfileDebug />
+        <div className="p-4 bg-gray-100 rounded-lg">
+          <h3 className="font-bold text-lg">Debug Info</h3>
+          <div className="space-y-2 mt-2">
+            <div><strong>Usuario:</strong> {user ? `${user.email} (${user.id})` : 'No autenticado'}</div>
+            <div><strong>Perfil:</strong> {profile ? `${profile.full_name || profile.fullName} (${profile.id})` : 'No encontrado'}</div>
+            <div><strong>Timestamp:</strong> {new Date().toISOString()}</div>
+          </div>
+        </div>
       </div>
 
       <MobileNav className="md:hidden" />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { SafeClientButton } from "@/components/ui/safe-client-button";
 
 export function ServerClientDebug() {
   const [isClient, setIsClient] = useState(false);
@@ -45,12 +46,14 @@ export function ServerClientDebug() {
       {errors.length > 0 && (
         <div className="mt-2">
           <p className="font-semibold text-xs">Event Handler Errors: {errors.length}</p>
-          <button
+          <SafeClientButton
             onClick={() => setErrors([])}
-            className="text-xs underline hover:no-underline"
+            variant="ghost"
+            size="sm"
+            className="text-xs underline hover:no-underline p-0 h-auto"
           >
             Clear
-          </button>
+          </SafeClientButton>
         </div>
       )}
     </div>

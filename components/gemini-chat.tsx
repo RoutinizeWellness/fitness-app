@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useGemini } from "@/lib/contexts/gemini-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

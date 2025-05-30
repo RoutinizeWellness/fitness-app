@@ -135,11 +135,9 @@ export default function LoginPage() {
           localStorage.setItem('login_redirect_success', 'true');
         }
 
-        // Usar el hook de redirección post-login
-        setTimeout(() => {
-          console.log("🚀 Ejecutando redirección con hook...");
-          handlePostLoginRedirect(redirectUrl);
-        }, 100);
+        // Usar el hook de redirección post-login inmediatamente
+        console.log("🚀 Ejecutando redirección con hook...");
+        handlePostLoginRedirect(redirectUrl);
       } else {
         console.error("❌ Login exitoso pero datos de sesión inválidos");
         setErrorMessage("Error: No se pudo establecer la sesión correctamente");

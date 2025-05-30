@@ -16,7 +16,7 @@ import {
 } from "lucide-react"
 import { getCommunityActivities, addCommunityActivity, getUserProfile, type CommunityActivity } from "@/lib/supabase"
 import { toast } from "@/components/ui/use-toast"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { SafeClientButton } from "@/components/ui/safe-client-button"
 
 export default function CommunityPage() {

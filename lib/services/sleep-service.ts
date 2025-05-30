@@ -468,7 +468,24 @@ export class SleepService {
    * @returns - Minutos desde medianoche
    */
   private static timeToMinutes(time: string): number {
-    const [hours, minutes] = time.split(':').map(Number)
+    if (!time || typeof time !== 'string') {
+      console.warn('timeToMinutes: Invalid time provided:', time)
+      return 0
+    }
+
+    const timeParts = time.split(':')
+    if (timeParts.length !== 2) {
+      console.warn('timeToMinutes: Invalid time format:', time)
+      return 0
+    }
+
+    const [hours, minutes] = timeParts.map(Number)
+
+    if (isNaN(hours) || isNaN(minutes)) {
+      console.warn('timeToMinutes: Non-numeric time parts:', time)
+      return 0
+    }
+
     return hours * 60 + minutes
   }
 

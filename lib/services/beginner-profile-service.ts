@@ -228,24 +228,6 @@ export async function initializeBeginnerProfile(userId: string): Promise<Beginne
   try {
     console.log('🔄 Inicializando perfil de principiante para usuario:', userId);
 
-    // Primero verificar si ya existe un perfil
-    const { data: existingProfile, error: selectError } = await supabase
-      .from('beginner_profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    if (selectError && selectError.code !== 'PGRST116') {
-      console.error('❌ Error al verificar perfil existente:', selectError);
-      throw new Error(`Error al verificar perfil existente: ${selectError.message}`);
-    }
-
-    if (existingProfile) {
-      console.log('✅ Perfil de principiante ya existe, retornando perfil existente');
-      return existingProfile as BeginnerProfile;
-    }
-
-    console.log('📝 Creando nuevo perfil de principiante...');
     const defaultProfile: BeginnerProfile = {
       user_id: userId,
       motivation: 'energy',
@@ -259,24 +241,53 @@ export async function initializeBeginnerProfile(userId: string): Promise<Beginne
       updated_at: new Date().toISOString()
     };
 
+    // ✅ SECURE: Use UPSERT to handle race conditions and duplicate key violations
+    // This will INSERT if the profile doesn't exist, or return the existing one if it does
     const { data, error } = await supabase
       .from('beginner_profiles')
-      .insert(defaultProfile)
+      .upsert(
+        defaultProfile,
+        {
+          onConflict: 'user_id',
+          ignoreDuplicates: false // Return the existing row if conflict
+        }
+      )
       .select()
       .single();
 
     if (error) {
-      console.error('❌ Error al insertar perfil de principiante:', {
+      console.error('❌ Error al hacer upsert del perfil de principiante:', {
         error,
         code: error.code,
         message: error.message,
         details: error.details,
         hint: error.hint
       });
-      throw new Error(`Error al crear perfil: ${error.message} (Código: ${error.code})`);
+
+      // If upsert fails, try to get the existing profile
+      if (error.code === '23505') { // Unique constraint violation
+        console.log('🔄 Conflicto de clave única detectado, obteniendo perfil existente...');
+        const { data: existingProfile, error: selectError } = await supabase
+          .from('beginner_profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+
+        if (selectError) {
+          console.error('❌ Error al obtener perfil existente después del conflicto:', selectError);
+          throw new Error(`Error al obtener perfil existente: ${selectError.message}`);
+        }
+
+        if (existingProfile) {
+          console.log('✅ Perfil existente obtenido después del conflicto:', existingProfile);
+          return existingProfile as BeginnerProfile;
+        }
+      }
+
+      throw new Error(`Error al crear/obtener perfil: ${error.message} (Código: ${error.code})`);
     }
 
-    console.log('✅ Perfil de principiante creado exitosamente:', data);
+    console.log('✅ Perfil de principiante inicializado exitosamente:', data);
     return data as BeginnerProfile;
   } catch (error) {
     console.error('💥 Error en initializeBeginnerProfile:', error);

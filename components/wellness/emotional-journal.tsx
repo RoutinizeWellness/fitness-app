@@ -18,7 +18,7 @@ import { AnimatedList } from "@/components/ui/animated-list"
 import { LoadingAnimation } from "@/components/ui/loading-animation"
 import { toast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import {
   Calendar,
   Edit,

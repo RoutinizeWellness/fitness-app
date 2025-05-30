@@ -31,7 +31,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { getUserFatigue } from "@/lib/adaptive-learning-service"
 import { isReadyToTrain } from "@/lib/wearable-integration"
 

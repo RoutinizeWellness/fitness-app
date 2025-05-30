@@ -8,7 +8,7 @@ import AIAssistant from "./ai-assistant"
 import AIWorkoutPlanner from "./ai-workout-planner"
 import AIProgressAnalyzer from "./ai-progress-analyzer"
 import SmartRecommendations from "./smart-recommendations"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 
 export default function AIFitnessHub() {
   const [activeTab, setActiveTab] = useState("assistant")

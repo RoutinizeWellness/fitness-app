@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, Trophy, Flame, Award, Star } from 'lucide-react'
-import { useAuth } from '@/lib/contexts/auth-context'
+import { useAuth } from '@/lib/auth/auth-context'
 import { useToast } from '@/components/ui/use-toast'
 
 export function PointsDisplay() {
@@ -108,7 +108,7 @@ export function PointsDisplay() {
             </div>
             <p className="text-lg font-semibold">{points.workoutPoints} pts</p>
           </div>
-          
+
           <div className="bg-[#F9F9F9] rounded-lg p-3">
             <div className="flex items-center mb-2">
               <Flame className="h-4 w-4 text-[#FF6767] mr-2" />
@@ -116,7 +116,7 @@ export function PointsDisplay() {
             </div>
             <p className="text-lg font-semibold">{points.streakPoints} pts</p>
           </div>
-          
+
           <div className="bg-[#F9F9F9] rounded-lg p-3">
             <div className="flex items-center mb-2">
               <Award className="h-4 w-4 text-[#8C80F8] mr-2" />
@@ -124,7 +124,7 @@ export function PointsDisplay() {
             </div>
             <p className="text-lg font-semibold">{points.milestonePoints} pts</p>
           </div>
-          
+
           <div className="bg-[#F9F9F9] rounded-lg p-3">
             <div className="flex items-center mb-2">
               <Star className="h-4 w-4 text-[#5DE292] mr-2" />
@@ -139,7 +139,7 @@ export function PointsDisplay() {
             <h3 className="text-sm font-medium mb-2">Logros Recientes</h3>
             <div className="flex flex-wrap gap-2">
               {gamificationState.achievements.slice(0, 3).map(achievement => (
-                <Badge 
+                <Badge
                   key={achievement.id}
                   variant="secondary"
                   className="bg-[#F9F9F9] text-[#573353] hover:bg-[#F5F5F5]"

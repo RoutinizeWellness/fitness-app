@@ -7,7 +7,7 @@ import { Sparkles, Brain, MessageSquare, Lightbulb } from "lucide-react"
 import { GeminiChat } from "./gemini-chat"
 import { GeminiProvider } from "@/lib/contexts/gemini-provider"
 import { GeminiRecommendations } from "./gemini-recommendations"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 
 interface GeminiAIHubProps {
   className?: string

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { TrainerAvatar } from '@/lib/types/gamification'
-import { useAuth } from '@/lib/contexts/auth-context'
+import { useAuth } from '@/lib/auth/auth-context'
 import { getUserTrainerAvatar, trainAvatarPhrases } from '@/lib/avatar-service'
 import { useToast } from '@/components/ui/use-toast'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -57,12 +57,12 @@ export function AvatarIntelligence() {
   })
   const { user } = useAuth()
   const { toast } = useToast()
-  
+
   // Load avatar data
   useEffect(() => {
     async function loadAvatar() {
       if (!user) return
-      
+
       try {
         setLoading(true)
         const avatarData = await getUserTrainerAvatar(user.id)
@@ -78,23 +78,23 @@ export function AvatarIntelligence() {
         setLoading(false)
       }
     }
-    
+
     loadAvatar()
   }, [user, toast])
-  
+
   // Train the avatar with new phrases
   const handleTrainAvatar = async () => {
     if (!user || !avatar || !newPhrases.trim()) return
-    
+
     try {
       setTraining(true)
-      
+
       // Split phrases by new line
       const phrases = newPhrases
         .split('\n')
         .map(phrase => phrase.trim())
         .filter(phrase => phrase.length > 0)
-      
+
       if (phrases.length === 0) {
         toast({
           title: 'Error',
@@ -103,19 +103,19 @@ export function AvatarIntelligence() {
         })
         return
       }
-      
+
       const success = await trainAvatarPhrases(user.id, phraseCategory, phrases)
-      
+
       if (success) {
         toast({
           title: 'Entrenamiento completado',
           description: `Se han añadido ${phrases.length} frases nuevas a tu entrenador`,
         })
-        
+
         // Update local avatar data
         setAvatar(prev => {
           if (!prev) return null
-          
+
           return {
             ...prev,
             phrases: {
@@ -124,7 +124,7 @@ export function AvatarIntelligence() {
             }
           }
         })
-        
+
         setNewPhrases('')
       } else {
         toast({
@@ -144,7 +144,7 @@ export function AvatarIntelligence() {
       setTraining(false)
     }
   }
-  
+
   // Update AI settings
   const updateAiSetting = (key: keyof typeof aiSettings, value: any) => {
     setAiSettings(prev => ({
@@ -152,7 +152,7 @@ export function AvatarIntelligence() {
       [key]: value
     }))
   }
-  
+
   if (loading) {
     return (
       <Card>
@@ -167,7 +167,7 @@ export function AvatarIntelligence() {
       </Card>
     )
   }
-  
+
   if (!avatar) {
     return (
       <Card>
@@ -183,7 +183,7 @@ export function AvatarIntelligence() {
       </Card>
     )
   }
-  
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-2">
@@ -196,7 +196,7 @@ export function AvatarIntelligence() {
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="pt-4">
         <Tabs defaultValue="overview">
           <TabsList className="grid grid-cols-4 mb-6">
@@ -217,7 +217,7 @@ export function AvatarIntelligence() {
               <span className="hidden sm:inline">Ajustes</span>
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="overview">
             <div className="space-y-6">
               {/* AI Intelligence Overview */}
@@ -247,7 +247,7 @@ export function AvatarIntelligence() {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardHeader className="p-4 pb-2">
                     <CardTitle className="text-sm font-medium">Capacidades de IA</CardTitle>
@@ -279,7 +279,7 @@ export function AvatarIntelligence() {
                   </CardContent>
                 </Card>
               </div>
-              
+
               {/* Recent Learnings */}
               <Card>
                 <CardHeader className="p-4 pb-2">
@@ -305,7 +305,7 @@ export function AvatarIntelligence() {
               </Card>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="training">
             <Card>
               <CardHeader className="p-4 pb-2">
@@ -357,7 +357,7 @@ export function AvatarIntelligence() {
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label className="mb-2 block">Nuevas frases</Label>
                     <Textarea
@@ -370,7 +370,7 @@ export function AvatarIntelligence() {
                       Escribe frases naturales que tu entrenador pueda usar durante las sesiones.
                     </p>
                   </div>
-                  
+
                   <div>
                     <Label className="mb-2 block">Frases actuales</Label>
                     <ScrollArea className="h-32 border rounded-md p-2">
@@ -395,7 +395,7 @@ export function AvatarIntelligence() {
               </CardFooter>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="knowledge">
             <Card>
               <CardHeader className="p-4 pb-2">
@@ -447,7 +447,7 @@ export function AvatarIntelligence() {
                       </Card>
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label className="mb-2 block">Nutrición y Recuperación</Label>
                     <div className="grid grid-cols-2 gap-2">
@@ -475,7 +475,7 @@ export function AvatarIntelligence() {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="settings">
             <Card>
               <CardHeader className="p-4 pb-2">
@@ -498,7 +498,7 @@ export function AvatarIntelligence() {
                       onCheckedChange={(checked) => updateAiSetting('personalizedGreetings', checked)}
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Recomendaciones de ejercicios</Label>
@@ -511,7 +511,7 @@ export function AvatarIntelligence() {
                       onCheckedChange={(checked) => updateAiSetting('exerciseRecommendations', checked)}
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Corrección de forma</Label>
@@ -524,7 +524,7 @@ export function AvatarIntelligence() {
                       onCheckedChange={(checked) => updateAiSetting('formCorrection', checked)}
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Respuestas adaptativas</Label>
@@ -537,7 +537,7 @@ export function AvatarIntelligence() {
                       onCheckedChange={(checked) => updateAiSetting('adaptiveResponses', checked)}
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Interacción por voz</Label>
@@ -550,7 +550,7 @@ export function AvatarIntelligence() {
                       onCheckedChange={(checked) => updateAiSetting('voiceInteraction', checked)}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <Label>Velocidad de aprendizaje</Label>

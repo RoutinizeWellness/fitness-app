@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { FigmaOnboarding } from "@/components/onboarding/figma-onboarding"
 import { PulseLoader } from "@/components/ui/enhanced-skeletons"
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CalendarIcon, BarChart, Calendar, Home, User, ArrowLeft } from "lucide-react"
 import { getNutritionEntries } from "@/lib/nutrition-service"

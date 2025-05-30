@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { supabase } from "@/lib/supabase-client"
 import { useToast } from "@/components/ui/use-toast"
+import { useAuth } from "@/lib/auth/auth-context"
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -28,52 +29,46 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter()
   const { toast } = useToast()
-  const [user, setUser] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  // Use the unified authentication context
+  const { user, isLoading: authLoading, isAdmin, signOut } = useAuth()
 
   // Verificar si el usuario es admin
   useEffect(() => {
-    const checkAdmin = async () => {
-      setIsLoading(true)
+    if (authLoading) return // Wait for auth to load
 
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser()
-
-        if (error || !user) {
-          throw new Error("Usuario no autenticado")
-        }
-
-        if (user.email !== "admin@routinize.com") {
-          toast({
-            title: "Acceso denegado",
-            description: "Solo el administrador puede acceder a esta sección",
-            variant: "destructive"
-          })
-          router.push("/")
-          return
-        }
-
-        setUser(user)
-      } catch (error) {
-        console.error("Error al verificar usuario:", error)
-        router.push("/auth/login")
-      } finally {
-        setIsLoading(false)
-      }
+    if (!user) {
+      console.log("No user found, redirecting to login")
+      router.push("/auth/login")
+      return
     }
 
-    checkAdmin()
-  }, [router, toast])
+    if (!isAdmin) {
+      toast({
+        title: "Acceso denegado",
+        description: "Solo el administrador puede acceder a esta sección",
+        variant: "destructive"
+      })
+      router.push("/")
+      return
+    }
+
+    console.log("Admin access granted for user:", user.email)
+  }, [user, isAdmin, authLoading, router, toast])
 
   const handleLogout = async () => {
     try {
       // Use the unified authentication system
-      const { supabaseAuth } = await import('@/lib/auth/supabase-auth')
-      await supabaseAuth.signOut()
+      await signOut()
       router.push("/auth/login")
     } catch (error) {
       console.error("Error al cerrar sesión:", error)
+      toast({
+        title: "Error",
+        description: "No se pudo cerrar la sesión correctamente",
+        variant: "destructive"
+      })
     }
   }
 
@@ -88,7 +83,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { label: "Configuración", icon: Settings, href: "/admin/settings" },
   ]
 
-  if (isLoading) {
+  // Show loading while auth is loading or while checking admin status
+  if (authLoading || (!user && !authLoading)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -97,6 +93,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </div>
     )
+  }
+
+  // If user is not admin, don't render the admin layout
+  if (!isAdmin) {
+    return null
   }
 
   return (
@@ -134,7 +135,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </Avatar>
             <div>
               <p className="font-medium">Administrador</p>
-              <p className="text-sm text-gray-500">admin@routinize.com</p>
+              <p className="text-sm text-gray-500">{user?.email || 'admin@routinize.com'}</p>
             </div>
           </div>
           <Button variant="outline" className="w-full" onClick={handleLogout}>
@@ -187,7 +188,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </Avatar>
               <div>
                 <p className="font-medium">Administrador</p>
-                <p className="text-sm text-gray-500">admin@routinize.com</p>
+                <p className="text-sm text-gray-500">{user?.email || 'admin@routinize.com'}</p>
               </div>
             </div>
             <Button variant="outline" className="w-full" onClick={handleLogout}>

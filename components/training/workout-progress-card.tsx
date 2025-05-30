@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Play, Calendar, BarChart2, Trophy, Clock } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { supabase } from "@/lib/supabase-client"
 
 interface WorkoutProgressCardProps {

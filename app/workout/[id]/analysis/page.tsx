@@ -2,7 +2,7 @@
 
 import React, { useEffect, use } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import EnhancedNavigation from "@/components/enhanced-navigation"
 import { WorkoutAnalysis } from "@/components/workout-analysis"
 import { MobileOptimizer } from "@/components/mobile-optimizer"

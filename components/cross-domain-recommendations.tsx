@@ -21,7 +21,7 @@ import {
   Lightbulb
 } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { AdvancedAIService, CrossDomainRecommendation } from "@/lib/advanced-ai-service"
 
 export default function CrossDomainRecommendations() {

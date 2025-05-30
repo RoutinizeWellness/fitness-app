@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { TrainingProvider } from "@/lib/contexts/training-context"
 import { UnifiedLayout } from "@/components/layout/unified-layout"
 import { NotificationCenter, Notification } from "@/components/notifications/notification-center"
@@ -71,7 +71,22 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, profile, isLoading } = useAuth()
+  // Safely get auth context
+  let user = null
+  let profile = null
+  let isLoading = true
+  try {
+    const authContext = useAuth()
+    user = authContext?.user || null
+    profile = authContext?.profile || null
+    isLoading = authContext?.isLoading ?? true
+  } catch (error) {
+    console.warn('DashboardLayout: AuthContext not available yet')
+    user = null
+    profile = null
+    isLoading = true
+  }
+
   const router = useRouter()
   const pathname = usePathname()
   const { showFeedback } = useFeedback()
@@ -94,34 +109,19 @@ export default function DashboardLayout({
     }
   }, [pathname])
 
-  // Forzar la redirección al dashboard si estamos en otra ruta
+  // Verificar autenticación sin forzar redirecciones innecesarias
   useEffect(() => {
     // Si estamos cargando, no hacer nada
     if (isLoading) return
 
-    // Si no hay usuario, redirigir a login
+    // Si no hay usuario, el middleware ya manejará la redirección
     if (!user) {
-      console.log("No hay usuario autenticado, redirigiendo a login")
-      router.push("/auth/login")
+      console.log("No hay usuario autenticado en dashboard layout")
       return
     }
 
-    // Si estamos en la ruta correcta, no hacer nada
-    if (pathname === "/dashboard") {
-      console.log("Ya estamos en el dashboard, no es necesario redirigir")
-      return
-    }
-
-    // Si estamos en una subruta del dashboard, no hacer nada
-    if (pathname.startsWith("/dashboard/")) {
-      console.log("Estamos en una subruta del dashboard, no es necesario redirigir")
-      return
-    }
-
-    // En cualquier otro caso, forzar la redirección al dashboard
-    console.log("Forzando redirección al dashboard desde layout")
-    router.push("/dashboard")
-  }, [user, isLoading, router, pathname])
+    console.log("Usuario autenticado en dashboard layout:", user.email)
+  }, [user, isLoading])
 
   // Manejar cambio de pestaña
   const handleTabChange = (tab: string) => {

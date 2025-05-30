@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { supabase } from "@/lib/supabase-client"
 import { useToast } from "@/components/ui/use-toast"
 
@@ -64,7 +64,16 @@ const sampleNotifications: Notification[] = [
 ]
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
+  // Safely get auth context
+  let user = null
+  try {
+    const authContext = useAuth()
+    user = authContext?.user || null
+  } catch (error) {
+    console.warn('NotificationProvider: AuthContext not available yet')
+    user = null
+  }
+
   const { toast } = useToast()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -137,7 +146,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           actionUrl: item.link,
           image: item.image
         }))
-        
+
         setNotifications(formattedNotifications)
         setUnreadCount(formattedNotifications.filter(n => !n.read).length)
       }
@@ -180,10 +189,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     if (!user) return
 
     // Actualizar UI optimistamente
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, read: true } 
+    setNotifications(prev =>
+      prev.map(notification =>
+        notification.id === id
+          ? { ...notification, read: true }
           : notification
       )
     )
@@ -229,7 +238,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     if (!user) return
 
     // Actualizar UI optimistamente
-    setNotifications(prev => 
+    setNotifications(prev =>
       prev.map(notification => ({ ...notification, read: true }))
     )
     setUnreadCount(0)

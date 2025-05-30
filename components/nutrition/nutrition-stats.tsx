@@ -113,6 +113,23 @@ function NutritionStatsContent({}: NutritionStatsProps) {
     { name: "Snacks", value: stats.mealTypeDistribution.snack }
   ] : []
 
+  // Manejar errores de carga - DEBE estar antes del return condicional
+  useEffect(() => {
+    // Verificar si hay errores en el contexto de nutrición
+    try {
+      const { dailyStatsError } = useNutrition();
+
+      if (dailyStats === null && !isLoadingDailyStats && dailyStatsError) {
+        handleSupabaseError(dailyStatsError, {
+          context: 'Estadísticas de Nutrición',
+          showToast: true
+        })
+      }
+    } catch (error) {
+      console.error('Error in nutrition stats effect:', error)
+    }
+  }, [dailyStats, isLoadingDailyStats])
+
   if (!stats) {
     return (
       <div className="space-y-4">
@@ -125,19 +142,6 @@ function NutritionStatsContent({}: NutritionStatsProps) {
       </div>
     )
   }
-
-  // Manejar errores de carga
-  useEffect(() => {
-    // Verificar si hay errores en el contexto de nutrición
-    const { dailyStatsError } = useNutrition();
-
-    if (dailyStats === null && !isLoadingDailyStats && dailyStatsError) {
-      handleSupabaseError(dailyStatsError, {
-        context: 'Estadísticas de Nutrición',
-        showToast: true
-      })
-    }
-  }, [dailyStats, isLoadingDailyStats])
 
   return (
     <div className="space-y-4">

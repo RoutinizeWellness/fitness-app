@@ -54,7 +54,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { toast } from "@/components/ui/use-toast"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { SleepEntry, SleepGoal, SleepStats, DeviceSource } from "@/lib/types/wellness"
 import { SleepService } from "@/lib/services/sleep-service"
 import { WearableService } from "@/lib/services/wearable-service"

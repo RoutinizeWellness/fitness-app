@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { v4 as uuidv4 } from 'uuid'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 /**
  * GET handler for training data
@@ -10,10 +13,24 @@ import { v4 as uuidv4 } from 'uuid'
  */
 export async function GET(request: NextRequest) {
   try {
-    // Create a Supabase client
-    const supabase = createRouteHandlerClient({ cookies: async () => await cookies() })
+    console.log('🏋️ Training API: GET request received')
 
-    // Get the current user
+    // ✅ SECURE: Create Supabase client with proper cookie handling
+    const cookieStore = await cookies()
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options)
+          })
+        },
+      },
+    })
+
+    // ✅ SECURE: Get the current user with server verification
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
     if (userError || !user) {
@@ -269,10 +286,24 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Create a Supabase client
-    const supabase = createRouteHandlerClient({ cookies: async () => await cookies() })
+    console.log('🏋️ Training API: POST request received')
 
-    // Get the current user
+    // ✅ SECURE: Create Supabase client with proper cookie handling
+    const cookieStore = await cookies()
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options)
+          })
+        },
+      },
+    })
+
+    // ✅ SECURE: Get the current user with server verification
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
     if (userError || !user) {
@@ -437,10 +468,24 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    // Create a Supabase client
-    const supabase = createRouteHandlerClient({ cookies: async () => await cookies() })
+    console.log('🏋️ Training API: DELETE request received')
 
-    // Get the current user
+    // ✅ SECURE: Create Supabase client with proper cookie handling
+    const cookieStore = await cookies()
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options)
+          })
+        },
+      },
+    })
+
+    // ✅ SECURE: Get the current user with server verification
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
     if (userError || !user) {

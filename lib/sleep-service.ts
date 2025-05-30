@@ -598,7 +598,24 @@ const calculateTimeConsistency = (times: string[]): number => {
 
   // Convertir horas a minutos desde medianoche
   const minutesArray = times.map(time => {
-    const [hours, minutes] = time.split(':').map(Number)
+    if (!time || typeof time !== 'string') {
+      console.warn('calculateTimeConsistency: Invalid time provided:', time)
+      return 0
+    }
+
+    const timeParts = time.split(':')
+    if (timeParts.length !== 2) {
+      console.warn('calculateTimeConsistency: Invalid time format:', time)
+      return 0
+    }
+
+    const [hours, minutes] = timeParts.map(Number)
+
+    if (isNaN(hours) || isNaN(minutes)) {
+      console.warn('calculateTimeConsistency: Non-numeric time parts:', time)
+      return 0
+    }
+
     return hours * 60 + minutes
   })
 

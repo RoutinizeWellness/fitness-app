@@ -396,8 +396,171 @@ export class AICoreService {
 
   // Domain-specific recommendation generators
   private async generateWorkoutRecommendations(context: AIRecommendationContext, limit: number): Promise<any[]> {
-    // Implementation will be added in the next section
-    return [];
+    try {
+      console.log('🤖 AI Core: Generando recomendaciones de entrenamiento personalizadas');
+
+      const recommendations: any[] = [];
+
+      // Get user profile and training data
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', this.userId)
+        .single();
+
+      const { data: trainingProfile } = await supabase
+        .from('training_profiles')
+        .select('*')
+        .eq('user_id', this.userId)
+        .single();
+
+      const { data: recentWorkouts } = await supabase
+        .from('workout_logs')
+        .select('*')
+        .eq('user_id', this.userId)
+        .order('date', { ascending: false })
+        .limit(10);
+
+      // ✅ PERSONALIZATION: Generate recommendations based on user data
+      const userLevel = profile?.experience_level || 'beginner';
+      const primaryGoal = trainingProfile?.primary_goal || 'general_fitness';
+      const fatigueLevel = context.currentFatigue || 0;
+      const readyToTrain = context.readyToTrain;
+
+      // Recommendation 1: Adaptive Intensity Based on Fatigue
+      if (fatigueLevel > 7) {
+        recommendations.push({
+          id: `workout_rec_${Date.now()}_1`,
+          type: 'workout_adjustment',
+          title: 'Entrenamiento de Recuperación Activa',
+          description: 'Tu nivel de fatiga está alto. Te recomendamos un entrenamiento de baja intensidad.',
+          priority: 'high',
+          confidence: 0.9,
+          actions: [
+            'Reduce la intensidad en un 30%',
+            'Enfócate en movilidad y flexibilidad',
+            'Considera un día de descanso activo'
+          ],
+          reasoning: `Fatiga detectada: ${fatigueLevel}/10. Priorizando recuperación.`,
+          category: 'recovery'
+        });
+      } else if (readyToTrain && fatigueLevel < 4) {
+        recommendations.push({
+          id: `workout_rec_${Date.now()}_2`,
+          type: 'workout_intensity',
+          title: 'Oportunidad de Entrenamiento Intenso',
+          description: 'Estás en condiciones óptimas para un entrenamiento desafiante.',
+          priority: 'medium',
+          confidence: 0.8,
+          actions: [
+            'Aumenta la intensidad en un 10-15%',
+            'Prueba ejercicios más desafiantes',
+            'Enfócate en tu objetivo principal'
+          ],
+          reasoning: `Baja fatiga (${fatigueLevel}/10) y buena preparación detectada.`,
+          category: 'progression'
+        });
+      }
+
+      // Recommendation 2: Goal-Specific Training Focus
+      if (primaryGoal === 'muscle_gain') {
+        recommendations.push({
+          id: `workout_rec_${Date.now()}_3`,
+          type: 'training_focus',
+          title: 'Optimización para Ganancia Muscular',
+          description: 'Ajustes específicos para maximizar la hipertrofia.',
+          priority: 'medium',
+          confidence: 0.85,
+          actions: [
+            'Mantén repeticiones en rango 8-12',
+            'Aumenta el tiempo bajo tensión',
+            'Prioriza ejercicios compuestos'
+          ],
+          reasoning: `Objetivo principal: ${primaryGoal}. Optimizando para hipertrofia.`,
+          category: 'goal_optimization'
+        });
+      } else if (primaryGoal === 'strength') {
+        recommendations.push({
+          id: `workout_rec_${Date.now()}_4`,
+          type: 'training_focus',
+          title: 'Optimización para Fuerza',
+          description: 'Ajustes específicos para maximizar las ganancias de fuerza.',
+          priority: 'medium',
+          confidence: 0.85,
+          actions: [
+            'Enfócate en repeticiones bajas (3-6)',
+            'Aumenta los períodos de descanso',
+            'Prioriza levantamientos básicos'
+          ],
+          reasoning: `Objetivo principal: ${primaryGoal}. Optimizando para fuerza máxima.`,
+          category: 'goal_optimization'
+        });
+      }
+
+      // Recommendation 3: Experience Level Adaptations
+      if (userLevel === 'beginner') {
+        recommendations.push({
+          id: `workout_rec_${Date.now()}_5`,
+          type: 'beginner_guidance',
+          title: 'Progresión para Principiantes',
+          description: 'Recomendaciones específicas para tu nivel de experiencia.',
+          priority: 'high',
+          confidence: 0.95,
+          actions: [
+            'Enfócate en la técnica correcta',
+            'Aumenta el peso gradualmente (2.5-5kg)',
+            'Mantén rutinas de cuerpo completo'
+          ],
+          reasoning: `Nivel de experiencia: ${userLevel}. Priorizando fundamentos.`,
+          category: 'skill_development'
+        });
+      } else if (userLevel === 'advanced') {
+        recommendations.push({
+          id: `workout_rec_${Date.now()}_6`,
+          type: 'advanced_techniques',
+          title: 'Técnicas Avanzadas',
+          description: 'Incorpora técnicas avanzadas para romper mesetas.',
+          priority: 'medium',
+          confidence: 0.8,
+          actions: [
+            'Prueba técnicas de intensidad (drop sets, supersets)',
+            'Varía los rangos de repeticiones',
+            'Considera periodización avanzada'
+          ],
+          reasoning: `Nivel avanzado detectado. Sugiriendo técnicas de intensificación.`,
+          category: 'advanced_progression'
+        });
+      }
+
+      // Recommendation 4: Workout Frequency Optimization
+      const workoutFrequency = recentWorkouts?.length || 0;
+      const targetFrequency = trainingProfile?.days_per_week || 3;
+
+      if (workoutFrequency < targetFrequency * 0.7) {
+        recommendations.push({
+          id: `workout_rec_${Date.now()}_7`,
+          type: 'frequency_adjustment',
+          title: 'Aumentar Frecuencia de Entrenamiento',
+          description: 'Has entrenado menos de lo planificado esta semana.',
+          priority: 'medium',
+          confidence: 0.8,
+          actions: [
+            'Programa entrenamientos más cortos',
+            'Considera entrenamientos en casa',
+            'Establece recordatorios diarios'
+          ],
+          reasoning: `Frecuencia actual: ${workoutFrequency}, objetivo: ${targetFrequency}`,
+          category: 'consistency'
+        });
+      }
+
+      console.log(`✅ AI Core: Generadas ${recommendations.length} recomendaciones de entrenamiento`);
+      return recommendations.slice(0, limit);
+
+    } catch (error) {
+      console.error('❌ AI Core: Error generando recomendaciones de entrenamiento:', error);
+      return [];
+    }
   }
 
   private async generateNutritionRecommendations(context: AIRecommendationContext, limit: number): Promise<any[]> {

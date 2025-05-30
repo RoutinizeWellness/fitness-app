@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { 
-  AlertCircle, 
-  CheckCircle, 
-  ChevronRight, 
-  Dumbbell, 
+import {
+  AlertCircle,
+  CheckCircle,
+  ChevronRight,
+  Dumbbell,
   Calendar,
   Clock,
   AlertTriangle,
@@ -19,14 +19,14 @@ import {
   ThumbsDown
 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { getActiveWorkoutPlan, getUserWorkoutPlans, activateWorkoutPlan } from "@/lib/workout-plan-service"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog"
@@ -63,7 +63,7 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
   const router = useRouter()
   const { toast } = useToast()
   const { user } = useAuth()
-  
+
   const [isLoading, setIsLoading] = useState(true)
   const [activePlan, setActivePlan] = useState<WorkoutPlan | null>(null)
   const [userPlans, setUserPlans] = useState<WorkoutPlan[]>([])
@@ -71,19 +71,19 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
   const [isDiscrepancyDialogOpen, setIsDiscrepancyDialogOpen] = useState(false)
   const [isSelectPlanDialogOpen, setIsSelectPlanDialogOpen] = useState(false)
   const [discrepancyReported, setDiscrepancyReported] = useState(false)
-  
+
   // Cargar el plan activo y todos los planes del usuario
   useEffect(() => {
     const loadData = async () => {
       if (!user?.id) return
-      
+
       setIsLoading(true)
-      
+
       try {
         // Obtener el plan activo
         const active = await getActiveWorkoutPlan(user.id)
         setActivePlan(active)
-        
+
         // Obtener todos los planes del usuario
         const plans = await getUserWorkoutPlans(user.id)
         setUserPlans(plans)
@@ -98,10 +98,10 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
         setIsLoading(false)
       }
     }
-    
+
     loadData()
   }, [user?.id, toast])
-  
+
   // Manejar el reporte de discrepancia
   const handleReportDiscrepancy = (feedback: "wrong" | "correct") => {
     if (feedback === "wrong") {
@@ -115,33 +115,33 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
     }
     setDiscrepancyReported(true)
   }
-  
+
   // Manejar la selección de un plan diferente
   const handleSelectPlan = async () => {
     if (!selectedPlan || !user?.id) return
-    
+
     setIsLoading(true)
-    
+
     try {
       // Activar el plan seleccionado
       const result = await activateWorkoutPlan(selectedPlan, user.id)
-      
+
       if (result.success) {
         // Actualizar el plan activo
         const active = await getActiveWorkoutPlan(user.id)
         setActivePlan(active)
-        
+
         toast({
           title: "Plan actualizado",
           description: "Se ha cambiado tu plan de entrenamiento activo",
           variant: "default"
         })
-        
+
         // Notificar al componente padre si existe
         if (onPlanChange) {
           onPlanChange(selectedPlan)
         }
-        
+
         setIsSelectPlanDialogOpen(false)
       } else {
         throw new Error("No se pudo activar el plan")
@@ -157,7 +157,7 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
       setIsLoading(false)
     }
   }
-  
+
   // Renderizar el estado de carga
   if (isLoading) {
     return (
@@ -166,7 +166,7 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
       </div>
     )
   }
-  
+
   // Si no hay plan activo
   if (!activePlan) {
     return (
@@ -183,8 +183,8 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
               </p>
             </div>
           </div>
-          
-          <Button 
+
+          <Button
             className="w-full mt-4"
             onClick={() => router.push("/training/generate-plan")}
           >
@@ -194,12 +194,12 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
       </Card>
     )
   }
-  
+
   // Encontrar el día actual si se proporciona
-  const currentDayData = currentDay 
-    ? activePlan.days.find(day => day.id === currentDay) 
+  const currentDayData = currentDay
+    ? activePlan.days.find(day => day.id === currentDay)
     : null
-  
+
   return (
     <>
       <Card className="bg-white shadow-sm">
@@ -215,9 +215,9 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
               </p>
             </div>
           </div>
-          
+
           <Separator className="my-4" />
-          
+
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <h4 className="font-medium">Plan activo:</h4>
@@ -225,7 +225,7 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
             </div>
             <p className="font-semibold text-lg">{activePlan.name}</p>
             <p className="text-sm text-muted-foreground">{activePlan.description}</p>
-            
+
             {currentDayData && (
               <div className="mt-4 p-3 bg-primary/5 rounded-lg">
                 <h5 className="font-medium">Entrenamiento actual:</h5>
@@ -234,20 +234,20 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
               </div>
             )}
           </div>
-          
+
           {!discrepancyReported ? (
             <div className="mt-6 space-y-3">
               <p className="text-sm font-medium text-center">¿Es este el plan que deberías estar siguiendo?</p>
               <div className="flex space-x-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="flex-1"
                   onClick={() => handleReportDiscrepancy("wrong")}
                 >
                   <ThumbsDown className="h-4 w-4 mr-2" />
                   No es correcto
                 </Button>
-                <Button 
+                <Button
                   className="flex-1"
                   onClick={() => handleReportDiscrepancy("correct")}
                 >
@@ -258,8 +258,8 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
             </div>
           ) : (
             <div className="mt-6">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full"
                 onClick={() => setIsSelectPlanDialogOpen(true)}
               >
@@ -270,7 +270,7 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
           )}
         </CardContent>
       </Card>
-      
+
       {/* Diálogo para reportar discrepancia */}
       <Dialog open={isDiscrepancyDialogOpen} onOpenChange={setIsDiscrepancyDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -280,12 +280,12 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
               Indica qué plan deberías estar siguiendo o selecciona uno diferente.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-4">
             <p className="text-sm font-medium mb-2">¿Qué deseas hacer?</p>
             <div className="space-y-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full justify-start"
                 onClick={() => {
                   setIsDiscrepancyDialogOpen(false)
@@ -295,8 +295,8 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Seleccionar un plan diferente
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full justify-start"
                 onClick={() => router.push("/training/generate-plan")}
               >
@@ -305,9 +305,9 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
               </Button>
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button 
+            <Button
               variant="secondary"
               onClick={() => setIsDiscrepancyDialogOpen(false)}
             >
@@ -316,7 +316,7 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* Diálogo para seleccionar un plan diferente */}
       <Dialog open={isSelectPlanDialogOpen} onOpenChange={setIsSelectPlanDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -326,7 +326,7 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
               Elige el plan que deseas activar.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-4">
             <ScrollArea className="h-[300px] pr-4">
               <RadioGroup value={selectedPlan || ""} onValueChange={setSelectedPlan}>
@@ -359,15 +359,15 @@ export function WorkoutPlanVerification({ currentDay, onPlanChange }: WorkoutPla
               </RadioGroup>
             </ScrollArea>
           </div>
-          
+
           <DialogFooter>
-            <Button 
+            <Button
               variant="secondary"
               onClick={() => setIsSelectPlanDialogOpen(false)}
             >
               Cancelar
             </Button>
-            <Button 
+            <Button
               onClick={handleSelectPlan}
               disabled={!selectedPlan || isLoading}
             >

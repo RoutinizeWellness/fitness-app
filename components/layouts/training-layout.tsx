@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { TrainingProvider } from "@/lib/contexts/training-context"
 import { UnifiedLayout } from "@/components/layout/unified-layout"
 import { PageTransition } from "@/components/ui/page-transition"

@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "@/components/ui/use-toast"
 import { createNutritionistProfile } from "@/lib/professional-service"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 
 // Esquema de validación para el formulario
 const nutritionistFormSchema = z.object({

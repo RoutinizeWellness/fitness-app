@@ -18,7 +18,7 @@ import {
   BatteryCharging,
   BatteryWarning
 } from "lucide-react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { supabase } from "@/lib/supabase-client"
 import { processSupabaseResponse, processSingleRecord } from "@/lib/supabase-utils"
 
@@ -38,7 +38,16 @@ interface FatigueData {
 }
 
 export function StrengthProgressCard() {
-  const { user } = useAuth()
+  // Safely get auth context
+  let user = null
+  try {
+    const authContext = useAuth()
+    user = authContext?.user || null
+  } catch (error) {
+    console.warn('StrengthProgressCard: AuthContext not available yet')
+    user = null
+  }
+
   const { toast } = useToast()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)

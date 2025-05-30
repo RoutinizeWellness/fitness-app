@@ -39,7 +39,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { supabase } from "@/lib/supabase-client"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { getUserFriendlyErrorMessage, isEmptyErrorObject, logErrorWithContext } from "@/lib/error-utils"
 import { handleEmptyErrorRecovery } from "@/lib/utils/cookie-cleaner"
 

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import Image from "next/image"
 import { Check, ChevronRight, Clock, Dumbbell, Home, MapPin, Star } from "lucide-react"
 
@@ -158,8 +158,8 @@ export function AmateurZeroOnboarding() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>
-              {step === 0 ? "¡Bienvenido!" : 
-               step === 5 ? "Último paso" : 
+              {step === 0 ? "¡Bienvenido!" :
+               step === 5 ? "Último paso" :
                `Paso ${step} de 4`}
             </CardTitle>
             <div className="text-sm text-muted-foreground">
@@ -168,8 +168,8 @@ export function AmateurZeroOnboarding() {
           </div>
           <Progress value={progress} className="h-2" />
           <CardDescription>
-            {step === 0 ? "Comencemos tu viaje fitness" : 
-             step === 5 ? "Casi listo para comenzar" : 
+            {step === 0 ? "Comencemos tu viaje fitness" :
+             step === 5 ? "Casi listo para comenzar" :
              "Personalicemos tu experiencia"}
           </CardDescription>
         </CardHeader>
@@ -190,14 +190,14 @@ export function AmateurZeroOnboarding() {
         </CardContent>
 
         <CardFooter className="flex justify-between">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={prevStep}
             disabled={step === 0}
           >
             Atrás
           </Button>
-          <Button 
+          <Button
             onClick={nextStep}
             disabled={!canProceed() || isSubmitting}
           >
@@ -244,9 +244,9 @@ function WelcomeScreen() {
   return (
     <div className="text-center space-y-6">
       <div className="relative h-40 w-40 mx-auto">
-        <Image 
-          src="/images/welcome-fitness.png" 
-          alt="Bienvenido a tu viaje fitness" 
+        <Image
+          src="/images/welcome-fitness.png"
+          alt="Bienvenido a tu viaje fitness"
           fill
           className="object-contain"
         />
@@ -272,29 +272,29 @@ function MotivationScreen({ value, onChange }: { value: string, onChange: (value
       <p className="text-sm text-muted-foreground mb-4">
         Esto nos ayuda a personalizar tu experiencia y recordarte tu "porqué" cuando necesites motivación extra.
       </p>
-      
+
       <RadioGroup value={value} onValueChange={onChange}>
         <div className="space-y-3">
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="energy" id="energy" />
             <Label htmlFor="energy" className="flex-1 cursor-pointer">Para sentirme con más energía en mi día a día</Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="health" id="health" />
             <Label htmlFor="health" className="flex-1 cursor-pointer">Para mejorar mi salud general</Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="appearance" id="appearance" />
             <Label htmlFor="appearance" className="flex-1 cursor-pointer">Para verme mejor físicamente</Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="new" id="new" />
             <Label htmlFor="new" className="flex-1 cursor-pointer">Para probar algo nuevo y diferente</Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="stress" id="stress" />
             <Label htmlFor="stress" className="flex-1 cursor-pointer">Para reducir el estrés</Label>
@@ -312,7 +312,7 @@ function TimeAvailabilityScreen({ value, onChange }: { value: string, onChange: 
       <p className="text-sm text-muted-foreground mb-4">
         No necesitas horas para ver resultados. Adaptaremos todo a tu disponibilidad real para que puedas ser consistente.
       </p>
-      
+
       <RadioGroup value={value} onValueChange={onChange}>
         <div className="space-y-3">
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
@@ -322,7 +322,7 @@ function TimeAvailabilityScreen({ value, onChange }: { value: string, onChange: 
               10-15 minutos
             </Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="20-30" id="time-2" />
             <Label htmlFor="time-2" className="flex-1 cursor-pointer flex items-center">
@@ -330,7 +330,7 @@ function TimeAvailabilityScreen({ value, onChange }: { value: string, onChange: 
               20-30 minutos
             </Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="30-45" id="time-3" />
             <Label htmlFor="time-3" className="flex-1 cursor-pointer flex items-center">
@@ -338,7 +338,7 @@ function TimeAvailabilityScreen({ value, onChange }: { value: string, onChange: 
               30-45 minutos
             </Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="varies" id="time-4" />
             <Label htmlFor="time-4" className="flex-1 cursor-pointer flex items-center">
@@ -359,9 +359,9 @@ function LimitationsScreen({ value, onToggle }: { value: string[], onToggle: (li
       <p className="text-sm text-muted-foreground mb-4">
         Tu seguridad es nuestra prioridad. Esta información nos ayuda a recomendarte ejercicios adecuados para ti.
       </p>
-      
+
       <div className="space-y-3">
-        <div 
+        <div
           className={`flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer ${value.includes('none') ? 'bg-accent' : ''}`}
           onClick={() => onToggle('none')}
         >
@@ -370,8 +370,8 @@ function LimitationsScreen({ value, onToggle }: { value: string[], onToggle: (li
           </div>
           <span className="flex-1">No, ninguna que conozca</span>
         </div>
-        
-        <div 
+
+        <div
           className={`flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer ${value.includes('knees') ? 'bg-accent' : ''}`}
           onClick={() => onToggle('knees')}
         >
@@ -380,8 +380,8 @@ function LimitationsScreen({ value, onToggle }: { value: string[], onToggle: (li
           </div>
           <span className="flex-1">Molestias en rodillas</span>
         </div>
-        
-        <div 
+
+        <div
           className={`flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer ${value.includes('back') ? 'bg-accent' : ''}`}
           onClick={() => onToggle('back')}
         >
@@ -390,8 +390,8 @@ function LimitationsScreen({ value, onToggle }: { value: string[], onToggle: (li
           </div>
           <span className="flex-1">Molestias en espalda</span>
         </div>
-        
-        <div 
+
+        <div
           className={`flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer ${value.includes('shoulders') ? 'bg-accent' : ''}`}
           onClick={() => onToggle('shoulders')}
         >
@@ -400,8 +400,8 @@ function LimitationsScreen({ value, onToggle }: { value: string[], onToggle: (li
           </div>
           <span className="flex-1">Molestias en hombros</span>
         </div>
-        
-        <div 
+
+        <div
           className={`flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer ${value.includes('medical') ? 'bg-accent' : ''}`}
           onClick={() => onToggle('medical')}
         >
@@ -422,7 +422,7 @@ function TrainingLocationScreen({ value, onChange }: { value: string, onChange: 
       <p className="text-sm text-muted-foreground mb-4">
         Adaptaremos tus rutinas al espacio y recursos que tengas disponibles.
       </p>
-      
+
       <RadioGroup value={value} onValueChange={onChange}>
         <div className="space-y-3">
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
@@ -432,7 +432,7 @@ function TrainingLocationScreen({ value, onChange }: { value: string, onChange: 
               En casa sin equipamiento
             </Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="home_basic_equipment" id="loc-2" />
             <Label htmlFor="loc-2" className="flex-1 cursor-pointer flex items-center">
@@ -440,7 +440,7 @@ function TrainingLocationScreen({ value, onChange }: { value: string, onChange: 
               En casa con equipamiento básico
             </Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="gym" id="loc-3" />
             <Label htmlFor="loc-3" className="flex-1 cursor-pointer flex items-center">
@@ -448,7 +448,7 @@ function TrainingLocationScreen({ value, onChange }: { value: string, onChange: 
               En un gimnasio
             </Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="outdoors" id="loc-4" />
             <Label htmlFor="loc-4" className="flex-1 cursor-pointer flex items-center">
@@ -456,7 +456,7 @@ function TrainingLocationScreen({ value, onChange }: { value: string, onChange: 
               Al aire libre
             </Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="combination" id="loc-5" />
             <Label htmlFor="loc-5" className="flex-1 cursor-pointer flex items-center">
@@ -477,24 +477,24 @@ function FeelingScreen({ value, onChange }: { value: string, onChange: (value: s
       <p className="text-sm text-muted-foreground mb-4">
         Ser honesto nos ayuda a darte el apoyo que realmente necesitas en cada momento.
       </p>
-      
+
       <RadioGroup value={value} onValueChange={onChange}>
         <div className="space-y-3">
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="excited_nervous" id="feel-1" />
             <Label htmlFor="feel-1" className="flex-1 cursor-pointer">Emocionado pero un poco nervioso</Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="motivated" id="feel-2" />
             <Label htmlFor="feel-2" className="flex-1 cursor-pointer">Motivado y listo para empezar</Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="skeptical" id="feel-3" />
             <Label htmlFor="feel-3" className="flex-1 cursor-pointer">Escéptico pero dispuesto a intentarlo</Label>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-accent cursor-pointer">
             <RadioGroupItem value="overwhelmed" id="feel-4" />
             <Label htmlFor="feel-4" className="flex-1 cursor-pointer">Abrumado, necesito que sea muy simple</Label>

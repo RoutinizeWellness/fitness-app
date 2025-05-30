@@ -1,9 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
-import { use } from "react"
+import { useAuth } from "@/lib/auth/auth-context"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -78,10 +77,9 @@ interface MealFood {
   notes?: string
 }
 
-export default function NutritionPlanPage({ params }: { params: { id: string } }) {
-  // Usar React.use() para desenvolver params
-  const unwrappedParams = use(params)
-  const planId = unwrappedParams.id
+export default function NutritionPlanPage({ params }: { params: Promise<{ id: string }> }) {
+  // ✅ NEXT.JS 15: Unwrap async params using React.use()
+  const { id: planId } = use(params)
 
   const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()

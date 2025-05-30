@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { TrainingLayout } from "@/components/layouts/training-layout"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase-client"
 import Image from "next/image"
@@ -71,7 +71,7 @@ export default function LevelUpPage() {
         }
 
         const particleCount = 50 * (timeLeft / duration)
-        
+
         // Lanzar confeti desde diferentes ángulos
         confetti({
           ...defaults,
@@ -117,25 +117,25 @@ export default function LevelUpPage() {
               Has avanzado al nivel <span className="font-bold text-primary">{newLevel}</span>
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             <div className="flex items-center justify-center space-x-4">
               <div className="text-center p-4 border rounded-lg bg-muted/30 w-32">
                 <div className="text-sm text-muted-foreground">Nivel Anterior</div>
                 <div className="font-medium mt-1">{previousLevel}</div>
               </div>
-              
+
               <ArrowRight className="h-6 w-6 text-primary" />
-              
+
               <div className="text-center p-4 border-2 border-primary rounded-lg bg-primary/10 w-32">
                 <div className="text-sm text-primary">Nivel Actual</div>
                 <div className="font-medium mt-1">{newLevel}</div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6">
               <h3 className="text-lg font-medium mb-4 text-center">Nuevas Funcionalidades Desbloqueadas</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white rounded-lg p-3 shadow-sm">
                   <div className="flex items-center">
@@ -148,7 +148,7 @@ export default function LevelUpPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-white rounded-lg p-3 shadow-sm">
                   <div className="flex items-center">
                     <div className="bg-purple-100 rounded-full p-2 mr-3">
@@ -160,7 +160,7 @@ export default function LevelUpPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-white rounded-lg p-3 shadow-sm">
                   <div className="flex items-center">
                     <div className="bg-green-100 rounded-full p-2 mr-3">
@@ -172,7 +172,7 @@ export default function LevelUpPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-white rounded-lg p-3 shadow-sm">
                   <div className="flex items-center">
                     <div className="bg-amber-100 rounded-full p-2 mr-3">
@@ -186,17 +186,17 @@ export default function LevelUpPage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="text-center">
               <p className="text-muted-foreground">
-                Tu dedicación y consistencia te han llevado a este nuevo nivel. 
+                Tu dedicación y consistencia te han llevado a este nuevo nivel.
                 ¡Sigue así para desbloquear más funcionalidades y avanzar en tu viaje fitness!
               </p>
             </div>
           </CardContent>
-          
+
           <CardFooter className="flex justify-center">
-            <Button 
+            <Button
               className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
               onClick={() => router.push('/training/dashboard')}
             >

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -27,14 +27,14 @@ export default function DatabaseDebugPage() {
     try {
       setIsLoading(true)
       setDbStructure(null)
-      
+
       const response = await fetch('/api/database/structure', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       })
-      
+
       const result = await response.json()
       console.log('Database structure check result:', result)
       setDbStructure(result)
@@ -59,7 +59,7 @@ export default function DatabaseDebugPage() {
     try {
       setIsDirectCheckLoading(true)
       setDirectCheckResult(null)
-      
+
       // Try to query the profiles table directly
       const response = await fetch('/api/profile/create', {
         method: 'POST',
@@ -77,7 +77,7 @@ export default function DatabaseDebugPage() {
           }
         }),
       })
-      
+
       const result = await response.json()
       console.log('Direct check result:', result)
       setDirectCheckResult({
@@ -98,7 +98,7 @@ export default function DatabaseDebugPage() {
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-2xl font-bold mb-6 text-center">Database Structure Debug</h1>
-      
+
       <Card className="w-full max-w-4xl mx-auto mb-8">
         <CardHeader>
           <CardTitle>Database Structure Check</CardTitle>
@@ -121,13 +121,13 @@ export default function DatabaseDebugPage() {
                 </div>
               </div>
             </div>
-            
+
             <div>
               <h3 className="text-lg font-medium mb-2">Acciones</h3>
               <div className="space-y-2">
-                <Button 
-                  onClick={checkDatabaseStructure} 
-                  variant="default" 
+                <Button
+                  onClick={checkDatabaseStructure}
+                  variant="default"
                   className="w-full"
                   disabled={isLoading}
                 >
@@ -140,9 +140,9 @@ export default function DatabaseDebugPage() {
                     "Verificar Estructura de BD"
                   )}
                 </Button>
-                <Button 
-                  onClick={performDirectCheck} 
-                  variant="outline" 
+                <Button
+                  onClick={performDirectCheck}
+                  variant="outline"
                   className="w-full"
                   disabled={isDirectCheckLoading}
                 >
@@ -158,11 +158,11 @@ export default function DatabaseDebugPage() {
               </div>
             </div>
           </div>
-          
+
           {dbStructure && (
             <div className="space-y-6">
               <h3 className="text-lg font-medium">Resultados de la Verificación</h3>
-              
+
               {dbStructure.error ? (
                 <Alert variant="destructive">
                   <AlertTitle className="flex items-center">
@@ -185,12 +185,12 @@ export default function DatabaseDebugPage() {
                       Tabla de Perfiles
                     </AlertTitle>
                     <AlertDescription>
-                      {dbStructure.profilesTable?.exists 
-                        ? "La tabla de perfiles existe en la base de datos" 
+                      {dbStructure.profilesTable?.exists
+                        ? "La tabla de perfiles existe en la base de datos"
                         : "La tabla de perfiles no existe en la base de datos"}
                     </AlertDescription>
                   </Alert>
-                  
+
                   {dbStructure.profilesTable?.exists && dbStructure.columns?.data && (
                     <div>
                       <h4 className="text-md font-medium mb-2">Columnas de la Tabla</h4>
@@ -214,7 +214,7 @@ export default function DatabaseDebugPage() {
                       </Table>
                     </div>
                   )}
-                  
+
                   {dbStructure.profilesTable?.exists && dbStructure.policies?.data && (
                     <div>
                       <h4 className="text-md font-medium mb-2">Políticas RLS</h4>
@@ -240,7 +240,7 @@ export default function DatabaseDebugPage() {
                   )}
                 </>
               )}
-              
+
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="details">
                   <AccordionTrigger>Detalles Técnicos</AccordionTrigger>
@@ -253,11 +253,11 @@ export default function DatabaseDebugPage() {
               </Accordion>
             </div>
           )}
-          
+
           {directCheckResult && (
             <div className="space-y-4 mt-6">
               <h3 className="text-lg font-medium">Resultado de Prueba Directa</h3>
-              
+
               <Alert variant={directCheckResult.success ? "default" : "destructive"}>
                 <AlertTitle className="flex items-center">
                   {directCheckResult.success ? (
@@ -268,12 +268,12 @@ export default function DatabaseDebugPage() {
                   Prueba Directa
                 </AlertTitle>
                 <AlertDescription>
-                  {directCheckResult.success 
-                    ? "La prueba directa fue exitosa" 
+                  {directCheckResult.success
+                    ? "La prueba directa fue exitosa"
                     : directCheckResult.error || "La prueba directa falló"}
                 </AlertDescription>
               </Alert>
-              
+
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="direct-details">
                   <AccordionTrigger>Detalles Técnicos</AccordionTrigger>

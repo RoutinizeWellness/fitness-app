@@ -38,7 +38,7 @@ import {
   PlusCircle,
   ListFilter
 } from "lucide-react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useFeedback } from "@/components/feedback/action-feedback"
 import {
   FadeInElement,

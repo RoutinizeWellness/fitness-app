@@ -25,7 +25,7 @@ import {
   BarChart2
 } from "lucide-react"
 import { AICoreService } from "@/lib/ai-core-service"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 
 interface AICoreRecommendation {
   id: string

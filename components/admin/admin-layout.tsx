@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { toast } from "@/components/ui/use-toast"
 import { Button3D } from "@/components/ui/button-3d"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

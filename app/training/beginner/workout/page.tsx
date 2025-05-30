@@ -21,7 +21,7 @@ import {
   Dumbbell 
 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { supabase } from "@/lib/supabase-client"
 import { processSupabaseResponse } from "@/lib/supabase-utils"
 import { AnimatedFade, AnimatedSlide } from "@/components/animations/animated-transitions"

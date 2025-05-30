@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { geminiRateLimiter } from '@/lib/gemini-rate-limiter';
 
 /**
  * GET handler for checking Gemini API key
@@ -25,6 +24,9 @@ export async function GET(request: NextRequest) {
 
     // Try to get a model to verify the API key works
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+    // Import the rate limiter dynamically to avoid SSR issues
+    const { geminiRateLimiter } = await import('@/lib/gemini-rate-limiter');
 
     // Get rate limit status
     const rateLimitStatus = geminiRateLimiter.getRateLimitStatus();

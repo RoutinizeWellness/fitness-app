@@ -1,19 +1,20 @@
 "use client"
 
 import { useState } from "react"
-import { 
-  Moon, 
-  Sun, 
-  Clock, 
-  Calendar, 
-  Plus, 
-  ChevronRight, 
-  ChevronDown, 
+import {
+  Moon,
+  Sun,
+  Clock,
+  Calendar,
+  Plus,
+  ChevronRight,
+  ChevronDown,
   ChevronUp,
   Heart,
   Activity,
   Thermometer,
-  Info
+  Info,
+  Waves
 } from "lucide-react"
 import { Card3D, Card3DContent, Card3DHeader, Card3DTitle } from "@/components/ui/card-3d"
 import { Button3D } from "@/components/ui/button-3d"

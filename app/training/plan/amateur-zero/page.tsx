@@ -2,7 +2,7 @@
 
 import { AmateurZeroWorkoutPlan } from "@/components/training/amateur-zero-workout-plan"
 import { TrainingLayout } from "@/components/layouts/training-layout"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase-client"
@@ -32,7 +32,7 @@ export default function AmateurZeroWorkoutPlanPage() {
 
         // Verificar si el usuario es amateur_zero
         setIsAmateurZero(data?.experience_level === 'amateur_zero')
-        
+
         // Si no es amateur_zero, redirigir al plan de entrenamiento regular
         if (data?.experience_level !== 'amateur_zero') {
           router.push('/training/plan')

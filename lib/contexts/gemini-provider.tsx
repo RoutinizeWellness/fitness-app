@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useToast } from "@/components/ui/use-toast"
 import { createClient } from "@/lib/supabase/client"
 
@@ -25,7 +25,19 @@ interface GeminiContextType {
 const GeminiContext = createContext<GeminiContextType | undefined>(undefined)
 
 export function GeminiProvider({ children, context = {} }: { children: ReactNode, context?: Record<string, any> }) {
-  const { user, profile } = useAuth()
+  // Safely get auth context
+  let user = null
+  let profile = null
+  try {
+    const authContext = useAuth()
+    user = authContext?.user || null
+    profile = authContext?.profile || null
+  } catch (error) {
+    console.warn('GeminiProvider: AuthContext not available yet')
+    user = null
+    profile = null
+  }
+
   const { toast } = useToast()
   const [messages, setMessages] = useState<GeminiMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)

@@ -56,12 +56,12 @@ export function useAuthRedirect(options: UseAuthRedirectOptions = {}) {
     // Si requiere NO estar autenticado y está autenticado, redirigir
     if (requireNoAuth && isAuthenticated) {
       console.log('🚀 useAuthRedirect: Usuario autenticado, redirigiendo a:', redirectTo);
-      
+
       if (onRedirect) {
         onRedirect(redirectTo);
       }
-      
-      router.push(redirectTo);
+
+      router.replace(redirectTo);
       return;
     }
 
@@ -104,7 +104,7 @@ export function usePostLoginRedirect() {
 
   const handlePostLoginRedirect = (returnUrl?: string) => {
     // Obtener URL de retorno de diferentes fuentes
-    const finalReturnUrl = returnUrl || 
+    const finalReturnUrl = returnUrl ||
                           (typeof window !== 'undefined' ? localStorage.getItem('login_return_url') : null) ||
                           (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('returnUrl') : null) ||
                           '/dashboard';
@@ -118,8 +118,8 @@ export function usePostLoginRedirect() {
       localStorage.setItem('post_login_redirect_time', new Date().toISOString());
     }
 
-    // Ejecutar redirección
-    router.push(finalReturnUrl);
+    // Ejecutar redirección usando replace para evitar volver atrás
+    router.replace(finalReturnUrl);
   };
 
   return { handlePostLoginRedirect };

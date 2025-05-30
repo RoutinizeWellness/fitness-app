@@ -8,14 +8,14 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase-client"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { 
-  TrendingUp, 
-  Award, 
-  Star, 
-  Calendar, 
+import {
+  TrendingUp,
+  Award,
+  Star,
+  Calendar,
   CheckCircle,
   Info,
   ChevronRight,
@@ -92,36 +92,36 @@ export function AmateurZeroProgressionSystem() {
 
         // Calcular estadísticas básicas
         const totalWorkouts = sessionsData?.length || 0
-        
+
         // Calcular racha actual
         let streak = 0
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-        
-        const sortedSessions = [...(sessionsData || [])].sort((a, b) => 
+
+        const sortedSessions = [...(sessionsData || [])].sort((a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime()
         )
-        
+
         if (sortedSessions.length > 0) {
           // Verificar si hay un entrenamiento hoy
           const lastSessionDate = new Date(sortedSessions[0].date)
           lastSessionDate.setHours(0, 0, 0, 0)
-          
+
           const diffDays = Math.floor((today.getTime() - lastSessionDate.getTime()) / (1000 * 60 * 60 * 24))
-          
+
           if (diffDays <= 1) { // Hoy o ayer
             streak = 1
-            
+
             // Contar días consecutivos hacia atrás
             for (let i = 1; i < sortedSessions.length; i++) {
               const currentDate = new Date(sortedSessions[i-1].date)
               currentDate.setHours(0, 0, 0, 0)
-              
+
               const prevDate = new Date(sortedSessions[i].date)
               prevDate.setHours(0, 0, 0, 0)
-              
+
               const daysBetween = Math.floor((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24))
-              
+
               if (daysBetween <= 2) { // Permitir un día de descanso
                 streak++
               } else {
@@ -130,25 +130,25 @@ export function AmateurZeroProgressionSystem() {
             }
           }
         }
-        
+
         // Calcular consistencia (% de semanas con al menos 2 entrenamientos)
         let consistency = 0
         if (totalWorkouts > 0) {
           const weekMap = new Map<string, number>()
-          
+
           sortedSessions.forEach(session => {
             const sessionDate = new Date(session.date)
             const weekKey = `${sessionDate.getFullYear()}-${Math.floor(sessionDate.getDate() / 7)}`
-            
+
             weekMap.set(weekKey, (weekMap.get(weekKey) || 0) + 1)
           })
-          
+
           const weeksWithEnoughWorkouts = [...weekMap.values()].filter(count => count >= 2).length
           const totalWeeks = weekMap.size
-          
+
           consistency = totalWeeks > 0 ? Math.round((weeksWithEnoughWorkouts / totalWeeks) * 100) : 0
         }
-        
+
         // Obtener ejercicios realizados
         const { data: exercisesData, error: exercisesError } = await supabase
           .from('workout_exercises')
@@ -171,12 +171,12 @@ export function AmateurZeroProgressionSystem() {
             exercises: 8
           }
         }
-        
+
         // Calcular progreso hacia el siguiente nivel
         const workoutProgress = Math.min(totalWorkouts / level.requirements.workouts, 1)
         const consistencyProgress = Math.min(consistency / level.requirements.consistency, 1)
         const exerciseProgress = Math.min(totalExercises / level.requirements.exercises, 1)
-        
+
         // Promedio ponderado de los factores
         level.progress = Math.round(((workoutProgress * 0.5) + (consistencyProgress * 0.3) + (exerciseProgress * 0.2)) * 100)
 
@@ -369,7 +369,7 @@ export function AmateurZeroProgressionSystem() {
           Seguimiento de tu evolución y camino hacia el siguiente nivel
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-4">
@@ -386,7 +386,7 @@ export function AmateurZeroProgressionSystem() {
               <span>Objetivos</span>
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="progress" className="space-y-6">
             <div className="space-y-4">
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
@@ -399,7 +399,7 @@ export function AmateurZeroProgressionSystem() {
                     <Star className="h-6 w-6 text-amber-400" />
                   </div>
                 </div>
-                
+
                 <div className="space-y-1">
                   <div className="flex justify-between items-center text-sm">
                     <span>Progreso hacia {progressionData.level.nextLevel}</span>
@@ -407,10 +407,10 @@ export function AmateurZeroProgressionSystem() {
                   </div>
                   <Progress value={progressionData.level.progress} className="h-2" />
                 </div>
-                
+
                 {isReadyForNextLevel() && (
                   <div className="mt-4">
-                    <Button 
+                    <Button
                       className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
                       onClick={advanceToNextLevel}
                     >
@@ -420,29 +420,29 @@ export function AmateurZeroProgressionSystem() {
                   </div>
                 )}
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="border rounded-lg p-4 text-center">
                   <div className="text-3xl font-bold text-primary">{progressionData.totalWorkouts}</div>
                   <div className="text-sm text-muted-foreground">Entrenamientos Completados</div>
                 </div>
-                
+
                 <div className="border rounded-lg p-4 text-center">
                   <div className="text-3xl font-bold text-primary">{progressionData.streak}</div>
                   <div className="text-sm text-muted-foreground">Racha Actual</div>
                 </div>
-                
+
                 <div className="border rounded-lg p-4 text-center">
                   <div className="text-3xl font-bold text-primary">{progressionData.consistency}%</div>
                   <div className="text-sm text-muted-foreground">Consistencia Semanal</div>
                 </div>
-                
+
                 <div className="border rounded-lg p-4 text-center">
                   <div className="text-3xl font-bold text-primary">{progressionData.totalSets}</div>
                   <div className="text-sm text-muted-foreground">Series Totales</div>
                 </div>
               </div>
-              
+
               <div className="bg-blue-50 rounded-md p-4 text-sm">
                 <div className="flex">
                   <Info className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
@@ -461,14 +461,14 @@ export function AmateurZeroProgressionSystem() {
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="achievements" className="space-y-6">
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Tus Logros</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {progressionData.achievements.map((achievement) => (
-                  <div 
+                  <div
                     key={achievement.id}
                     className={`border rounded-lg p-4 ${achievement.completed ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}
                   >
@@ -496,17 +496,17 @@ export function AmateurZeroProgressionSystem() {
                   </div>
                 ))}
               </div>
-              
+
               <div className="text-center text-sm text-muted-foreground">
                 {progressionData.achievements.filter(a => a.completed).length} de {progressionData.achievements.length} logros desbloqueados
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="milestones" className="space-y-6">
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Objetivos para Nivel Principiante</h3>
-              
+
               <div className="space-y-4">
                 {progressionData.milestones.map((milestone) => (
                   <div key={milestone.id} className="border rounded-lg p-4">
@@ -517,14 +517,14 @@ export function AmateurZeroProgressionSystem() {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">{milestone.description}</p>
-                    <Progress 
-                      value={Math.min((milestone.current / milestone.target) * 100, 100)} 
+                    <Progress
+                      value={Math.min((milestone.current / milestone.target) * 100, 100)}
                       className="h-2"
                     />
                   </div>
                 ))}
               </div>
-              
+
               <div className="bg-amber-50 rounded-md p-4 text-sm">
                 <div className="flex">
                   <Info className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />
@@ -546,7 +546,7 @@ export function AmateurZeroProgressionSystem() {
           </TabsContent>
         </Tabs>
       </CardContent>
-      
+
       <CardFooter className="flex justify-between">
         <Button variant="outline" onClick={() => router.push('/training/dashboard')}>
           Volver al Dashboard

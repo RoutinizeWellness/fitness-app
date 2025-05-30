@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { UnifiedLayout } from "@/components/layout/unified-layout"
 import { PageTransition } from "@/components/ui/page-transition"
 import { GeminiChat } from "@/components/gemini-chat"

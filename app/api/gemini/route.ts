@@ -155,54 +155,61 @@ export async function POST(request: NextRequest) {
 
       const responseText = result.response.text();
 
-    // Extract suggestions if any
-    const suggestions = extractSuggestions(responseText);
+      // Extract suggestions if any
+      const suggestions = extractSuggestions(responseText);
 
-    // Return response
-    return NextResponse.json({
-      response: {
-        message: responseText,
-        suggestions,
-      }
-    });
-  } catch (error: any) {
-    console.error('Error al procesar la solicitud a Gemini:', error);
-
-    // Check if it's a rate limit error
-    if (error.message && (
-        error.message.includes('429') ||
-        error.message.includes('Too Many Requests') ||
-        error.message.includes('quota') ||
-        error.message.includes('rate limit')
-    )) {
-      // Extract retry delay if available
-      let retryAfter = 60; // Default to 60 seconds
-      const retryMatch = error.message.match(/retryDelay:"(\d+)s"/);
-      if (retryMatch && retryMatch[1]) {
-        retryAfter = parseInt(retryMatch[1], 10);
-      }
-
-      console.log(`Rate limit error detected. Suggesting retry after ${retryAfter} seconds`);
-
+      // Return response
       return NextResponse.json({
         response: {
-          message: `Lo siento, el asistente está experimentando alta demanda en este momento. Por favor, intenta de nuevo en ${retryAfter} segundos.`,
-          suggestions: [
-            "¿Qué ejercicios puedo hacer sin el asistente?",
-            "Muéstrame rutinas predefinidas",
-            "¿Cómo puedo seguir mi progreso manualmente?"
-          ],
-          limited: true,
-          retryAfter
+          message: responseText,
+          suggestions,
         }
       });
-    }
+    } catch (error: any) {
+      console.error('Error al procesar la solicitud a Gemini:', error);
 
+      // Check if it's a rate limit error
+      if (error.message && (
+          error.message.includes('429') ||
+          error.message.includes('Too Many Requests') ||
+          error.message.includes('quota') ||
+          error.message.includes('rate limit')
+      )) {
+        // Extract retry delay if available
+        let retryAfter = 60; // Default to 60 seconds
+        const retryMatch = error.message.match(/retryDelay:"(\d+)s"/);
+        if (retryMatch && retryMatch[1]) {
+          retryAfter = parseInt(retryMatch[1], 10);
+        }
+
+        console.log(`Rate limit error detected. Suggesting retry after ${retryAfter} seconds`);
+
+        return NextResponse.json({
+          response: {
+            message: `Lo siento, el asistente está experimentando alta demanda en este momento. Por favor, intenta de nuevo en ${retryAfter} segundos.`,
+            suggestions: [
+              "¿Qué ejercicios puedo hacer sin el asistente?",
+              "Muéstrame rutinas predefinidas",
+              "¿Cómo puedo seguir mi progreso manualmente?"
+            ],
+            limited: true,
+            retryAfter
+          }
+        });
+      }
+
+      return NextResponse.json(
+        {
+          error: 'Error interno del servidor',
+          details: error.message
+        },
+        { status: 500 }
+      );
+    }
+  } catch (error) {
+    console.error('Error in POST handler:', error);
     return NextResponse.json(
-      {
-        error: 'Error interno del servidor',
-        details: error.message
-      },
+      { error: 'Error interno del servidor' },
       { status: 500 }
     );
   }
@@ -355,35 +362,42 @@ export async function GET(request: NextRequest) {
 
       const responseText = result.response.text();
 
-    // Parse recommendations
-    const recommendations = parseRecommendations(responseText, type);
+      // Parse recommendations
+      const recommendations = parseRecommendations(responseText, type);
 
-    // Return response
-    return NextResponse.json({ recommendations });
-  } catch (error: any) {
-    console.error('Error al generar recomendaciones:', error);
+      // Return response
+      return NextResponse.json({ recommendations });
+    } catch (error: any) {
+      console.error('Error al generar recomendaciones:', error);
 
-    // Check if it's a rate limit error
-    if (error.message && (
-        error.message.includes('429') ||
-        error.message.includes('Too Many Requests') ||
-        error.message.includes('quota') ||
-        error.message.includes('rate limit')
-    )) {
-      // Return predefined recommendations instead of an error
-      console.log('Rate limit error detected. Returning predefined recommendations.');
+      // Check if it's a rate limit error
+      if (error.message && (
+          error.message.includes('429') ||
+          error.message.includes('Too Many Requests') ||
+          error.message.includes('quota') ||
+          error.message.includes('rate limit')
+      )) {
+        // Return predefined recommendations instead of an error
+        console.log('Rate limit error detected. Returning predefined recommendations.');
 
-      return NextResponse.json({
-        recommendations: getPredefinedRecommendations(type),
-        limited: true
-      });
+        return NextResponse.json({
+          recommendations: getPredefinedRecommendations(type),
+          limited: true
+        });
+      }
+
+      return NextResponse.json(
+        {
+          error: 'Error interno del servidor',
+          details: error.message
+        },
+        { status: 500 }
+      );
     }
-
+  } catch (error) {
+    console.error('Error in GET handler:', error);
     return NextResponse.json(
-      {
-        error: 'Error interno del servidor',
-        details: error.message
-      },
+      { error: 'Error interno del servidor' },
       { status: 500 }
     );
   }

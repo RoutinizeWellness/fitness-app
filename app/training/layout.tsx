@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { TrainingProvider } from "@/lib/contexts/training-context"
 import { UnifiedLayout } from "@/components/layout/unified-layout"
 import { PageTransition } from "@/components/ui/page-transition"
@@ -14,7 +14,22 @@ export default function TrainingLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, profile, isLoading } = useAuth()
+  // Safely get auth context
+  let user = null
+  let profile = null
+  let isLoading = true
+  try {
+    const authContext = useAuth()
+    user = authContext?.user || null
+    profile = authContext?.profile || null
+    isLoading = authContext?.isLoading ?? true
+  } catch (error) {
+    console.warn('TrainingLayout: AuthContext not available yet')
+    user = null
+    profile = null
+    isLoading = true
+  }
+
   const [activeTab, setActiveTab] = useState("training")
 
   // Handle tab change

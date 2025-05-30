@@ -25,7 +25,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { updateProfessionalVerification } from "@/lib/admin-dashboard-service"
 import { supabase } from "@/lib/supabase-client"
 

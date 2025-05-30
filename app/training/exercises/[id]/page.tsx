@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 
 import { OrganicElement } from "@/components/transitions/organic-transitions"
@@ -64,7 +64,10 @@ const sampleExercise = {
   ]
 }
 
-export default function ExercisePage({ params }: { params: { id: string } }) {
+export default function ExercisePage({ params }: { params: Promise<{ id: string }> }) {
+  // ✅ NEXT.JS 15: Unwrap async params using React.use()
+  const { id } = use(params)
+
   const [exercise, setExercise] = useState(sampleExercise)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
@@ -84,7 +87,7 @@ export default function ExercisePage({ params }: { params: { id: string } }) {
     }
 
     fetchExercise()
-  }, [params.id])
+  }, [id])
 
   return (
       <OrganicElement type="fade">

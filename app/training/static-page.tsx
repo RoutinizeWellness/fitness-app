@@ -24,7 +24,7 @@ import { WorkoutRoutine } from "@/lib/types/training"
 import { v4 as uuidv4 } from "uuid"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useTraining } from "@/lib/contexts/training-context"
 
 // This is a completely static version of the training page without any animations or framer-motion dependencies
@@ -242,8 +242,8 @@ export default function StaticTrainingPage() {
             ) : (
               <div className="space-y-4">
                 {routines.map(routine => (
-                  <div 
-                    key={routine.id} 
+                  <div
+                    key={routine.id}
                     className="border rounded-lg p-5 hover:shadow-md transition-all duration-300 bg-white relative overflow-hidden"
                     style={{
                       borderLeftWidth: '4px',
@@ -284,7 +284,7 @@ export default function StaticTrainingPage() {
                 ))}
               </div>
             )}
-            
+
             <Separator className="my-8" />
             <WorkoutCalendar />
           </div>

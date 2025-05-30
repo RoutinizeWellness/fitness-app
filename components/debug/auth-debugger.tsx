@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth/auth-context"
-import { supabase } from "@/lib/supabase-client"
+import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+
+// ✅ SECURE: Initialize Supabase client for secure authentication
+const supabase = createClient()
 
 export function AuthDebugger() {
   const { user, session, profile, refreshProfile } = useAuth()
@@ -35,17 +38,34 @@ export function AuthDebugger() {
       console.error("Error accessing sessionStorage:", e)
     }
 
-    // Get Supabase session directly
-    const getSupabaseSession = async () => {
-      const { data, error } = await supabase.auth.getSession()
-      if (error) {
-        console.error("Error getting Supabase session:", error)
-      } else {
-        setSupabaseSession(data.session)
+    // ✅ SECURE: Get verified user from server
+    const getVerifiedUser = async () => {
+      try {
+        console.log('🔐 Auth Debugger: Verificando usuario con el servidor...')
+
+        // ✅ SECURE: Usar getUser() para verificar con el servidor
+        const { data: { user }, error } = await supabase.auth.getUser()
+
+        if (error) {
+          console.error("❌ Error getting verified user:", error)
+          setSupabaseSession(null)
+        } else if (user) {
+          console.log('✅ Usuario verificado por el servidor:', user.id)
+
+          // Obtener sesión local solo para información adicional
+          const { data: sessionData } = await supabase.auth.getSession()
+          setSupabaseSession(sessionData.session)
+        } else {
+          console.log('ℹ️ No hay usuario autenticado')
+          setSupabaseSession(null)
+        }
+      } catch (error) {
+        console.error("💥 Error inesperado al verificar usuario:", error)
+        setSupabaseSession(null)
       }
     }
 
-    getSupabaseSession()
+    getVerifiedUser()
   }, [])
 
   const handleRefreshProfile = async () => {

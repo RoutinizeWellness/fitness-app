@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { useAuth } from '@/lib/contexts/auth-context'
+import { useAuth } from '@/lib/auth/auth-context'
 import { useToast } from '@/components/ui/use-toast'
 import { Bot, Mic, Send, Volume2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -33,7 +33,7 @@ export function TrainerAvatar() {
         setLoading(true)
         const avatarData = await getUserTrainerAvatar(user.id)
         setAvatar(avatarData)
-        
+
         // Show a random greeting
         if (avatarData?.phrases.greeting.length) {
           const randomIndex = Math.floor(Math.random() * avatarData.phrases.greeting.length)
@@ -59,12 +59,12 @@ export function TrainerAvatar() {
 
     // Simple keyword matching for responses
     let responseCategory: keyof TrainerAvatarType['phrases'] = 'greeting'
-    
-    if (message.toLowerCase().includes('ejercicio') || 
+
+    if (message.toLowerCase().includes('ejercicio') ||
         message.toLowerCase().includes('entrenamiento') ||
         message.toLowerCase().includes('rutina')) {
       responseCategory = 'workout'
-    } else if (message.toLowerCase().includes('logro') || 
+    } else if (message.toLowerCase().includes('logro') ||
                message.toLowerCase().includes('conseguido') ||
                message.toLowerCase().includes('completado')) {
       responseCategory = 'milestone'
@@ -86,7 +86,7 @@ export function TrainerAvatar() {
 
     try {
       setIsTraining(true)
-      
+
       // Split phrases by new line
       const phrases = newPhrases
         .split('\n')
@@ -103,17 +103,17 @@ export function TrainerAvatar() {
       }
 
       const success = await trainAvatarPhrases(user.id, phraseCategory, phrases)
-      
+
       if (success) {
         toast({
           title: 'Entrenamiento completado',
           description: `Se han añadido ${phrases.length} frases nuevas a tu entrenador`,
         })
-        
+
         // Update local avatar data
         setAvatar(prev => {
           if (!prev) return null
-          
+
           return {
             ...prev,
             phrases: {
@@ -122,7 +122,7 @@ export function TrainerAvatar() {
             }
           }
         })
-        
+
         setNewPhrases('')
       } else {
         toast({
@@ -145,7 +145,7 @@ export function TrainerAvatar() {
 
   const speakPhrase = () => {
     if (!currentPhrase) return
-    
+
     // Use the Web Speech API to speak the phrase
     const utterance = new SpeechSynthesisUtterance(currentPhrase)
     utterance.lang = 'es-ES'
@@ -190,7 +190,7 @@ export function TrainerAvatar() {
           <div>
             <CardTitle className="text-lg font-medium">{avatar.name}</CardTitle>
             <CardDescription>
-              {avatar.personality === 'motivational' ? 'Motivador' : 
+              {avatar.personality === 'motivational' ? 'Motivador' :
                avatar.personality === 'technical' ? 'Técnico' :
                avatar.personality === 'supportive' ? 'Apoyo' : 'Desafiante'}
             </CardDescription>
@@ -208,35 +208,35 @@ export function TrainerAvatar() {
                   Añade nuevas frases para personalizar tu entrenador virtual.
                 </DialogDescription>
               </DialogHeader>
-              
+
               <Tabs defaultValue="greeting">
                 <TabsList className="grid grid-cols-4">
-                  <TabsTrigger 
-                    value="greeting" 
+                  <TabsTrigger
+                    value="greeting"
                     onClick={() => setPhraseCategory('greeting')}
                   >
                     Saludos
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="encouragement" 
+                  <TabsTrigger
+                    value="encouragement"
                     onClick={() => setPhraseCategory('encouragement')}
                   >
                     Ánimos
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="milestone" 
+                  <TabsTrigger
+                    value="milestone"
                     onClick={() => setPhraseCategory('milestone')}
                   >
                     Logros
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="workout" 
+                  <TabsTrigger
+                    value="workout"
                     onClick={() => setPhraseCategory('workout')}
                   >
                     Ejercicios
                   </TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="greeting" className="space-y-4">
                   <p className="text-sm text-muted-foreground">
                     Frases que el entrenador dirá al saludar.
@@ -248,7 +248,7 @@ export function TrainerAvatar() {
                     rows={5}
                   />
                 </TabsContent>
-                
+
                 <TabsContent value="encouragement" className="space-y-4">
                   <p className="text-sm text-muted-foreground">
                     Frases motivadoras durante el entrenamiento.
@@ -260,7 +260,7 @@ export function TrainerAvatar() {
                     rows={5}
                   />
                 </TabsContent>
-                
+
                 <TabsContent value="milestone" className="space-y-4">
                   <p className="text-sm text-muted-foreground">
                     Frases para celebrar logros y hitos.
@@ -272,7 +272,7 @@ export function TrainerAvatar() {
                     rows={5}
                   />
                 </TabsContent>
-                
+
                 <TabsContent value="workout" className="space-y-4">
                   <p className="text-sm text-muted-foreground">
                     Consejos técnicos sobre ejercicios.
@@ -285,10 +285,10 @@ export function TrainerAvatar() {
                   />
                 </TabsContent>
               </Tabs>
-              
+
               <DialogFooter>
-                <Button 
-                  onClick={handleTrainAvatar} 
+                <Button
+                  onClick={handleTrainAvatar}
                   disabled={isTraining || !newPhrases.trim()}
                 >
                   {isTraining ? 'Entrenando...' : 'Entrenar'}
@@ -298,29 +298,29 @@ export function TrainerAvatar() {
           </Dialog>
         </div>
       </CardHeader>
-      
+
       <CardContent className="pt-4">
         <div className="flex flex-col items-center">
           {/* 3D Avatar Placeholder - In a real implementation, this would be a 3D model */}
-          <div 
+          <div
             ref={avatarContainerRef}
             className="w-full h-48 bg-gradient-to-b from-[#F9F9F9] to-[#F5F5F5] rounded-lg mb-4 flex items-center justify-center relative"
           >
             <div className="absolute inset-0 flex items-center justify-center">
-              <img 
-                src="/images/trainer-avatar-placeholder.png" 
-                alt="Entrenador virtual" 
+              <img
+                src="/images/trainer-avatar-placeholder.png"
+                alt="Entrenador virtual"
                 className="h-40 object-contain"
               />
             </div>
           </div>
-          
+
           {currentPhrase && (
             <div className="bg-[#F9F9F9] p-3 rounded-lg w-full mb-4 relative">
               <p className="text-sm">{currentPhrase}</p>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className="absolute right-2 top-2"
                 onClick={speakPhrase}
               >
@@ -328,7 +328,7 @@ export function TrainerAvatar() {
               </Button>
             </div>
           )}
-          
+
           <div className="flex w-full space-x-2">
             <Button variant="outline" size="icon">
               <Mic className="h-4 w-4" />
@@ -339,8 +339,8 @@ export function TrainerAvatar() {
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
             />
-            <Button 
-              variant="default" 
+            <Button
+              variant="default"
               size="icon"
               onClick={handleSendMessage}
               disabled={!message.trim()}

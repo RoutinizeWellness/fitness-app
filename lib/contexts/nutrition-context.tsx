@@ -115,7 +115,16 @@ const NutritionContext = createContext<NutritionContextType | undefined>(undefin
 
 // Proveedor del contexto
 export function NutritionProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
+  // Safely get auth context
+  let user = null
+  try {
+    const authContext = useAuth()
+    user = authContext?.user || null
+  } catch (error) {
+    console.warn('NutritionProvider: AuthContext not available yet')
+    user = null
+  }
+
   const { toast } = useToast()
   const [nutritionGoals, setNutritionGoals] = useState<NutritionGoal | null>(null)
   const [activeMealPlan, setActiveMealPlan] = useState<MealPlan | null>(null)

@@ -19,7 +19,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { WorkoutPlanVerification } from "@/components/training/workout-plan-verification"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 
 interface WorkoutDay {
   id: string

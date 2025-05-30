@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { Dumbbell, Utensils, Brain, Lock, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { supabase } from "@/lib/supabase-client"
 
 interface FitnessPlan {

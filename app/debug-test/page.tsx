@@ -7,7 +7,7 @@ import { UnifiedBottomNav } from "@/components/navigation/unified-bottom-nav"
 import { SafeClientButton } from "@/components/ui/safe-client-button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { CheckCircle, AlertTriangle, Database, Palette, Navigation, Code } from "lucide-react"
 
 export default function DebugTestPage() {

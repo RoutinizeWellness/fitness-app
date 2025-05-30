@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/contexts/auth-context';
+import { useAuth } from '@/lib/auth/auth-context';
 import { getActivePeriodizedPlan } from '@/lib/periodized-training-service';
 import { EnhancedMacroCycle, EnhancedMesoCycle, EnhancedMicroCycle } from '@/lib/macrocycle-periodization';
 import { DeloadRecommendation } from '@/lib/deload-recommendation-service';
@@ -26,7 +26,7 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
-  
+
   const [periodizedPlan, setPeriodizedPlan] = useState<{
     macrocycle: EnhancedMacroCycle | null;
     currentMesocycle: EnhancedMesoCycle | null;
@@ -40,19 +40,19 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
     currentRoutine: null,
     deloadRecommendation: null
   });
-  
+
   useEffect(() => {
     const fetchPeriodizedPlan = async () => {
       try {
         setLoading(true);
         const id = userId || user?.id;
-        
+
         if (!id) {
           setError('User not authenticated');
           setLoading(false);
           return;
         }
-        
+
         const plan = await getActivePeriodizedPlan(id);
         setPeriodizedPlan(plan);
         setLoading(false);
@@ -62,12 +62,12 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
         setLoading(false);
       }
     };
-    
+
     fetchPeriodizedPlan();
   }, [userId, user?.id]);
-  
+
   const { macrocycle, currentMesocycle, currentMicrocycle, currentRoutine, deloadRecommendation } = periodizedPlan;
-  
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -75,7 +75,7 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <Alert variant="destructive" className="mb-4">
@@ -85,7 +85,7 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
       </Alert>
     );
   }
-  
+
   if (!macrocycle) {
     return (
       <Card>
@@ -107,58 +107,58 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
       </Card>
     );
   }
-  
+
   // Calculate progress percentages
   const calculateMacrocycleProgress = () => {
     const start = new Date(macrocycle.startDate);
     const end = new Date(macrocycle.endDate);
     const now = new Date();
-    
+
     if (isBefore(now, start)) return 0;
     if (isAfter(now, end)) return 100;
-    
+
     const totalDuration = end.getTime() - start.getTime();
     const elapsed = now.getTime() - start.getTime();
-    
+
     return Math.round((elapsed / totalDuration) * 100);
   };
-  
+
   const calculateMesocycleProgress = () => {
     if (!currentMesocycle) return 0;
-    
+
     const start = new Date(currentMesocycle.startDate);
     const end = new Date(currentMesocycle.endDate);
     const now = new Date();
-    
+
     if (isBefore(now, start)) return 0;
     if (isAfter(now, end)) return 100;
-    
+
     const totalDuration = end.getTime() - start.getTime();
     const elapsed = now.getTime() - start.getTime();
-    
+
     return Math.round((elapsed / totalDuration) * 100);
   };
-  
+
   const calculateMicrocycleProgress = () => {
     if (!currentMicrocycle) return 0;
-    
+
     const start = new Date(currentMicrocycle.startDate);
     const end = new Date(currentMicrocycle.endDate);
     const now = new Date();
-    
+
     if (isBefore(now, start)) return 0;
     if (isAfter(now, end)) return 100;
-    
+
     const totalDuration = end.getTime() - start.getTime();
     const elapsed = now.getTime() - start.getTime();
-    
+
     return Math.round((elapsed / totalDuration) * 100);
   };
-  
+
   const macrocycleProgress = calculateMacrocycleProgress();
   const mesocycleProgress = calculateMesocycleProgress();
   const microcycleProgress = calculateMicrocycleProgress();
-  
+
   // Format phase names for display
   const formatPhase = (phase: string) => {
     return phase
@@ -166,7 +166,7 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
-  
+
   return (
     <div className="space-y-6">
       <Card>
@@ -176,8 +176,8 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
               <CardTitle>{macrocycle.name}</CardTitle>
               <CardDescription>{macrocycle.description}</CardDescription>
             </div>
-            <Badge variant={macrocycle.primaryGoal === 'hypertrophy' ? 'default' : 
-                           macrocycle.primaryGoal === 'strength' ? 'destructive' : 
+            <Badge variant={macrocycle.primaryGoal === 'hypertrophy' ? 'default' :
+                           macrocycle.primaryGoal === 'strength' ? 'destructive' :
                            macrocycle.primaryGoal === 'weight_loss' ? 'secondary' : 'outline'}>
               {macrocycle.primaryGoal.replace('_', ' ')}
             </Badge>
@@ -196,7 +196,7 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
                 <span>{format(new Date(macrocycle.endDate), 'MMM d, yyyy')}</span>
               </div>
             </div>
-            
+
             {currentMesocycle && (
               <div>
                 <div className="flex justify-between mb-1 text-sm">
@@ -210,7 +210,7 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
                 </div>
               </div>
             )}
-            
+
             {currentMicrocycle && (
               <div>
                 <div className="flex justify-between mb-1 text-sm">
@@ -225,10 +225,10 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
                 </div>
               </div>
             )}
-            
+
             {deloadRecommendation && (
-              <Alert className={deloadRecommendation.urgency === 'critical' ? 'bg-red-100 border-red-400' : 
-                              deloadRecommendation.urgency === 'high' ? 'bg-amber-100 border-amber-400' : 
+              <Alert className={deloadRecommendation.urgency === 'critical' ? 'bg-red-100 border-red-400' :
+                              deloadRecommendation.urgency === 'high' ? 'bg-amber-100 border-amber-400' :
                               'bg-blue-100 border-blue-400'}>
                 <AlertTriangleIcon className="h-4 w-4" />
                 <AlertTitle>Deload Recommended ({deloadRecommendation.urgency} priority)</AlertTitle>
@@ -253,14 +253,14 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
           </Button>
         </CardFooter>
       </Card>
-      
+
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-3 mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="schedule">Schedule</TabsTrigger>
           <TabsTrigger value="metrics">Metrics</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="overview" className="space-y-4">
           <Card>
             <CardHeader>
@@ -273,7 +273,7 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
                     <h4 className="font-medium">Phase: {formatPhase(currentMesocycle.phase)}</h4>
                     <p className="text-sm text-muted-foreground">{currentMesocycle.description}</p>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium">Primary Focus</h4>
                     <div className="flex flex-wrap gap-2 mt-1">
@@ -282,7 +282,7 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium">Special Techniques</h4>
                     <div className="flex flex-wrap gap-2 mt-1">
@@ -298,7 +298,7 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
               )}
             </CardContent>
           </Card>
-          
+
           {currentRoutine && (
             <Card>
               <CardHeader>
@@ -332,7 +332,7 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
             </Card>
           )}
         </TabsContent>
-        
+
         <TabsContent value="schedule">
           <Card>
             <CardHeader>
@@ -346,7 +346,7 @@ export default function PeriodizedPlanOverview({ userId }: PeriodizedPlanOvervie
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="metrics">
           <Card>
             <CardHeader>

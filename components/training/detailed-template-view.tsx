@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/dialog"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { DETAILED_WORKOUT_TEMPLATES } from "@/lib/predefined-workout-templates"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useRouter } from "next/navigation"
 import { toast } from "@/components/ui/use-toast"
 

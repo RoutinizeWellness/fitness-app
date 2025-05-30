@@ -1,19 +1,19 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth/auth-context'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { SafeClientButton as Button } from "@/components/ui/safe-client-button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { 
-  BarChart3, 
-  TrendingUp, 
+import {
+  BarChart3,
+  TrendingUp,
   TrendingDown,
-  Users, 
-  Activity, 
+  Users,
+  Activity,
   Target,
   Brain,
   Eye,
@@ -77,7 +77,7 @@ export default function AnalyticsPage() {
   const { user, profile } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
-  
+
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     userEngagement: {
       totalSessions: 0,
@@ -110,14 +110,14 @@ export default function AnalyticsPage() {
       modelConfidence: 0
     }
   })
-  
+
   const [realTimeMetrics, setRealTimeMetrics] = useState<RealTimeMetrics>({
     activeUsers: 0,
     ongoingWorkouts: 0,
     newSignups: 0,
     systemLoad: 0
   })
-  
+
   const [isLoading, setIsLoading] = useState(true)
   const [selectedTimeRange, setSelectedTimeRange] = useState("7d")
   const [predictiveAnalytics, setPredictiveAnalytics] = useState<PredictiveAnalytics[]>([])
@@ -177,7 +177,7 @@ export default function AnalyticsPage() {
         )
 
         const validPredictions = churnPredictions.filter(p => p !== null) as PredictiveAnalytics[]
-        
+
         const highRisk = validPredictions.filter(p => p.churnRisk > 0.7).length
         const mediumRisk = validPredictions.filter(p => p.churnRisk > 0.4 && p.churnRisk <= 0.7).length
         const lowRisk = validPredictions.filter(p => p.churnRisk <= 0.4).length

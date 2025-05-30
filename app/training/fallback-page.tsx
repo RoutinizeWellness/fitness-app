@@ -25,7 +25,7 @@ import { WorkoutRoutine } from "@/lib/types/training"
 import { v4 as uuidv4 } from "uuid"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useAuth } from "@/lib/auth/auth-context"
 import { useTraining } from "@/lib/contexts/training-context"
 
 // This is a fallback version of the training page without animations

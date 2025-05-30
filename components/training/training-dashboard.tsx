@@ -22,6 +22,7 @@ import {
 import { getWorkoutLogs } from "@/lib/training-service"
 import { getUserFatigue } from "@/lib/adaptive-learning-service"
 import { supabase } from "@/lib/supabase-client"
+import { getTrainingStats, getUserWorkoutRoutines } from "@/lib/services/unified-training-service"
 
 interface TrainingDashboardProps {
   userId: string
@@ -34,6 +35,8 @@ export function TrainingDashboard({ userId }: TrainingDashboardProps) {
   const [sessionsPlanned, setSessionsPlanned] = useState(5)
   const [fatigueData, setFatigueData] = useState<any>(null)
   const [strengthProgress, setStrengthProgress] = useState<any[]>([])
+  const [trainingStats, setTrainingStats] = useState<any>(null)
+  const [routines, setRoutines] = useState<any[]>([])
 
   // Cargar datos del dashboard
   useEffect(() => {
@@ -43,31 +46,17 @@ export function TrainingDashboard({ userId }: TrainingDashboardProps) {
       setIsLoading(true)
 
       try {
-        // Cargar registros de entrenamiento
-        const { data: logs } = await getWorkoutLogs(userId)
-
-        if (logs && logs.length > 0) {
-          // Calcular volumen semanal
-          const oneWeekAgo = new Date()
-          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
-
-          const recentLogs = logs.filter(log =>
-            new Date(log.date) >= oneWeekAgo
-          )
-
-          // Calcular volumen total
-          let totalVolume = 0
-          recentLogs.forEach(log => {
-            if (log.completedSets) {
-              log.completedSets.forEach((set: any) => {
-                totalVolume += (set.weight || 0) * (set.reps || 0)
-              })
-            }
-          })
-
-          setWeeklyVolume(totalVolume)
-          setSessionsCompleted(recentLogs.length)
+        // Cargar estadísticas de entrenamiento usando el servicio unificado
+        const stats = await getTrainingStats(userId)
+        if (stats) {
+          setTrainingStats(stats)
+          setWeeklyVolume(stats.weekly_volume)
+          setSessionsCompleted(stats.total_workouts)
         }
+
+        // Cargar rutinas del usuario
+        const userRoutines = await getUserWorkoutRoutines(userId, false)
+        setRoutines(userRoutines)
 
         // Cargar datos de fatiga
         try {

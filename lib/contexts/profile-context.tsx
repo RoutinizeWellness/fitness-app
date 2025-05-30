@@ -33,12 +33,23 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [lastErrorTime, setLastErrorTime] = useState<number>(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const { toast } = useToast()
 
   // Get auth context safely
   const authContext = React.useContext(AuthContext)
   const user = authContext?.user || null
   const session = authContext?.session || null
+
+  // Debounce error logging to prevent duplicates
+  const logErrorWithDebounce = (error: any, context: string) => {
+    const now = Date.now()
+    if (now - lastErrorTime > 5000) { // Only log errors every 5 seconds
+      console.error(`[ProfileContext] ${context}:`, error)
+      setLastErrorTime(now)
+    }
+  }
 
   // Helper function to transform Supabase profile data to our app's format
   const transformProfileData = (profileData: any): UserProfile => {
@@ -107,12 +118,20 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       if (error) {
         // Log detailed error information
-        console.error('Error fetching profile:', error)
-        console.error('Error code:', error.code)
-        console.error('Error message:', error.message)
-        console.error('Error details:', error.details)
+        console.log('Profile fetch error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        })
 
-        // Check for specific error types
+        // Handle PGRST116 - "The result contains 0 rows" - this is expected for new users
+        if (error.code === 'PGRST116') {
+          console.log('No profile found for user (PGRST116) - this is expected for new users')
+          return null // Return null to trigger profile creation
+        }
+
+        // Check for other specific error types
         if (error.code === '42P01') {
           console.error('Table does not exist error')
           toast({
@@ -133,6 +152,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           return null
         }
 
+        // For other errors, show a toast and log the error with debounce
+        logErrorWithDebounce(error, 'Unexpected error fetching profile')
         toast({
           title: 'Error',
           description: 'No se pudo cargar el perfil. Por favor, intenta de nuevo.',
@@ -224,7 +245,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return minimalProfile
       }
     } catch (error) {
-      console.error('Unexpected error fetching profile:', error)
+      logErrorWithDebounce(error, 'Unexpected error in fetchProfile')
       toast({
         title: 'Error inesperado',
         description: 'Ocurrió un error al cargar el perfil. Por favor, intenta de nuevo.',
@@ -495,7 +516,14 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return
     }
 
+    // Prevent multiple simultaneous refresh calls
+    if (isRefreshing) {
+      console.log('Profile refresh already in progress, skipping')
+      return
+    }
+
     console.log('🔄 Refreshing profile for user:', user.id)
+    setIsRefreshing(true)
     setIsLoading(true)
 
     try {
@@ -504,6 +532,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.log('❌ No session found in auth context, clearing profile')
         setProfile(null)
         setIsLoading(false)
+        setIsRefreshing(false)
         return
       }
 
@@ -512,6 +541,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.error('❌ User ID mismatch in refreshProfile:', { contextId: user.id, sessionId: session.user?.id })
         setProfile(null)
         setIsLoading(false)
+        setIsRefreshing(false)
         return
       }
 
@@ -523,6 +553,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.log('✅ Existing profile found')
         setProfile(fetchedProfile)
         setIsLoading(false)
+        setIsRefreshing(false)
         return fetchedProfile
       }
 
@@ -534,6 +565,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.log('✅ Default profile created successfully')
         setProfile(defaultProfile)
         setIsLoading(false)
+        setIsRefreshing(false)
         return defaultProfile
       }
 
@@ -565,6 +597,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const profile = transformProfileData(result.profile)
             setProfile(profile)
             setIsLoading(false)
+            setIsRefreshing(false)
             return profile
           }
         } else {
@@ -584,10 +617,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       })
       setProfile(null)
       setIsLoading(false)
+      setIsRefreshing(false)
       return null
 
     } catch (error) {
-      console.error('❌ Unexpected error in refreshProfile:', error)
+      logErrorWithDebounce(error, 'Unexpected error in refreshProfile')
       toast({
         title: 'Error',
         description: 'Ocurrió un error al cargar tu perfil. Por favor, intenta de nuevo.',
@@ -595,6 +629,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       })
       setProfile(null)
       setIsLoading(false)
+      setIsRefreshing(false)
       return null
     }
   }

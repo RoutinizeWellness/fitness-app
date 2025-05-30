@@ -1,11 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { NutritionProvider, useNutrition } from '@/contexts/nutrition-context'
-import { AuthProvider } from '@/lib/contexts/auth-context'
+import { AuthProvider } from '@/lib/auth/auth-context'
 import { SupabaseProvider } from '@/contexts/supabase-context'
-import { useAuth } from '@/lib/contexts/auth-context'
+import { useAuth } from '@/lib/auth/auth-context'
 
 // Mock de los hooks y servicios
-jest.mock('@/lib/contexts/auth-context', () => ({
+jest.mock('@/lib/auth/auth-context', () => ({
   useAuth: jest.fn(),
   AuthProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
 }))
