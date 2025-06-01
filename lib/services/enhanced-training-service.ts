@@ -1,5 +1,8 @@
 import { supabase } from "@/lib/supabase-client"
 import { handleSupabaseError } from "@/lib/utils/error-handler"
+import ComprehensivePeriodizationService from "./comprehensive-periodization-service"
+import VolumeLandmarksService from "./volume-landmarks-service"
+import RiRTrackingService from "./rir-tracking-service"
 
 export interface EnhancedTrainingPlan {
   id: string

@@ -88,29 +88,6 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
 // ✅ NEXT.JS 15: ErrorFallback needs to be a Client Component for onClick handlers
 function ErrorFallback({ error, reset }: { error: Error | null, reset: () => void }) {
-  useEffect(() => {
-    // Log the error
-    console.error('Error caught by ErrorBoundary:', error)
-  }, [error])
-
-  const handleRefresh = () => {
-    // Clear cache if possible
-    if ('caches' in window) {
-      caches.keys().then(cacheNames => {
-        cacheNames.forEach(cacheName => {
-          if (cacheName.includes('next-static')) {
-            caches.delete(cacheName)
-              .then(() => console.log(`Cache ${cacheName} cleared`))
-              .catch(err => console.error(`Failed to clear cache ${cacheName}:`, err))
-          }
-        })
-      })
-    }
-    
-    // Reload the page
-    window.location.reload()
-  }
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
       <div className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
@@ -123,13 +100,19 @@ function ErrorFallback({ error, reset }: { error: Error | null, reset: () => voi
             {error?.message || 'Se ha producido un error al cargar la aplicación.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 mt-4">
-            <Button onClick={reset} variant="outline">
+            <button
+              onClick={reset}
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
               Intentar de nuevo
-            </Button>
-            <Button onClick={handleRefresh} className="gap-2">
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+            >
               <RefreshCw className="h-4 w-4" />
               Recargar página
-            </Button>
+            </button>
           </div>
         </div>
       </div>
